@@ -2,9 +2,9 @@ import { Button } from '@cloudflare/kumo/components/button'
 import { ButtonGroup } from '@cloudflare/kumo/components/button-group'
 import { scaleLinear } from 'd3-scale'
 import { type KeyboardEvent, type PointerEvent, useState } from 'react'
+import { Fig, ScaleBar, TerrainMap, useTerrain, type View } from '~/components/scene/terrain'
 import type { LegacyMastData as MastData, MastOutcome } from '~/lib/feed-schemas'
 import { paretoFront } from '~/lib/mission'
-import { Fig, ScaleBar, TerrainMap, useTerrain, type View } from './terrain'
 
 const pct = (x: number) => `${(x * 100).toFixed(1)} %`
 const pts = (x: number) => `${x >= 0 ? '+' : '−'}${Math.abs(x * 100).toFixed(1)} pts`

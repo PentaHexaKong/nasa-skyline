@@ -3,8 +3,8 @@ import { ButtonGroup } from '@cloudflare/kumo/components/button-group'
 import { PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import { scaleLinear } from 'd3-scale'
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { Fig, type Rgb, rgbOf, ScaleBar, TerrainMap, type Tint, useDark, useTerrain, type View } from '~/components/scene/terrain'
 import { buildModel, cellOf, drive, type Field, type Model, STRIDE } from '~/lib/roverSim'
-import { Fig, type Rgb, rgbOf, ScaleBar, TerrainMap, type Tint, useDark, useTerrain, type View } from './terrain'
 
 /**
  * FIXTURE. The terrain and its slopes are real LOLA data; everything else here is invented for the

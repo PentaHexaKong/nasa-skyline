@@ -4,17 +4,28 @@ import { PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { glowTexture, palette as scenePalette } from '~/components/SiteIsland'
+import tdrsUrl from '~/components/scene/models/relay-tdrs.glb?url'
+import merUrl from '~/components/scene/models/rover-mer.glb?url'
+import { SkyClock, useSiteSky } from '~/components/scene/sky'
+import {
+  type Build,
+  EARTH_SCALE,
+  facing,
+  loadModel,
+  polyline,
+  rgb,
+  Stage,
+  SUN_SCALE,
+  shadowBoxOf,
+  sharedTerrain,
+} from '~/components/scene/stage'
+import { Fig, useTerrain } from '~/components/scene/terrain'
 import type { LegacyMastData as MastData } from '~/lib/feed-schemas'
 import { heightAt } from '~/lib/sky'
 import { loadSpace, type Space, sampleSpace } from '~/lib/space'
 import { clock as clockOf, shortDate } from '~/lib/time'
 import { at, frontOf, Heights, heightsOf, Radius, SpotCard, spots } from './mast'
-import tdrsUrl from './models/relay-tdrs.glb?url'
-import merUrl from './models/rover-mer.glb?url'
 import { cellOf, type Field, km2, Range, reachKm, SCENARIOS, Swatch, usePalette, useRover } from './rover'
-import { SkyClock, useSiteSky } from './sky'
-import { type Build, EARTH_SCALE, facing, loadModel, polyline, rgb, Stage, SUN_SCALE, shadowBoxOf, sharedTerrain } from './stage'
-import { Fig, useTerrain } from './terrain'
 
 const Blank = () => <div className="aspect-[4/3] outline -outline-offset-1 outline-line" />
 

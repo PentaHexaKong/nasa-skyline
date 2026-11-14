@@ -1,8 +1,8 @@
 import { type PointerEvent, useState } from 'react'
+import { Fig } from '~/components/scene/terrain'
 import type { RelayData } from '~/lib/feed-schemas'
 import { DAY_MS, HOUR_MS, type MissionWindow, type Span, toSpans } from '~/lib/mission'
 import { shortDate } from '~/lib/time'
-import { Fig } from './terrain'
 
 const pct = (x: number) => `${(x * 100).toFixed(0)} %`
 const hoursOf = ([a, b]: Span) => (b - a) / HOUR_MS
