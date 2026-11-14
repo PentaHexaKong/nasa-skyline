@@ -2,6 +2,9 @@ from datetime import datetime,timezone
 from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 
+epoch=datetime(2025,1,1,tzinfo=timezone.utc)
+replayDays=28
+
 class RelayRequest(BaseModel):
     model_config=ConfigDict(extra='forbid',allow_inf_nan=False)
     schemaVersion: Literal['1.0']='1.0'
@@ -9,7 +12,8 @@ class RelayRequest(BaseModel):
     siteId: Literal['CR1','GR1','SR1']='CR1'
     startUtc: datetime=datetime(2025,1,1,tzinfo=timezone.utc)
     durationS: int=Field(default=86400,ge=120,le=28*86400)
-    cadenceS: Literal[120]=120
+    satellites: int=Field(default=2,ge=1,le=4)
+    cadenceS: int=Field(default=120,ge=120,le=960,multiple_of=120)
     profile: Literal['geometric']='geometric'
     terrainProfile: Literal['lola-80-240-zero-mask']='lola-80-240-zero-mask'
     rfQualified: Literal[False]=False
@@ -18,9 +22,9 @@ class RelayRequest(BaseModel):
     def validateWindow(self):
         if self.startUtc.tzinfo is None or self.startUtc.utcoffset().total_seconds()!=0:
             raise ValueError('UTC timestamp required')
-        offset=(self.startUtc-datetime(2025,1,1,tzinfo=timezone.utc)).total_seconds()
-        if offset<0 or offset%120 or self.durationS%120 or offset+self.durationS>28*86400:
-            raise ValueError('Replay requires aligned 120-second bins within 2025-01-01 through 2025-01-29 exclusive')
+        offset=(self.startUtc-epoch).total_seconds()
+        if offset%self.cadenceS or self.durationS%self.cadenceS:
+            raise ValueError('startUtc and durationS must be whole multiples of cadenceS from 2025-01-01T00:00:00Z')
         return self
 
 class RelayResponse(BaseModel):
