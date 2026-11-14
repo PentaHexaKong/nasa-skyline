@@ -303,3 +303,19 @@ func TestRelayCompareForwardsPositions(t *testing.T) {
 		}
 	}
 }
+
+func TestRelayCompareReportsBusyServiceAsRetryable(t *testing.T) {
+	service := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"schemaVersion":"1.0","dataState":"unavailable","error":{"code":"busy"}}`))
+	}))
+	defer service.Close()
+	t.Setenv("RELAY_ADAPTER_URL", service.URL+"/relay")
+	t.Setenv("MISSION_SCIENCE_URL", service.URL+"/mission")
+	mux := http.NewServeMux()
+	registerRelayEngineering(mux, http.DefaultClient)
+	recorder := httptest.NewRecorder()
+	mux.ServeHTTP(recorder, httptest.NewRequest("POST", "/api/relay-engineering/compare", strings.NewReader(`{"siteId":"CR1","startUtc":"2025-01-06T00:00:00Z","durationS":86400}`)))
+	if recorder.Code != 503 || !strings.Contains(recorder.Body.String(), `"code":"busy"`) {
+		t.Fatal(recorder.Code, recorder.Body.String())
+	}
+}

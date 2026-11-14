@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -134,7 +135,27 @@ func callMissionService(ctx context.Context, client *http.Client, url string, pa
 	if err != nil || len(body) > 16<<20 || response.StatusCode != 200 {
 		return nil, fmt.Errorf("scientific service rejected evaluation (%d)", response.StatusCode)
 	}
+	var reply struct {
+		Error *struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &reply) == nil && reply.Error != nil && reply.Error.Code == "busy" {
+		return nil, errServiceBusy
+	}
 	return body, nil
+}
+
+// The science services run one evaluation at a time and answer the rest 200 with error.code "busy"; callers retry.
+var errServiceBusy = errors.New("the scientific service is busy with another evaluation")
+
+// writeServiceError reports a busy service as retryable and anything else with the caller's status and code.
+func writeServiceError(w http.ResponseWriter, err error, status int, code string) {
+	if errors.Is(err, errServiceBusy) {
+		writeError(w, 503, "busy", err.Error())
+		return
+	}
+	writeError(w, status, code, err.Error())
 }
 
 func validateRelayComparison(environment comparisonEnvironment, relay comparisonRelay, cadenceS int) error {
@@ -286,7 +307,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 		adapterQuery := map[string]any{"siteId": query.SiteID, "startUtc": query.StartUTC, "durationS": query.DurationS, "satellites": query.satelliteCount(), "cadenceS": cadenceS}
 		relayBody, err := callMissionService(r.Context(), client, relayURL+"/v1/evaluate", adapterQuery)
 		if err != nil {
-			writeError(w, 422, "unsupported_scenario", err.Error())
+			writeServiceError(w, err, 422, "unsupported_scenario")
 			return
 		}
 		var replayClock comparisonRelay
@@ -297,7 +318,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 		missionQuery := map[string]any{"site": query.SiteID, "startUtc": replayClock.Provenance.SampleUTC[0], "durationS": query.DurationS, "cadenceS": cadenceS, "profile": "geometric", "earthDefinition": "center", "solarDefinition": "anyDisk", "horizonOffsetDeg": 0, "localResolutionM": 80}
 		environmentBody, err := callMissionService(r.Context(), client, missionURL+"/v1/evaluate", missionQuery)
 		if err != nil {
-			writeError(w, 502, "mission_unavailable", err.Error())
+			writeServiceError(w, err, 502, "mission_unavailable")
 			return
 		}
 		var environment comparisonEnvironment
