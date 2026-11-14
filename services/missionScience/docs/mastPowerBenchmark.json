@@ -1,0 +1,844 @@
+{
+  "runtime": {
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "processor": "arm",
+    "python": "3.12.0"
+  },
+  "cases": [
+    {
+      "site": "CR1",
+      "request": {
+        "schemaVersion": "skyline-mast-power-request/1.0.0",
+        "site": "CR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.0,
+          "minimumEarth": 0.0,
+          "maximumSolarOutageS": 31536000.0,
+          "maximumEarthOutageS": 31536000.0
+        },
+        "observerHeightM": 0,
+        "mastHeightsM": [
+          0.0,
+          2.0,
+          10.0,
+          30.0
+        ],
+        "verticalAzimuthDeg": 90.0
+      },
+      "coldTerrainAndResultS": 18.589375417039264,
+      "warmResultS": 2.400694540992845,
+      "sourceScenarioIds": [
+        "scenario-6935c0a02cc929d8cc419eb8b05b08adf7b9e7da83c21b55a3315674edbd1016",
+        "scenario-644633c1c167bdd80c4a5e935c33a29e0f4a58d1bca381bc5649d15284c7c758",
+        "scenario-3bdb1801002f983e537321690fab77238ef4dc6283ba16bdbf96b6d14afe21ba",
+        "scenario-0299322d079f98d243b434e77fa8652851daf913af1d9a02937d184f0d0177d8"
+      ],
+      "outcomes": [
+        {
+          "heightM": 0.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 31326.172458394605,
+            "directEarthAvailabilityFraction": 0.3625714404906783,
+            "meanVisibleSolarDiskFraction": 0.505121660329601,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 55073.827541605395,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T15:17:53.827523Z",
+                "startS": 0.0,
+                "endS": 55073.827541605395,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.01017539598214749,
+            "vertical": 0.0,
+            "tracking": 0.505121660329601
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": 0.0,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 2.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 65021.218352009164,
+            "directEarthAvailabilityFraction": 0.7525603975926987,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 21378.781647990836,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T05:56:18.781641Z",
+                "startS": 0.0,
+                "endS": 21378.781647990836,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.02009486953940076,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.38998895710202036,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -33695.04589361456,
+            "horizontalExposure": 0.009919473557253271,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.49487833967039896,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 10.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 65021.1519412816,
+            "directEarthAvailabilityFraction": 0.7525596289500185,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 21378.848058718406,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T05:56:18.848052Z",
+                "startS": 0.0,
+                "endS": 21378.848058718406,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.020094869485024498,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.3899881884593402,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -33694.97948288699,
+            "horizontalExposure": 0.009919473502877007,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.49487833967039896,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 30.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 65020.98591446165,
+            "directEarthAvailabilityFraction": 0.7525577073433062,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 21379.014085538354,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T05:56:19.014078Z",
+                "startS": 0.0,
+                "endS": 21379.014085538354,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.02009486934908383,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.3899862668526279,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -33694.813456067044,
+            "horizontalExposure": 0.009919473366936339,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.49487833967039896,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        }
+      ]
+    },
+    {
+      "site": "GR1",
+      "request": {
+        "schemaVersion": "skyline-mast-power-request/1.0.0",
+        "site": "GR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.0,
+          "minimumEarth": 0.0,
+          "maximumSolarOutageS": 31536000.0,
+          "maximumEarthOutageS": 31536000.0
+        },
+        "observerHeightM": 0,
+        "mastHeightsM": [
+          0.0,
+          2.0,
+          10.0,
+          30.0
+        ],
+        "verticalAzimuthDeg": 90.0
+      },
+      "coldTerrainAndResultS": 17.715124666981865,
+      "warmResultS": 2.396546042000409,
+      "sourceScenarioIds": [
+        "scenario-b078537d0e5215b4d7b940e7e57b2d25dbcb2f0b888ffc7f8ff3b289a6e70c42",
+        "scenario-fc2b4f8f424d5ef370a7a770390bf78b8abeb0260c1dbf31b7946d136ba02f88",
+        "scenario-9113da6b4ec86f3c7af4160996f78ced159db59b95bfa4bf8321ef6195cc55bb",
+        "scenario-b69e2e64f92e2ff6611dfef74305151bf8247ed2a91c3e6536dca5d1363eef78"
+      ],
+      "outcomes": [
+        {
+          "heightM": 0.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 86400.0,
+            "directEarthAvailabilityFraction": 1.0,
+            "meanVisibleSolarDiskFraction": 0.9560515338718282,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.0037634513691519986,
+            "vertical": 0.2723090182615927,
+            "tracking": 0.9560515338718282
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": 0.0,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 2.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 86400.0,
+            "directEarthAvailabilityFraction": 1.0,
+            "meanVisibleSolarDiskFraction": 0.9560515328901807,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.0037634513523821227,
+            "vertical": 0.272309017997218,
+            "tracking": 0.9560515328901807
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": -1.676987585255696e-11,
+            "verticalExposure": -2.643746888075782e-10,
+            "trackingExposure": -9.816474300095024e-10,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 10.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 86400.0,
+            "directEarthAvailabilityFraction": 1.0,
+            "meanVisibleSolarDiskFraction": 0.9560515289635919,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.0037634512853026345,
+            "vertical": 0.2723090169397195,
+            "tracking": 0.9560515289635919
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": -8.384936408395438e-11,
+            "verticalExposure": -1.321873221993286e-09,
+            "trackingExposure": -4.908236261869092e-09,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 30.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 86400.0,
+            "directEarthAvailabilityFraction": 1.0,
+            "meanVisibleSolarDiskFraction": 0.9560515191471188,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.003763451117603909,
+            "vertical": 0.2723090142959729,
+            "tracking": 0.9560515191471188
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": -2.5154808964977793e-10,
+            "verticalExposure": -3.965619832513312e-09,
+            "trackingExposure": -1.4724709340718789e-08,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        }
+      ]
+    },
+    {
+      "site": "SR1",
+      "request": {
+        "schemaVersion": "skyline-mast-power-request/1.0.0",
+        "site": "SR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.0,
+          "minimumEarth": 0.0,
+          "maximumSolarOutageS": 31536000.0,
+          "maximumEarthOutageS": 31536000.0
+        },
+        "observerHeightM": 0,
+        "mastHeightsM": [
+          0.0,
+          2.0,
+          10.0,
+          30.0
+        ],
+        "verticalAzimuthDeg": 90.0
+      },
+      "coldTerrainAndResultS": 17.13357366604032,
+      "warmResultS": 2.3338424999965355,
+      "sourceScenarioIds": [
+        "scenario-d413aa06112cc69940cc1b094aeac9f088c18a9a78d37312c270359a3f1e761c",
+        "scenario-bb37ce089882f0dfbed57a11ebdaf478577c0c6c6caea9aa0eb1bdbfc076372f",
+        "scenario-3d664fb9cba32e6646f8583b9b5648d938f8aecc0eb3a75e4287bc4a6900fac0",
+        "scenario-1413d31780fdc417f2bcda65fbced5508cb97d7cc5f24d6f11c59c35532feb0c"
+      ],
+      "outcomes": [
+        {
+          "heightM": 0.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 86400.0,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T23:59:59.999971Z",
+                "startS": 0.0,
+                "endS": 86400.0,
+                "startClipped": true,
+                "endClipped": true
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.024489909299802402,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.0,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": 0.0,
+            "horizontalExposure": 0.0,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 2.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 74632.85160672809,
+            "directEarthAvailabilityFraction": 0.8638061528556491,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 11767.148393271918,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T03:16:07.148389Z",
+                "startS": 0.0,
+                "endS": 11767.148393271918,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.024489909286210997,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.8638061528556491,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -74632.85160672809,
+            "horizontalExposure": -1.3591405778612398e-11,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 10.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 74632.78549286083,
+            "directEarthAvailabilityFraction": 0.8638053876488522,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 11767.214507139173,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T03:16:07.214503Z",
+                "startS": 0.0,
+                "endS": 11767.214507139173,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.024489909231845377,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.8638053876488522,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -74632.78549286083,
+            "horizontalExposure": -6.795702542361504e-11,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        },
+        {
+          "heightM": 30.0,
+          "metrics": {
+            "sunlightDurationS": 86400.0,
+            "sunlightAvailabilityFraction": 1.0,
+            "directEarthDurationS": 74632.62020819163,
+            "directEarthAvailabilityFraction": 0.8638034746318476,
+            "meanVisibleSolarDiskFraction": 1.0,
+            "longestDarkness": {
+              "durationS": 0.0,
+              "interval": null,
+              "touchesCoverageBoundary": false
+            },
+            "longestDirectEarthBlackout": {
+              "durationS": 11767.37979180838,
+              "interval": {
+                "startUtc": "2025-01-06T00:00:00.000000Z",
+                "endUtc": "2025-01-06T03:16:07.379788Z",
+                "startS": 0.0,
+                "endS": 11767.37979180838,
+                "startClipped": true,
+                "endClipped": false
+              },
+              "touchesCoverageBoundary": true
+            },
+            "denominatorS": 86400.0,
+            "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+            "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+          },
+          "panelMeans": {
+            "horizontal": 0.024489909095931333,
+            "vertical": 0.0,
+            "tracking": 1.0
+          },
+          "delta": {
+            "sunlightAvailabilityFraction": 0.0,
+            "directEarthAvailabilityFraction": 0.8638034746318476,
+            "longestDarknessS": 0.0,
+            "longestDirectEarthBlackoutS": -74632.62020819163,
+            "horizontalExposure": -2.038710693319512e-10,
+            "verticalExposure": 0.0,
+            "trackingExposure": 0.0,
+            "maximumRawHorizonIncreaseDeg": 0.0,
+            "skylineNonincreasingWithinTolerance": true,
+            "angularToleranceDeg": 1e-09
+          }
+        }
+      ]
+    }
+  ],
+  "temporalConvergence": [
+    {
+      "cadenceS": 3600,
+      "wallTimeS": 0.564069207990542,
+      "metrics": {
+        "sunlightDurationS": 86400.0,
+        "sunlightAvailabilityFraction": 1.0,
+        "directEarthDurationS": 65021.1519412816,
+        "directEarthAvailabilityFraction": 0.7525596289500185,
+        "meanVisibleSolarDiskFraction": 1.0,
+        "longestDarkness": {
+          "durationS": 0.0,
+          "interval": null,
+          "touchesCoverageBoundary": false
+        },
+        "longestDirectEarthBlackout": {
+          "durationS": 21378.848058718406,
+          "interval": {
+            "startUtc": "2025-01-06T00:00:00.000000Z",
+            "endUtc": "2025-01-06T05:56:18.848052Z",
+            "startS": 0.0,
+            "endS": 21378.848058718406,
+            "startClipped": true,
+            "endClipped": false
+          },
+          "touchesCoverageBoundary": true
+        },
+        "denominatorS": 86400.0,
+        "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+        "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+      },
+      "panelMeans": {
+        "horizontal": 0.020094869485024498,
+        "vertical": 0.0,
+        "tracking": 1.0
+      }
+    },
+    {
+      "cadenceS": 1800,
+      "wallTimeS": 0.7945385839557275,
+      "metrics": {
+        "sunlightDurationS": 86400.0,
+        "sunlightAvailabilityFraction": 1.0,
+        "directEarthDurationS": 65021.163568491276,
+        "directEarthAvailabilityFraction": 0.7525597635242046,
+        "meanVisibleSolarDiskFraction": 1.0,
+        "longestDarkness": {
+          "durationS": 0.0,
+          "interval": null,
+          "touchesCoverageBoundary": false
+        },
+        "longestDirectEarthBlackout": {
+          "durationS": 21378.836431508724,
+          "interval": {
+            "startUtc": "2025-01-06T00:00:00.000000Z",
+            "endUtc": "2025-01-06T05:56:18.836424Z",
+            "startS": 0.0,
+            "endS": 21378.836431508724,
+            "startClipped": true,
+            "endClipped": false
+          },
+          "touchesCoverageBoundary": true
+        },
+        "denominatorS": 86400.0,
+        "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+        "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+      },
+      "panelMeans": {
+        "horizontal": 0.02009484055733501,
+        "vertical": 0.0,
+        "tracking": 1.0
+      }
+    },
+    {
+      "cadenceS": 900,
+      "wallTimeS": 1.0159742499818094,
+      "metrics": {
+        "sunlightDurationS": 86400.0,
+        "sunlightAvailabilityFraction": 1.0,
+        "directEarthDurationS": 65021.16942839354,
+        "directEarthAvailabilityFraction": 0.7525598313471474,
+        "meanVisibleSolarDiskFraction": 1.0,
+        "longestDarkness": {
+          "durationS": 0.0,
+          "interval": null,
+          "touchesCoverageBoundary": false
+        },
+        "longestDirectEarthBlackout": {
+          "durationS": 21378.830571606457,
+          "interval": {
+            "startUtc": "2025-01-06T00:00:00.000000Z",
+            "endUtc": "2025-01-06T05:56:18.830564Z",
+            "startS": 0.0,
+            "endS": 21378.830571606457,
+            "startClipped": true,
+            "endClipped": false
+          },
+          "touchesCoverageBoundary": true
+        },
+        "denominatorS": 86400.0,
+        "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+        "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+      },
+      "panelMeans": {
+        "horizontal": 0.020094833325423306,
+        "vertical": 0.0,
+        "tracking": 1.0
+      }
+    }
+  ],
+  "terrainConvergence": {
+    "coarseAzimuthStepDeg": 0.25,
+    "refinedAzimuthStepDeg": 0.125,
+    "coarseNearStepM": 40,
+    "refinedNearStepM": 20,
+    "refinedWallTimeS": 5.530763500020839,
+    "maximumAlignedHorizonDifferenceDeg": 0.09220388956219328,
+    "coarseMetrics": {
+      "sunlightDurationS": 86400.0,
+      "sunlightAvailabilityFraction": 1.0,
+      "directEarthDurationS": 65021.163568491276,
+      "directEarthAvailabilityFraction": 0.7525597635242046,
+      "meanVisibleSolarDiskFraction": 1.0,
+      "longestDarkness": {
+        "durationS": 0.0,
+        "interval": null,
+        "touchesCoverageBoundary": false
+      },
+      "longestDirectEarthBlackout": {
+        "durationS": 21378.836431508724,
+        "interval": {
+          "startUtc": "2025-01-06T00:00:00.000000Z",
+          "endUtc": "2025-01-06T05:56:18.836424Z",
+          "startS": 0.0,
+          "endS": 21378.836431508724,
+          "startClipped": true,
+          "endClipped": false
+        },
+        "touchesCoverageBoundary": true
+      },
+      "denominatorS": 86400.0,
+      "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+      "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+    },
+    "refinedMetrics": {
+      "sunlightDurationS": 86400.0,
+      "sunlightAvailabilityFraction": 1.0,
+      "directEarthDurationS": 65021.163568491276,
+      "directEarthAvailabilityFraction": 0.7525597635242046,
+      "meanVisibleSolarDiskFraction": 1.0,
+      "longestDarkness": {
+        "durationS": 0.0,
+        "interval": null,
+        "touchesCoverageBoundary": false
+      },
+      "longestDirectEarthBlackout": {
+        "durationS": 21378.836431508724,
+        "interval": {
+          "startUtc": "2025-01-06T00:00:00.000000Z",
+          "endUtc": "2025-01-06T05:56:18.836424Z",
+          "startS": 0.0,
+          "endS": 21378.836431508724,
+          "startClipped": true,
+          "endClipped": false
+        },
+        "touchesCoverageBoundary": true
+      },
+      "denominatorS": 86400.0,
+      "denominatorSemantics": "Entire half-open requested period in elapsed SPICE ET seconds; endpoint sample is context only",
+      "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
+    }
+  },
+  "interpretation": "Measured fixed-site/date numerical sensitivity. These cases do not establish universal temporal or terrain convergence. Cold cases rebuild terrain in an empty temporary cache; warm cases reuse result memoization.",
+  "limitations": [
+    "Single 2025-01-06 date for three supported ROI sites",
+    "Center-incidence disk-fraction approximation",
+    "One terrain refinement pair at CR1",
+    "Geometric opportunities only; no electrical or RF qualification"
+  ]
+}

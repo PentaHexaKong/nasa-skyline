@@ -1,0 +1,775 @@
+{
+  "cases": [
+    {
+      "label": "coldCoarseGrid",
+      "request": {
+        "schemaVersion": "skyline-mast-placement-request/1.0.0",
+        "site": "CR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.8,
+          "minimumEarth": 0.5,
+          "maximumSolarOutageS": 3600.0,
+          "maximumEarthOutageS": 30000.0
+        },
+        "observerHeightM": 0,
+        "searchRadiusM": 80.0,
+        "gridResolutionM": 80.0,
+        "mastHeightsM": [
+          0.0,
+          2.0
+        ],
+        "maximumCableLengthM": 80.0,
+        "maximumSlopeDeg": null,
+        "verticalAzimuthDeg": 90.0,
+        "evaluationBudget": {
+          "maxEvaluations": 10,
+          "maxWallTimeS": 300.0
+        }
+      },
+      "wallS": 41.83616704196902,
+      "memoryBefore": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 110592000
+      },
+      "memoryAfter": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 600735744
+      },
+      "scenarioId": "mast-placement-48e97ba759f600cd2d946465f38addeae53cd071cf68ca2576ea7c044dfd43bb",
+      "optimization": {
+        "generatedCandidateCount": 5,
+        "plannedEvaluationCount": 10,
+        "evaluationsPerformed": 10,
+        "feasibleOutcomeCount": 5,
+        "unknownOutcomeCount": 0,
+        "complete": true,
+        "terminationReason": "enumerated",
+        "wallTimeS": 41.83479441702366,
+        "method": "bounded exhaustive enumeration",
+        "objectiveDefinitions": [
+          {
+            "metric": "directEarthAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "sunlightAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "longestDirectEarthBlackoutS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "longestDarknessS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "cableDistanceM",
+            "direction": "minimize",
+            "unit": "m"
+          },
+          {
+            "metric": "observerHeightM",
+            "direction": "minimize",
+            "unit": "m"
+          }
+        ],
+        "paretoSet": [
+          {
+            "candidateId": "CR1",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-af071662ffacfc2a20fa",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+            "observerHeightM": 0.0
+          }
+        ],
+        "tradeOffs": [
+          "5 computed feasible location-height combinations yield 3 nondominated combinations over six objectives.",
+          "Nondominated direct Earth availability spans 0.752560398 to 0.753741425 fraction.",
+          "Nondominated sunlight availability spans 1 to 1 fraction.",
+          "Nondominated longest direct Earth blackout spans 21276.7408 to 21378.7816 s.",
+          "Nondominated longest darkness spans 0 to 0 s.",
+          "Nondominated cable distance spans 0 to 80 m.",
+          "Nondominated mast height spans 0 to 2 m."
+        ],
+        "rankScope": "computed feasible generated location-height combinations",
+        "globalOptimalityClaimed": false
+      },
+      "cacheEntries": {
+        "nativeResult": 10,
+        "horizon": 10,
+        "ephemeris": 23945
+      },
+      "feedBytes": 29396,
+      "underresolvedGridCandidateCount": 0,
+      "sourceScenarioIds": [
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-9f0646ccb4e3e9331d968c8a38538d77ce8cc566ece0c6811c2b2e479fd8bd7d"
+        },
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-81b3bdc6fb06b0a78b353bda760a642da59800f59107e6b5a30840f053d6803b"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-0c6c42a08ae810dd1afa9be8de32e71fbfe5d365e7caa196671df4a6d6bc686e"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-1eed7023b0883787dc8d812dbe4dd06a9a3193787bdc0276ca9d622d79dbfc98"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-fa4fe7153e725843069877f00ac951bf2d90fec86df95d65ae6afc9df906a8c1"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-efc3d3003923171bd7a78780e514f928f48d6129540ce580f4981c23c6687f5b"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-e3f51d68cc276b20b264f0b69209a2c0dba08865a6c16737278aa01a032d4953"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5dfde7b3f97ab7334907652ad2bc4ddf9d68ea6e93c82de465999262ebb2034a"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-f3765d12a4da1d95175653a1858ca97f6f5261023d69c9ee0b7ea72cbad863ea"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5d49ab68ccb300b0642daf23d178a70da22d846511796a31713cd7c093199ce2"
+        }
+      ]
+    },
+    {
+      "label": "memoizedCoarseGrid",
+      "request": {
+        "schemaVersion": "skyline-mast-placement-request/1.0.0",
+        "site": "CR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.8,
+          "minimumEarth": 0.5,
+          "maximumSolarOutageS": 3600.0,
+          "maximumEarthOutageS": 30000.0
+        },
+        "observerHeightM": 0,
+        "searchRadiusM": 80.0,
+        "gridResolutionM": 80.0,
+        "mastHeightsM": [
+          0.0,
+          2.0
+        ],
+        "maximumCableLengthM": 80.0,
+        "maximumSlopeDeg": null,
+        "verticalAzimuthDeg": 90.0,
+        "evaluationBudget": {
+          "maxEvaluations": 10,
+          "maxWallTimeS": 300.0
+        }
+      },
+      "wallS": 5.899245958018582,
+      "memoryBefore": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 600735744
+      },
+      "memoryAfter": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 600735744
+      },
+      "scenarioId": "mast-placement-48e97ba759f600cd2d946465f38addeae53cd071cf68ca2576ea7c044dfd43bb",
+      "optimization": {
+        "generatedCandidateCount": 5,
+        "plannedEvaluationCount": 10,
+        "evaluationsPerformed": 10,
+        "feasibleOutcomeCount": 5,
+        "unknownOutcomeCount": 0,
+        "complete": true,
+        "terminationReason": "enumerated",
+        "wallTimeS": 5.898136832984164,
+        "method": "bounded exhaustive enumeration",
+        "objectiveDefinitions": [
+          {
+            "metric": "directEarthAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "sunlightAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "longestDirectEarthBlackoutS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "longestDarknessS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "cableDistanceM",
+            "direction": "minimize",
+            "unit": "m"
+          },
+          {
+            "metric": "observerHeightM",
+            "direction": "minimize",
+            "unit": "m"
+          }
+        ],
+        "paretoSet": [
+          {
+            "candidateId": "CR1",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-af071662ffacfc2a20fa",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+            "observerHeightM": 0.0
+          }
+        ],
+        "tradeOffs": [
+          "5 computed feasible location-height combinations yield 3 nondominated combinations over six objectives.",
+          "Nondominated direct Earth availability spans 0.752560398 to 0.753741425 fraction.",
+          "Nondominated sunlight availability spans 1 to 1 fraction.",
+          "Nondominated longest direct Earth blackout spans 21276.7408 to 21378.7816 s.",
+          "Nondominated longest darkness spans 0 to 0 s.",
+          "Nondominated cable distance spans 0 to 80 m.",
+          "Nondominated mast height spans 0 to 2 m."
+        ],
+        "rankScope": "computed feasible generated location-height combinations",
+        "globalOptimalityClaimed": false
+      },
+      "cacheEntries": {
+        "nativeResult": 10,
+        "horizon": 10,
+        "ephemeris": 23945
+      },
+      "feedBytes": 29396,
+      "underresolvedGridCandidateCount": 0,
+      "sourceScenarioIds": [
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-9f0646ccb4e3e9331d968c8a38538d77ce8cc566ece0c6811c2b2e479fd8bd7d"
+        },
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-81b3bdc6fb06b0a78b353bda760a642da59800f59107e6b5a30840f053d6803b"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-0c6c42a08ae810dd1afa9be8de32e71fbfe5d365e7caa196671df4a6d6bc686e"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-1eed7023b0883787dc8d812dbe4dd06a9a3193787bdc0276ca9d622d79dbfc98"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-fa4fe7153e725843069877f00ac951bf2d90fec86df95d65ae6afc9df906a8c1"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-efc3d3003923171bd7a78780e514f928f48d6129540ce580f4981c23c6687f5b"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-e3f51d68cc276b20b264f0b69209a2c0dba08865a6c16737278aa01a032d4953"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5dfde7b3f97ab7334907652ad2bc4ddf9d68ea6e93c82de465999262ebb2034a"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-f3765d12a4da1d95175653a1858ca97f6f5261023d69c9ee0b7ea72cbad863ea"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5d49ab68ccb300b0642daf23d178a70da22d846511796a31713cd7c093199ce2"
+        }
+      ]
+    },
+    {
+      "label": "refinedSpatialGrid",
+      "request": {
+        "schemaVersion": "skyline-mast-placement-request/1.0.0",
+        "site": "CR1",
+        "startUtc": "2025-01-06T00:00:00Z",
+        "durationS": 86400.0,
+        "cadenceS": 3600.0,
+        "profile": "geometric",
+        "solarDefinition": "anyDisk",
+        "earthDefinition": "center",
+        "horizonOffsetDeg": 0.0,
+        "localResolutionM": 80,
+        "eventToleranceS": 1.0,
+        "constraints": {
+          "minimumSolar": 0.8,
+          "minimumEarth": 0.5,
+          "maximumSolarOutageS": 3600.0,
+          "maximumEarthOutageS": 30000.0
+        },
+        "observerHeightM": 0,
+        "searchRadiusM": 80.0,
+        "gridResolutionM": 40.0,
+        "mastHeightsM": [
+          0.0,
+          2.0
+        ],
+        "maximumCableLengthM": 80.0,
+        "maximumSlopeDeg": null,
+        "verticalAzimuthDeg": 90.0,
+        "evaluationBudget": {
+          "maxEvaluations": 26,
+          "maxWallTimeS": 300.0
+        }
+      },
+      "wallS": 72.6860394999967,
+      "memoryBefore": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 600735744
+      },
+      "memoryAfter": {
+        "currentRssBytes": null,
+        "processPeakRssBytes": 600735744
+      },
+      "scenarioId": "mast-placement-ada88fabb10d6a29b52261ef5c57353edaab72f0ca4b5f05713eee2ff5578999",
+      "optimization": {
+        "generatedCandidateCount": 13,
+        "plannedEvaluationCount": 26,
+        "evaluationsPerformed": 26,
+        "feasibleOutcomeCount": 14,
+        "unknownOutcomeCount": 0,
+        "complete": true,
+        "terminationReason": "enumerated",
+        "wallTimeS": 72.68348854099168,
+        "method": "bounded exhaustive enumeration",
+        "objectiveDefinitions": [
+          {
+            "metric": "directEarthAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "sunlightAvailabilityFraction",
+            "direction": "maximize",
+            "unit": "fraction"
+          },
+          {
+            "metric": "longestDirectEarthBlackoutS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "longestDarknessS",
+            "direction": "minimize",
+            "unit": "s"
+          },
+          {
+            "metric": "cableDistanceM",
+            "direction": "minimize",
+            "unit": "m"
+          },
+          {
+            "metric": "observerHeightM",
+            "direction": "minimize",
+            "unit": "m"
+          }
+        ],
+        "paretoSet": [
+          {
+            "candidateId": "CR1",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-82e1990c4344f6c7479b",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-dd8c6f8ad096c572df3d",
+            "observerHeightM": 0.0
+          },
+          {
+            "candidateId": "CR1-p-ca7f07872d02db0cfe35",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-af071662ffacfc2a20fa",
+            "observerHeightM": 2.0
+          },
+          {
+            "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+            "observerHeightM": 0.0
+          }
+        ],
+        "tradeOffs": [
+          "14 computed feasible location-height combinations yield 6 nondominated combinations over six objectives.",
+          "Nondominated direct Earth availability spans 0.674265112 to 0.753741425 fraction.",
+          "Nondominated sunlight availability spans 1 to 1 fraction.",
+          "Nondominated longest direct Earth blackout spans 21276.7408 to 28143.4943 s.",
+          "Nondominated longest darkness spans 0 to 0 s.",
+          "Nondominated cable distance spans 0 to 80 m.",
+          "Nondominated mast height spans 0 to 2 m."
+        ],
+        "rankScope": "computed feasible generated location-height combinations",
+        "globalOptimalityClaimed": false
+      },
+      "cacheEntries": {
+        "nativeResult": 26,
+        "horizon": 26,
+        "ephemeris": 61999
+      },
+      "feedBytes": 56087,
+      "underresolvedGridCandidateCount": 13,
+      "sourceScenarioIds": [
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-9f0646ccb4e3e9331d968c8a38538d77ce8cc566ece0c6811c2b2e479fd8bd7d"
+        },
+        {
+          "candidateId": "CR1",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-81b3bdc6fb06b0a78b353bda760a642da59800f59107e6b5a30840f053d6803b"
+        },
+        {
+          "candidateId": "CR1-p-82e1990c4344f6c7479b",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-6f1815c35905edb8985292ec6c46772024305ec111a6508d6f175ca9366ca562"
+        },
+        {
+          "candidateId": "CR1-p-82e1990c4344f6c7479b",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-c485483923cb61806c16ca9d9763a352d84d1a15f88a106e33b12041826925fd"
+        },
+        {
+          "candidateId": "CR1-p-44e97de58bfa7e0a2320",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-6e5aa96c001ef3ea1acec09cc6948f1ae6e600d2a817d981da337be0f8fc7972"
+        },
+        {
+          "candidateId": "CR1-p-44e97de58bfa7e0a2320",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-b70b4ebd5ab528ef2f6bac0c70b214c994f27774d9ba80886afa81dbc0e3c02e"
+        },
+        {
+          "candidateId": "CR1-p-dd8c6f8ad096c572df3d",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-a6dcd4841607925244cf9e043ce9dedad2d2589e19bbb1dbe3b53a89252bed20"
+        },
+        {
+          "candidateId": "CR1-p-dd8c6f8ad096c572df3d",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-d7aed1d56ba58c72df87e011a27fde6099d98c06a1e700b979289977162145cb"
+        },
+        {
+          "candidateId": "CR1-p-5a3f9c18eb120457aa9b",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-a2f53b516455f0c68cce2789cf59e34c94dd94060d743294fb2efd604cacb5c1"
+        },
+        {
+          "candidateId": "CR1-p-5a3f9c18eb120457aa9b",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-e206e15ebf0e74d7c8cae15bdbcf69a901b180ca3828ec6476d88774530dfc16"
+        },
+        {
+          "candidateId": "CR1-p-03d8a2445db275d0d0ec",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-dcc59c1c30ec0e29cff1968115d912e96db6fcb4a84f2ea332e1068e51d27987"
+        },
+        {
+          "candidateId": "CR1-p-03d8a2445db275d0d0ec",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-100ed403b93d21bbfe5387cfc7f37aff8ff3c9ec2752bd5eb60b37fa79f3cbb5"
+        },
+        {
+          "candidateId": "CR1-p-ca7f07872d02db0cfe35",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-a06ac3e9e1b28ae3a563840482b47d9aa9af4173515a43fed15baf3130902973"
+        },
+        {
+          "candidateId": "CR1-p-ca7f07872d02db0cfe35",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-19f1bc45685f77d4461ceaa16f737ea1b991cfd2a6de1b6d71b17a6edae43801"
+        },
+        {
+          "candidateId": "CR1-p-9819ff068f9df75f9d6e",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-88b91118194a6cf7dc67db1ad1e48e490bbd5a4e6fcf645f611815045a3665d0"
+        },
+        {
+          "candidateId": "CR1-p-9819ff068f9df75f9d6e",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-a648f4c7565a7cb6f4dd5dcb7df2e55e4dbfdca1594e3543fe2b6abc24f53f59"
+        },
+        {
+          "candidateId": "CR1-p-bd28b38275c508a84caf",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-8f2de2c2dc4d3a54dcbec0b317334e17664cc861982cc577ae4a8d67c7936eca"
+        },
+        {
+          "candidateId": "CR1-p-bd28b38275c508a84caf",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-913b563ac1c3b5d1f9ed709c48dddecfd225d28f0963c110e9f0dbb94c8fc7b8"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-0c6c42a08ae810dd1afa9be8de32e71fbfe5d365e7caa196671df4a6d6bc686e"
+        },
+        {
+          "candidateId": "CR1-p-af071662ffacfc2a20fa",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-1eed7023b0883787dc8d812dbe4dd06a9a3193787bdc0276ca9d622d79dbfc98"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-fa4fe7153e725843069877f00ac951bf2d90fec86df95d65ae6afc9df906a8c1"
+        },
+        {
+          "candidateId": "CR1-p-9b67c74e1c8a8c05dfda",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-efc3d3003923171bd7a78780e514f928f48d6129540ce580f4981c23c6687f5b"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-e3f51d68cc276b20b264f0b69209a2c0dba08865a6c16737278aa01a032d4953"
+        },
+        {
+          "candidateId": "CR1-p-2e198fbfafdb013bc99b",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5dfde7b3f97ab7334907652ad2bc4ddf9d68ea6e93c82de465999262ebb2034a"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 0.0,
+          "sourceScenarioId": "scenario-f3765d12a4da1d95175653a1858ca97f6f5261023d69c9ee0b7ea72cbad863ea"
+        },
+        {
+          "candidateId": "CR1-p-9feddc8d39a72854a035",
+          "observerHeightM": 2.0,
+          "sourceScenarioId": "scenario-5d49ab68ccb300b0642daf23d178a70da22d846511796a31713cd7c093199ce2"
+        }
+      ]
+    }
+  ],
+  "scientificSourceIdentity": {
+    "algorithm_version": "mast-placement/1.0.0",
+    "sources": [
+      "LDEM_60S_240MPP_ADJ.TIF:3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+      "LDEM_80S_80MPP_ADJ.TIF:82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+      "de440s.bsp:c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+      "moon_080317.tf:78732477b96f9863e7b0d65bcee3c22b8707ca5ed0db56d1173319cb2e8c7993",
+      "moon_de440_250416.tf:a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768",
+      "moon_pa_de421_1900-2050.bpc:656f90616403d75a75f0cd6c8830fc5b44f8cb4facb5ccb8915e752b397520cf",
+      "moon_pa_de440_200625.bpc:60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+      "naif0012.tls:678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+      "pck00011.tpc:3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1"
+    ],
+    "assumptions": [
+      "Generated grid locations have unverified construction safety and physical coordinate uncertainty",
+      "Cable distance is an idealized reference-sphere surface offset; vertical mast run, routing, slack and terrain following are omitted",
+      "Slope describes a coarse DEM footprint; rocks, microtopography, bearing strength and engineering suitability are unresolved",
+      "Subpixel candidate spacing shares interpolated DEM information",
+      "Pareto dominance uses exact computed numbers; physical significance below terrain and event uncertainty is unresolved",
+      "Search is conditional on the generated grid, selected heights, scientific profile and resolved outcomes",
+      "Wall-time admission is checked between scientific evaluations; an in-flight evaluation can overrun the limit",
+      "Panel exposure uses center incidence times visible solar-disk fraction with ideal unconstrained tracking",
+      "Possible missed subcadence events and tangencies",
+      "Sector horizon is discontinuous",
+      "Zero-degree elevation floor",
+      "Earth center geometry only",
+      "Terrain perturbations are uncalibrated scenarios",
+      "Root tolerance is numerical",
+      "Solar disk ignores variation of terrain across disk"
+    ],
+    "engineVersion": "0.1.0",
+    "environmentAlgorithmVersion": "0.4.0",
+    "implementation": {
+      "sources": {
+        "__init__.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+        "api.py": "70ea5d01692a9f09689efed4fb5c7d8be737fe394c98384d35f9f1544c7b2d84",
+        "engine.py": "e09482c4c551d5dc88f81054c19154389d87e8c3c58fea60c49016d98e72f208",
+        "intermediateCache.py": "a8afe44de45bfe2bf920541bbaad3d7dbf0a29d7fe7a93b88b94f8d2fb228b27",
+        "lunarSites.py": "b17edb9017d848211d5788a703d34f65550b3737d64ae69c5e630b1386eb5808",
+        "mastFeeds.py": "a13edc2d8cb8396f2fa2029e0c0030ecf6a3e0bb6c5da1a45bbd2ff33e29a7a4",
+        "mastPlacement.py": "45962702e49ed9fe49729238d7394ac7d80fcec106cd05a1d1b0d128b5d53f47",
+        "mastPlacementModels.py": "6e1358bc635a66a7fcbffc210c606a98d227d1c077489957b243a6a8f5ca957f",
+        "mastPlacementSelection.py": "89f40d9eb0920ee67aa375268c0d74478c531a6c5cbdb2918d056ec30957f0f6",
+        "mastPlacementTerrain.py": "a125728099c43f7110d3c16101ecda63484390413df237656bcabcc2cddebc1e",
+        "mastPower.py": "98461f645d2c2fc50b80e1289caed04258aa3f57d873434d58c94ace6a7c1623",
+        "mastPowerModels.py": "41a6d3ced5f0f0040b239fe4e7972f36d4662659e84358bba6949cedd1b81f56",
+        "optimization.py": "ed2b67a88c692b8492b01b30e5c5fc9872414df1a00b91a75b06c5e70d9d371f",
+        "panelGeometry.py": "06c7bf2d7c556f691a6108be0c52acfd4acc9c2a7d29338374b6d0460fd497b4",
+        "powerFeeds.py": "2a6666161151d015904389adbecf90ef0117d2066a31a22007b976257577317f",
+        "schemas.py": "98f246e344e31144c198c05fa0d9d2b4524d9427a30104f7c64884a0e3425751",
+        "scientificContract.py": "074cb441375b411e3eb21d9a162d755e104f2b61193d97e6445d796d0962ca4c",
+        "scientificFeeds.py": "8ab9554d8570119f34903617f9c646183d4cd08b6622b773a1f6454a4e488f72",
+        "scientificModels.py": "f56efd30eaa2bad3594e2833c2db70f95798a95f1c1f96667474db1daa7c5882",
+        "siteCatalog.py": "adf1edb062746a08e4e6f6daf2b40352e0653e4c5094d72d569ee395d136081c",
+        "spiceGeometry.py": "2e64b3b840b2e34b7064ada50bd4da9886c21cc53a1d576de714a13ce5645759",
+        "terrainHorizon.py": "14a8e2f5b24aaf7277187efd59d1acbc579204589ad8f1dfadd75238277107ff",
+        "visibility.py": "c3be5337eb8db03ab6380cade6bda32dee054047ad1050917d15fbafee8cf541"
+      },
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "spiceypy": "8.4.0",
+        "rasterio": "1.5.2",
+        "pyproj": "3.8.0",
+        "pydantic": "2.14.3"
+      },
+      "python": "3.12.0"
+    },
+    "kernels": {
+      "naif0012.tls": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+      "pck00011.tpc": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1",
+      "de440s.bsp": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+      "moon_pa_de421_1900-2050.bpc": "656f90616403d75a75f0cd6c8830fc5b44f8cb4facb5ccb8915e752b397520cf",
+      "moon_080317.tf": "78732477b96f9863e7b0d65bcee3c22b8707ca5ed0db56d1173319cb2e8c7993",
+      "moon_pa_de440_200625.bpc": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+      "moon_de440_250416.tf": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
+    },
+    "dems": [
+      {
+        "filename": "LDEM_80S_80MPP_ADJ.TIF",
+        "sourceUrl": "https://pgda.gsfc.nasa.gov/products/90",
+        "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+        "resolutionM": [
+          80.0,
+          80.0
+        ],
+        "boundsM": [
+          -304000.0,
+          -304000.0,
+          304000.0,
+          304000.0
+        ],
+        "frame": "MOON_ME_DE421",
+        "projection": "PROJCRS[\"Moon (2015) - Sphere / Ocentric / South Polar\",BASEGEOGCRS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",ELLIPSOID[\"Moon (2015) - Sphere\",1737400,0,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Reference Meridian\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],ID[\"IAU\",30100]],CONVERSION[\"unnamed\",METHOD[\"Polar Stereographic (variant B)\",ID[\"EPSG\",9829]],PARAMETER[\"Latitude of standard parallel\",-90,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8832]],PARAMETER[\"Longitude of origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8833]],PARAMETER[\"False easting\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"easting\",north,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],ID[\"IAU\",30135]]"
+      },
+      {
+        "filename": "LDEM_60S_240MPP_ADJ.TIF",
+        "sourceUrl": "https://pgda.gsfc.nasa.gov/products/90",
+        "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+        "resolutionM": [
+          240.0,
+          240.0
+        ],
+        "boundsM": [
+          -931200.0,
+          -931200.0,
+          931200.0,
+          931200.0
+        ],
+        "frame": "MOON_ME_DE421",
+        "projection": "PROJCRS[\"Moon (2015) - Sphere / Ocentric / South Polar\",BASEGEOGCRS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",ELLIPSOID[\"Moon (2015) - Sphere\",1737400,0,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Reference Meridian\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],ID[\"IAU\",30100]],CONVERSION[\"unnamed\",METHOD[\"Polar Stereographic (variant B)\",ID[\"EPSG\",9829]],PARAMETER[\"Latitude of standard parallel\",-90,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8832]],PARAMETER[\"Longitude of origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8833]],PARAMETER[\"False easting\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"easting\",north,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],ID[\"IAU\",30135]]"
+      }
+    ],
+    "placement": {
+      "algorithmVersion": "mast-placement/1.0.0",
+      "referenceSite": {
+        "siteId": "CR1",
+        "latitudeDeg": -89.4679,
+        "longitudeDeg": -137.411,
+        "sourceFrame": "MOON_ME_DE421",
+        "sourceUrl": "https://arxiv.org/pdf/1208.5587#page=55"
+      },
+      "mapping": "spherical exponential map in MOON_ME_DE421, radial terrain projection",
+      "offsetRadiusM": 1737400,
+      "cableModel": "reference-sphere great-circle surface offset; vertical mast run, routing, terrain following and slack omitted",
+      "slopeModel": "central radial-height differences at two projected pixels per half-baseline",
+      "independentlyValidated": false,
+      "constructionSafetyValidated": false,
+      "limitations": [
+        "Generated grid locations have unverified construction safety and physical coordinate uncertainty",
+        "Cable distance is an idealized reference-sphere surface offset; vertical mast run, routing, slack and terrain following are omitted",
+        "Slope describes a coarse DEM footprint; rocks, microtopography, bearing strength and engineering suitability are unresolved",
+        "Subpixel candidate spacing shares interpolated DEM information",
+        "Pareto dominance uses exact computed numbers; physical significance below terrain and event uncertainty is unresolved",
+        "Search is conditional on the generated grid, selected heights, scientific profile and resolved outcomes",
+        "Wall-time admission is checked between scientific evaluations; an in-flight evaluation can overrun the limit",
+        "Panel exposure uses center incidence times visible solar-disk fraction with ideal unconstrained tracking",
+        "Possible missed subcadence events and tangencies",
+        "Sector horizon is discontinuous",
+        "Zero-degree elevation floor",
+        "Earth center geometry only",
+        "Terrain perturbations are uncalibrated scenarios",
+        "Root tolerance is numerical",
+        "Solar disk ignores variation of terrain across disk"
+      ]
+    },
+    "validationStatus": "computed",
+    "independentlyValidated": false
+  },
+  "sharedScientificScenarioIdsIdentical": true,
+  "zeroOffsetBaselinePreserved": true,
+  "refinedGridContainsCoarse": true,
+  "memoizedScenarioIdentityStable": true,
+  "runtime": {
+    "platform": "macOS-27.0.1-arm64-arm-64bit",
+    "python": "3.12.0"
+  },
+  "memorySemantics": "OS process working set and cumulative process peak RSS, including interpreter and scientific caches; peaks are cumulative across cases",
+  "cacheSemantics": "First case uses empty temporary terrain/result caches; OS file cache uncontrolled; later cases share the evaluator and caches",
+  "independentlyValidated": false
+}

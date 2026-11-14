@@ -3,7 +3,7 @@
   "contractVersion": "skyline-mast-feed/1.0.0",
   "dataState": "computed",
   "origin": "computed",
-  "scenarioId": "mast-placement-aa7e15e014d2e5194cb65f91903bcb97985d1ac8013284b309bf713d1f0d90ac",
+  "scenarioId": "mast-placement-48e97ba759f600cd2d946465f38addeae53cd071cf68ca2576ea7c044dfd43bb",
   "site_id": "CR1",
   "period": {
     "start_utc": "2025-01-06T00:00:00.000000Z",
@@ -64,21 +64,21 @@
   "baselineMetrics": {
     "sunlightDurationS": 86400.0,
     "sunlightAvailabilityFraction": 1.0,
-    "directEarthDurationS": 31326.172458392604,
-    "directEarthAvailabilityFraction": 0.36257144049065515,
-    "meanVisibleSolarDiskFraction": 0.5051216603296937,
+    "directEarthDurationS": 31326.172458394605,
+    "directEarthAvailabilityFraction": 0.3625714404906783,
+    "meanVisibleSolarDiskFraction": 0.505121660329601,
     "longestDarkness": {
       "durationS": 0.0,
       "interval": null,
       "touchesCoverageBoundary": false
     },
     "longestDirectEarthBlackout": {
-      "durationS": 55073.827541607396,
+      "durationS": 55073.827541605395,
       "interval": {
         "startUtc": "2025-01-06T00:00:00.000000Z",
         "endUtc": "2025-01-06T15:17:53.827523Z",
         "startS": 0.0,
-        "endS": 55073.827541607396,
+        "endS": 55073.827541605395,
         "startClipped": true,
         "endClipped": false
       },
@@ -126,25 +126,25 @@
             "maximum_direct_Earth_blackout"
           ],
           "paretoRank": null,
-          "sourceScenarioId": "scenario-329d9685793fb10b383a93d45fd4b7a5945478d0ac047525122d83a39f4f4290",
+          "sourceScenarioId": "scenario-9f0646ccb4e3e9331d968c8a38538d77ce8cc566ece0c6811c2b2e479fd8bd7d",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 31326.172458392604,
-            "directEarthAvailabilityFraction": 0.36257144049065515,
-            "meanVisibleSolarDiskFraction": 0.5051216603296937,
+            "directEarthDurationS": 31326.172458394605,
+            "directEarthAvailabilityFraction": 0.3625714404906783,
+            "meanVisibleSolarDiskFraction": 0.505121660329601,
             "longestDarkness": {
               "durationS": 0.0,
               "interval": null,
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 55073.827541607396,
+              "durationS": 55073.827541605395,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T15:17:53.827523Z",
                 "startS": 0.0,
-                "endS": 55073.827541607396,
+                "endS": 55073.827541605395,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -155,9 +155,9 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.010175395982149706,
+            "horizontal": 0.01017539598214749,
             "vertical": 0.0,
-            "tracking": 0.5051216603296937,
+            "tracking": 0.505121660329601,
             "verticalAzimuthDeg": 90.0,
             "model": "solar-center-incidence-times-visible-disk-fraction/1.0.0",
             "idealUnconstrainedTracking": true
@@ -170,12 +170,12 @@
           "feasibilityStatus": "feasible",
           "violations": [],
           "paretoRank": 0,
-          "sourceScenarioId": "scenario-a5f31f97aade32b6f3dec219f6b0d6ef8b2caaed0233e573787f63bdfca389d3",
+          "sourceScenarioId": "scenario-81b3bdc6fb06b0a78b353bda760a642da59800f59107e6b5a30840f053d6803b",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 65021.2183520072,
-            "directEarthAvailabilityFraction": 0.7525603975926759,
+            "directEarthDurationS": 65021.218352009164,
+            "directEarthAvailabilityFraction": 0.7525603975926987,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -183,12 +183,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 21378.781647992804,
+              "durationS": 21378.781647990836,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T05:56:18.781641Z",
                 "startS": 0.0,
-                "endS": 21378.781647992804,
+                "endS": 21378.781647990836,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -199,7 +199,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020094869539401452,
+            "horizontal": 0.02009486953940076,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -248,12 +248,12 @@
             "maximum_direct_Earth_blackout"
           ],
           "paretoRank": null,
-          "sourceScenarioId": "scenario-3c7c21a146d05e7b45cc4907c5fd29c84b672ef36c8d960980affb1a547db748",
+          "sourceScenarioId": "scenario-0c6c42a08ae810dd1afa9be8de32e71fbfe5d365e7caa196671df4a6d6bc686e",
           "metrics": {
             "sunlightDurationS": 0.0,
             "sunlightAvailabilityFraction": 0.0,
-            "directEarthDurationS": 17100.860943485764,
-            "directEarthAvailabilityFraction": 0.1979266312903445,
+            "directEarthDurationS": 17100.860943487758,
+            "directEarthAvailabilityFraction": 0.19792663129036758,
             "meanVisibleSolarDiskFraction": 0.0,
             "longestDarkness": {
               "durationS": 86400.0,
@@ -268,12 +268,12 @@
               "touchesCoverageBoundary": true
             },
             "longestDirectEarthBlackout": {
-              "durationS": 69299.13905651424,
+              "durationS": 69299.13905651224,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T19:14:59.139033Z",
                 "startS": 0.0,
-                "endS": 69299.13905651424,
+                "endS": 69299.13905651224,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -299,12 +299,12 @@
           "feasibilityStatus": "feasible",
           "violations": [],
           "paretoRank": 0,
-          "sourceScenarioId": "scenario-53b99032c3086fa4cc043e7b24008686e0ae0d8cec016c76472a82131cd77fd8",
+          "sourceScenarioId": "scenario-1eed7023b0883787dc8d812dbe4dd06a9a3193787bdc0276ca9d622d79dbfc98",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 65123.259152315106,
-            "directEarthAvailabilityFraction": 0.7537414253740174,
+            "directEarthDurationS": 65123.25915231707,
+            "directEarthAvailabilityFraction": 0.7537414253740402,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -312,12 +312,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 21276.740847684898,
+              "durationS": 21276.740847682933,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T05:54:36.740841Z",
                 "startS": 0.0,
-                "endS": 21276.740847684898,
+                "endS": 21276.740847682933,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -328,7 +328,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020122761655821275,
+            "horizontal": 0.020122761655820585,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -375,7 +375,7 @@
             "maximum_direct_Earth_blackout"
           ],
           "paretoRank": null,
-          "sourceScenarioId": "scenario-4921863d5cd682111dccb7b73bcb02c74e74d7c3e2717c6af652c340136b351f",
+          "sourceScenarioId": "scenario-fa4fe7153e725843069877f00ac951bf2d90fec86df95d65ae6afc9df906a8c1",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
@@ -404,7 +404,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020131385585632912,
+            "horizontal": 0.020131385585632215,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -422,12 +422,12 @@
             "maximum_direct_Earth_blackout"
           ],
           "paretoRank": null,
-          "sourceScenarioId": "scenario-d7aa7f5d58b076c5d372b6aa9d1346c2f5f7988843aba5bb16c3a3ab9246d15f",
+          "sourceScenarioId": "scenario-efc3d3003923171bd7a78780e514f928f48d6129540ce580f4981c23c6687f5b",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 36377.08042470935,
-            "directEarthAvailabilityFraction": 0.42103102343413595,
+            "directEarthDurationS": 36377.08042471132,
+            "directEarthAvailabilityFraction": 0.42103102343415877,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -435,12 +435,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 50022.91957529065,
+              "durationS": 50022.91957528868,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T13:53:42.919559Z",
                 "startS": 0.0,
-                "endS": 50022.91957529065,
+                "endS": 50022.91957528868,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -451,7 +451,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020131385572038866,
+            "horizontal": 0.02013138557203817,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -495,12 +495,12 @@
           "feasibilityStatus": "feasible",
           "violations": [],
           "paretoRank": 0,
-          "sourceScenarioId": "scenario-1f1cff96cf8a6eb78cbc452c20b9a064a2716398ec45f94f496c4251c2705c5b",
+          "sourceScenarioId": "scenario-e3f51d68cc276b20b264f0b69209a2c0dba08865a6c16737278aa01a032d4953",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 65119.61787670105,
-            "directEarthAvailabilityFraction": 0.7536992809803362,
+            "directEarthDurationS": 65119.617876703036,
+            "directEarthAvailabilityFraction": 0.7536992809803592,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -508,12 +508,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 21280.38212329895,
+              "durationS": 21280.382123296968,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T05:54:40.382116Z",
                 "startS": 0.0,
-                "endS": 21280.38212329895,
+                "endS": 21280.382123296968,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -524,7 +524,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020058353469756436,
+            "horizontal": 0.020058353469755746,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -539,12 +539,12 @@
           "feasibilityStatus": "feasible",
           "violations": [],
           "paretoRank": 1,
-          "sourceScenarioId": "scenario-aac6647501cee16b6da65c6663deaa7ecaeecd08e0f1912a8f9613e414655fe6",
+          "sourceScenarioId": "scenario-5dfde7b3f97ab7334907652ad2bc4ddf9d68ea6e93c82de465999262ebb2034a",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 65119.60127377626,
-            "directEarthAvailabilityFraction": 0.7536990888168549,
+            "directEarthDurationS": 65119.601273778244,
+            "directEarthAvailabilityFraction": 0.7536990888168779,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -552,12 +552,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 21280.398726223742,
+              "durationS": 21280.398726221756,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T05:54:40.398719Z",
                 "startS": 0.0,
-                "endS": 21280.398726223742,
+                "endS": 21280.398726221756,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -568,7 +568,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.02005835345616235,
+            "horizontal": 0.02005835345616166,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -615,12 +615,12 @@
             "maximum_direct_Earth_blackout"
           ],
           "paretoRank": null,
-          "sourceScenarioId": "scenario-26b497a50c9195ba42ab76e3f25ae447631e80fc3b0b074394e6f9531cd6ce9e",
+          "sourceScenarioId": "scenario-f3765d12a4da1d95175653a1858ca97f6f5261023d69c9ee0b7ea72cbad863ea",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 24523.676551882018,
-            "directEarthAvailabilityFraction": 0.28383884898011597,
+            "directEarthDurationS": 24523.676551884084,
+            "directEarthAvailabilityFraction": 0.28383884898013984,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -628,12 +628,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 61876.32344811798,
+              "durationS": 61876.323448115916,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T17:11:16.323427Z",
                 "startS": 0.0,
-                "endS": 61876.32344811798,
+                "endS": 61876.323448115916,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -644,7 +644,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020066977366665233,
+            "horizontal": 0.020066977366664535,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -659,12 +659,12 @@
           "feasibilityStatus": "feasible",
           "violations": [],
           "paretoRank": 2,
-          "sourceScenarioId": "scenario-0d91f71870bbbb23f8041906eacdafbdcd674c89a8091fd04bb912e72abd4a1b",
+          "sourceScenarioId": "scenario-5d49ab68ccb300b0642daf23d178a70da22d846511796a31713cd7c093199ce2",
           "metrics": {
             "sunlightDurationS": 86400.0,
             "sunlightAvailabilityFraction": 1.0,
-            "directEarthDurationS": 64919.14079057868,
-            "directEarthAvailabilityFraction": 0.7513789443354013,
+            "directEarthDurationS": 64919.14079058065,
+            "directEarthAvailabilityFraction": 0.7513789443354242,
             "meanVisibleSolarDiskFraction": 1.0,
             "longestDarkness": {
               "durationS": 0.0,
@@ -672,12 +672,12 @@
               "touchesCoverageBoundary": false
             },
             "longestDirectEarthBlackout": {
-              "durationS": 21480.859209421327,
+              "durationS": 21480.859209419352,
               "interval": {
                 "startUtc": "2025-01-06T00:00:00.000000Z",
                 "endUtc": "2025-01-06T05:58:00.859202Z",
                 "startS": 0.0,
-                "endS": 21480.859209421327,
+                "endS": 21480.859209419352,
                 "startClipped": true,
                 "endClipped": false
               },
@@ -688,7 +688,7 @@
             "meanDiskFractionMethod": "Trapezoidal integral of returned solar-disk fractions divided by elapsed duration; sampling approximation"
           },
           "panels": {
-            "horizontal": 0.020066977353071152,
+            "horizontal": 0.020066977353070455,
             "vertical": 0.0,
             "tracking": 1.0,
             "verticalAzimuthDeg": 90.0,
@@ -708,7 +708,7 @@
     "unknownOutcomeCount": 0,
     "complete": true,
     "terminationReason": "enumerated",
-    "wallTimeS": 67.2233886519989,
+    "wallTimeS": 41.83479441702366,
     "method": "bounded exhaustive enumeration",
     "objectiveDefinitions": [
       {
@@ -802,29 +802,29 @@
     "environmentAlgorithmVersion": "0.4.0",
     "implementation": {
       "sources": {
-        "__init__.py": "af201fbc0696ed533c8358270ab1423eb5e671b6e6f7d5f0e3868b930199cda2",
-        "api.py": "d1ad65479961de62882d94b352294d04c78462f39deb663372f9d672f6f496af",
-        "engine.py": "a32b31a36851c430bf99a491d3b3f87174805bde2ddc87afa34ff22212cc84f4",
-        "intermediateCache.py": "770d90f0a15c0223b5712c7af6c88eebb9ece3147e7b053a9a28662c9a7d9470",
+        "__init__.py": "20c8e430ededc2143396e553a3c67aac4ec483ef54efdfcb18a31cb162ca0646",
+        "api.py": "70ea5d01692a9f09689efed4fb5c7d8be737fe394c98384d35f9f1544c7b2d84",
+        "engine.py": "e09482c4c551d5dc88f81054c19154389d87e8c3c58fea60c49016d98e72f208",
+        "intermediateCache.py": "a8afe44de45bfe2bf920541bbaad3d7dbf0a29d7fe7a93b88b94f8d2fb228b27",
         "lunarSites.py": "b17edb9017d848211d5788a703d34f65550b3737d64ae69c5e630b1386eb5808",
-        "mastFeeds.py": "afc51b27dd67f8d5fe68f67820280d68f619585b12513e9ce2cc017cfb2e967a",
-        "mastPlacement.py": "0b6626bdf57a2670473236e352fb2a37af124cbab84c2634d2086cbb065e3335",
-        "mastPlacementModels.py": "6c46a8584494c3a3450dc9e086af320349de5243607aa660daf39d2997a31d6a",
-        "mastPlacementSelection.py": "e43a4ebe25976089ad3650214dbac5916d94cd37fd0a4601b3569dabcd0ac670",
-        "mastPlacementTerrain.py": "4ecc63f56cf34c5690f281973e6f3f7848e2a05944cc18a4d6a34c84a25ab7bb",
-        "mastPower.py": "bf98b7f24c5bcaf48efcf84b720702746e04ce8f1ac99349fd4d00c2889739ba",
-        "mastPowerModels.py": "f7302972be2931d12d29f4efc249e2ebefaf714556291fed14603a70b07b4f1c",
-        "optimization.py": "c6cef6aa07f7622a949f2b1ad9cfa391306835c7de84a085911925105c06f470",
-        "panelGeometry.py": "27735e9db7367bea67e75e36ec4f7bb314053231343894204a6400cf4233dd1a",
-        "powerFeeds.py": "3533d3c465970c0ab6dd68f5e496940886cb8ad7b89bd60e3b776202c30e24cd",
-        "schemas.py": "e7e55e7b69e87160e9802a63feedb8c29cc0a735896a6fc79730021c48719e20",
-        "scientificContract.py": "4ad248ed9dd830db43093f1de9c9b9be463851c0e15123a2faf84699e77217e6",
-        "scientificFeeds.py": "f1d2f7578949baeae1278c5ac5fcc1d4daf2bacc2bb34c43491584a7d516434c",
-        "scientificModels.py": "1b68e1a4632489971946d827d219d09ded8b445776e40a3eeac4093efa26ede8",
-        "siteCatalog.py": "91070f5acd6b9063114bdffb51827ae1aa4a90b287847f2bb9ebe45ff0840cca",
+        "mastFeeds.py": "a13edc2d8cb8396f2fa2029e0c0030ecf6a3e0bb6c5da1a45bbd2ff33e29a7a4",
+        "mastPlacement.py": "45962702e49ed9fe49729238d7394ac7d80fcec106cd05a1d1b0d128b5d53f47",
+        "mastPlacementModels.py": "6e1358bc635a66a7fcbffc210c606a98d227d1c077489957b243a6a8f5ca957f",
+        "mastPlacementSelection.py": "89f40d9eb0920ee67aa375268c0d74478c531a6c5cbdb2918d056ec30957f0f6",
+        "mastPlacementTerrain.py": "a125728099c43f7110d3c16101ecda63484390413df237656bcabcc2cddebc1e",
+        "mastPower.py": "98461f645d2c2fc50b80e1289caed04258aa3f57d873434d58c94ace6a7c1623",
+        "mastPowerModels.py": "41a6d3ced5f0f0040b239fe4e7972f36d4662659e84358bba6949cedd1b81f56",
+        "optimization.py": "ed2b67a88c692b8492b01b30e5c5fc9872414df1a00b91a75b06c5e70d9d371f",
+        "panelGeometry.py": "06c7bf2d7c556f691a6108be0c52acfd4acc9c2a7d29338374b6d0460fd497b4",
+        "powerFeeds.py": "2a6666161151d015904389adbecf90ef0117d2066a31a22007b976257577317f",
+        "schemas.py": "98f246e344e31144c198c05fa0d9d2b4524d9427a30104f7c64884a0e3425751",
+        "scientificContract.py": "074cb441375b411e3eb21d9a162d755e104f2b61193d97e6445d796d0962ca4c",
+        "scientificFeeds.py": "8ab9554d8570119f34903617f9c646183d4cd08b6622b773a1f6454a4e488f72",
+        "scientificModels.py": "f56efd30eaa2bad3594e2833c2db70f95798a95f1c1f96667474db1daa7c5882",
+        "siteCatalog.py": "adf1edb062746a08e4e6f6daf2b40352e0653e4c5094d72d569ee395d136081c",
         "spiceGeometry.py": "2e64b3b840b2e34b7064ada50bd4da9886c21cc53a1d576de714a13ce5645759",
-        "terrainHorizon.py": "a5b451e67910df6e9876cf72316ab69ebf76609b8dd2d4526c593dcc663e48d0",
-        "visibility.py": "f18df2d950874af3af937c3e3e70228fd0b92f54f9ffca523be6adf71e0abf67"
+        "terrainHorizon.py": "14a8e2f5b24aaf7277187efd59d1acbc579204589ad8f1dfadd75238277107ff",
+        "visibility.py": "c3be5337eb8db03ab6380cade6bda32dee054047ad1050917d15fbafee8cf541"
       },
       "dependencies": {
         "numpy": "2.5.4",
@@ -834,7 +834,7 @@
         "pyproj": "3.8.0",
         "pydantic": "2.14.3"
       },
-      "python": "3.13.18"
+      "python": "3.12.0"
     },
     "kernels": {
       "naif0012.tls": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
@@ -881,7 +881,7 @@
         "projection": "PROJCRS[\"Moon (2015) - Sphere / Ocentric / South Polar\",BASEGEOGCRS[\"Moon (2015) - Sphere / Ocentric\",DATUM[\"Moon (2015) - Sphere\",ELLIPSOID[\"Moon (2015) - Sphere\",1737400,0,LENGTHUNIT[\"metre\",1]]],PRIMEM[\"Reference Meridian\",0,ANGLEUNIT[\"degree\",0.0174532925199433]],ID[\"IAU\",30100]],CONVERSION[\"unnamed\",METHOD[\"Polar Stereographic (variant B)\",ID[\"EPSG\",9829]],PARAMETER[\"Latitude of standard parallel\",-90,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8832]],PARAMETER[\"Longitude of origin\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8833]],PARAMETER[\"False easting\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8806]],PARAMETER[\"False northing\",0,LENGTHUNIT[\"metre\",1],ID[\"EPSG\",8807]]],CS[Cartesian,2],AXIS[\"easting\",north,ORDER[1],LENGTHUNIT[\"metre\",1]],AXIS[\"northing\",north,ORDER[2],LENGTHUNIT[\"metre\",1]],ID[\"IAU\",30135]]"
       }
     ],
-    "baselineScenarioId": "scenario-329d9685793fb10b383a93d45fd4b7a5945478d0ac047525122d83a39f4f4290",
+    "baselineScenarioId": "scenario-9f0646ccb4e3e9331d968c8a38538d77ce8cc566ece0c6811c2b2e479fd8bd7d",
     "placement": {
       "algorithmVersion": "mast-placement/1.0.0",
       "referenceSite": {

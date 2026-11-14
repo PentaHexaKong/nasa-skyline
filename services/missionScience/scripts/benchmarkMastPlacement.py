@@ -44,10 +44,11 @@ def processMemory():
         )
     import resource
 
-    pages = int(Path('/proc/self/statm').read_text().split()[1])
+    statm = Path('/proc/self/statm')
+    peak = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
     return dict(
-        currentRssBytes=pages * os.sysconf('SC_PAGE_SIZE'),
-        processPeakRssBytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024,
+        currentRssBytes=int(statm.read_text().split()[1]) * os.sysconf('SC_PAGE_SIZE') if statm.exists() else None,
+        processPeakRssBytes=peak if sys.platform == 'darwin' else peak * 1024,  # macOS reports bytes, Linux KiB
     )
 
 

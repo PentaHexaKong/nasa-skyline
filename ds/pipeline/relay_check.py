@@ -20,7 +20,7 @@ from pipeline.terrain import horizon_at
 ROOT = Path(__file__).resolve().parents[2]
 ORBITS = Path(__file__).with_name("relay_orbits.json")
 REPORT = ROOT / "ds" / "validation" / "relay-orbits.md"
-MOON_SITES = ["im2-mons-mouton", "im1-malapert", "malapert-massif", "connecting-ridge", "de-gerlache-rim", "shackleton-rim", "apollo11"]
+MOON_SITES = ["connecting-ridge", "de-gerlache-rim", "shackleton-rim"]  # the app sites, whose pipeline output is in frontend/data
 
 MU_MOON = 4902.800066  # GRAIL, km3/s2
 MU_EARTH = 398600.435
@@ -302,8 +302,8 @@ def main() -> None:
         "- Good for shares and gap lengths, not clock times. Pathfinder's starting position is unknown, and a 241 km disagreement in LDN-1's published start grows to "
         f"{drift:.0f} km after a lunar month.",
         "- Valid near the network's design epoch; the paper's check runs 60 days without maneuvers. The real orbits and launch dates will differ.",
-        "- No crater-floor site is tested here, where nearby terrain would block more relay passes, so do not generalise from these five.",
-        "- The network was designed to cover the south polar region, so polar sites reaching 100 % with all five is the design doing its job, not a finding about those sites. All five are not due until about 2029.",
+        "- No crater-floor site is tested here, where nearby terrain would block more relay passes, so do not generalise from these sites.",
+        "- The network was designed to cover the south polar region, so polar sites reaching 100 % with all five is the design doing its job, not a finding about those sites. All five are not due until 2028 (Intuitive Machines, Q3 2026 earnings call, as of 2026-11-14).",
     ]
     REPORT.write_text("\n".join(out) + "\n")
     print(f"wrote {REPORT}")

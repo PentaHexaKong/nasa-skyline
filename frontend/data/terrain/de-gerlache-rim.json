@@ -1,0 +1,46 @@
+{
+  "kind": "lunar_terrain",
+  "synthetic": false,
+  "site_id": "de-gerlache-rim",
+  "tier": "inner",
+  "body": "moon",
+  "curvature": "drop d^2/2R applied",
+  "file": "de-gerlache-rim.bin",
+  "encoding": "int16 little-endian, metres relative to the 1737.4 km reference sphere minus the drop d^2/2R, rows north to south, cols west to east",
+  "n": 513,
+  "radius_km": 10.0,
+  "cell_m": 39.062,
+  "frame": "MOON_ME_DE440_ME421; local east/north grid centred on the site, each cell placed at its great-circle distance d and bearing from the site; the drop d^2/(2R), R = 1737.4 km, is subtracted so elevation angles from the site stay true",
+  "ground_height_m": 1778.7,
+  "observer_height_m": 2.0,
+  "min_m": -1348,
+  "max_m": 1815,
+  "skyline_inside_share": 0.8819,
+  "provenance": {
+    "algorithm_version": "0.4.0",
+    "dem_product": "LOLA PGDA product 90 (Barker et al. 2023), south polar stereographic, heights above the 1737.4 km sphere, ME frame",
+    "dem": [
+      {
+        "role": "near field",
+        "range_km": 15.0,
+        "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+        "size_bytes": 2696082051,
+        "etag": "W/\"a0b2f283-189327867b8\"",
+        "last_modified": "Fri, 07 Jul 2023 22:28:19 GMT",
+        "accept_ranges": "bytes",
+        "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+        "window": {
+          "row_off": 13667,
+          "col_off": 12561,
+          "rows": 1604,
+          "cols": 1604
+        },
+        "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+        "reference_radius_m": 1737400.0,
+        "pixel_size_m": 20.0,
+        "dtype": "float32 metres relative to the reference sphere"
+      }
+    ],
+    "sampling": "bilinear"
+  }
+}

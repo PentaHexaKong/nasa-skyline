@@ -1,0 +1,123 @@
+{
+  "algorithm_version": "space-0.1.0",
+  "total_bytes": 5471140,
+  "notes": [
+    "The day map is colour-graded for display. The clouds are a multi-day composite (2002 MODIS), not a real day.",
+    "Equirectangular, longitude -180 to 180 left to right, latitude 90 to -90 top to bottom (GIBS EPSG:4326 WMS)."
+  ],
+  "files": [
+    {
+      "file": "earth-day-4k.jpg",
+      "size_px": [
+        4096,
+        2048
+      ],
+      "bytes": 1200097,
+      "sources": [
+        {
+          "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&CRS=EPSG:4326&BBOX=-90,-180,90,180&STYLES=&FORMAT=image/jpeg&LAYERS=BlueMarble_ShadedRelief_Bathymetry&WIDTH=8192&HEIGHT=4096",
+          "sha256": "dc26b816037021601eeea972c59e264a37fd41cd4062381fdb4d9dc9a6230348",
+          "fetched": "2026-11-14"
+        }
+      ],
+      "processing": "8192x4096 source colour-graded for display (saturation x1.2; ocean pixels with b > 1.4 r pulled 45% toward [0.07, 0.17, 0.42]), then Lanczos downsampled to 4096x2048. Display grading, not data.",
+      "credit": "NASA Blue Marble Next Generation and Black Marble via NASA GIBS",
+      "graded_for_display": true
+    },
+    {
+      "file": "earth-night-4k.jpg",
+      "size_px": [
+        4096,
+        2048
+      ],
+      "bytes": 427326,
+      "sources": [
+        {
+          "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&CRS=EPSG:4326&BBOX=-90,-180,90,180&STYLES=&FORMAT=image/jpeg&LAYERS=VIIRS_Black_Marble&WIDTH=4096&HEIGHT=2048",
+          "sha256": "29588cbd1170ae1f3ee634e9acfd3bb77b0a3a5964d49dc272b3c300506941b2",
+          "fetched": "2026-11-14"
+        }
+      ],
+      "processing": "Re-encoded, no pixel changes.",
+      "credit": "NASA Blue Marble Next Generation and Black Marble via NASA GIBS"
+    },
+    {
+      "file": "earth-rough-2k.jpg",
+      "size_px": [
+        2048,
+        1024
+      ],
+      "bytes": 114331,
+      "sources": [
+        {
+          "url": "https://gibs.earthdata.nasa.gov/wms/epsg4326/best/wms.cgi?SERVICE=WMS&REQUEST=GetMap&VERSION=1.3.0&CRS=EPSG:4326&BBOX=-90,-180,90,180&STYLES=&FORMAT=image/jpeg&LAYERS=OSM_Land_Water_Map&WIDTH=4096&HEIGHT=2048",
+          "sha256": "fca41e789b38e5e7ee6591cdd7acc8f62a0a057288d6b9b4a367c8c187849010",
+          "fetched": "2026-11-14"
+        }
+      ],
+      "processing": "Water (mean > 0.42 in the OSM land/water map) = 170, land = 255, bilinear to 2048x1024. Used as a roughness map.",
+      "credit": "NASA Blue Marble Next Generation and Black Marble via NASA GIBS"
+    },
+    {
+      "file": "earth-clouds-4k.jpg",
+      "size_px": [
+        4096,
+        2048
+      ],
+      "bytes": 1394206,
+      "sources": [
+        {
+          "url": "https://assets.science.nasa.gov/content/dam/science/esd/eo/content-feature/bluemarble/images/cloud_combined_2048.jpg",
+          "sha256": "daddaad84d7a33bbbc86cdda3f591099f57cee8607b7bcf3b67eb7e4f7a1c793",
+          "fetched": "2026-11-14"
+        }
+      ],
+      "processing": "Cloud map bicubic to 4096x2048, blur 0.6 px, black point 0.08, gamma 1.15; alpha reduced by 85% over ice found in the graded day map. A multi-day composite, not a real day.",
+      "credit": "NASA Earth Observatory Blue Marble cloud map (2002 MODIS composite)",
+      "composite_not_a_real_day": true
+    },
+    {
+      "file": "stars-4k.jpg",
+      "size_px": [
+        4096,
+        2048
+      ],
+      "bytes": 1722046,
+      "sources": [
+        {
+          "url": "https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004851/starmap_2020_8k.exr",
+          "sha256": "dc6c4f413e85707a29a25a9451148154554ecca2c996f84fa8f47b65ef9ff7c4",
+          "fetched": "2026-11-14"
+        }
+      ],
+      "processing": "Tone map 1 - exp(-k x), k = 1.5 / p99.95, gamma 1/2.2, background below 0.10 pulled to black, **1.3, area-averaged 2x down to 4096x2048. Display tone mapping.",
+      "credit": "NASA SVS Deep Star Maps 2020"
+    },
+    {
+      "file": "sun-2k.jpg",
+      "size_px": [
+        2048,
+        2048
+      ],
+      "bytes": 613134,
+      "sources": [
+        {
+          "url": "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_HMII.jpg",
+          "sha256": "2f81da5d99449dedefd867c1c4290d4af65ab293aabd1f6617b00dd7d935d42f",
+          "fetched": "2026-11-14T11:39:02Z"
+        }
+      ],
+      "processing": "Re-encoded, no pixel changes. A daily image, so the fetch time is the image date.",
+      "credit": "NASA SDO/HMI",
+      "disc": {
+        "centre_uv": [
+          0.4997,
+          0.5006
+        ],
+        "radius_uv": 0.4634,
+        "method": "pixels brighter than 0.06 of full scale (sky is 0), centroid and sqrt(area / pi), in fractions of image width; v from the top",
+        "server_last_modified": "Sat, 14 Nov 2026 11:20:06 GMT"
+      }
+    }
+  ]
+}

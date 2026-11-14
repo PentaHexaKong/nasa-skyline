@@ -12,23 +12,23 @@
       "sun_share": 1.0,
       "longest_no_sun_h": 0.0,
       "longest_no_sun_truncated": false,
-      "earth_center_share": 0.36257144049065515,
-      "longest_no_earth_h": 15.298285428224277,
+      "earth_center_share": 0.3625714404906783,
+      "longest_no_earth_h": 15.298285428223721,
       "longest_no_earth_truncated": true,
       "potential_vertical": 0.0,
-      "potential_horizontal": 0.010175395982149706,
-      "potential_tracking": 0.5051216603296937
+      "potential_horizontal": 0.01017539598214749,
+      "potential_tracking": 0.505121660329601
     },
     {
       "mast_m": 2.0,
       "sun_share": 1.0,
       "longest_no_sun_h": 0.0,
       "longest_no_sun_truncated": false,
-      "earth_center_share": 0.7525603975926759,
-      "longest_no_earth_h": 5.938550457775779,
+      "earth_center_share": 0.7525603975926987,
+      "longest_no_earth_h": 5.938550457775232,
       "longest_no_earth_truncated": true,
       "potential_vertical": 0.0,
-      "potential_horizontal": 0.020094869539401452,
+      "potential_horizontal": 0.02009486953940076,
       "potential_tracking": 1.0
     },
     {
@@ -36,11 +36,11 @@
       "sun_share": 1.0,
       "longest_no_sun_h": 0.0,
       "longest_no_sun_truncated": false,
-      "earth_center_share": 0.7525596289499956,
-      "longest_no_earth_h": 5.938568905200104,
+      "earth_center_share": 0.7525596289500185,
+      "longest_no_earth_h": 5.938568905199557,
       "longest_no_earth_truncated": true,
       "potential_vertical": 0.0,
-      "potential_horizontal": 0.02009486948502519,
+      "potential_horizontal": 0.020094869485024498,
       "potential_tracking": 1.0
     },
     {
@@ -48,11 +48,11 @@
       "sun_share": 1.0,
       "longest_no_sun_h": 0.0,
       "longest_no_sun_truncated": false,
-      "earth_center_share": 0.7525577073432833,
-      "longest_no_earth_h": 5.9386150237612005,
+      "earth_center_share": 0.7525577073433062,
+      "longest_no_earth_h": 5.938615023760654,
       "longest_no_earth_truncated": true,
       "potential_vertical": 0.0,
-      "potential_horizontal": 0.020094869349084523,
+      "potential_horizontal": 0.02009486934908383,
       "potential_tracking": 1.0
     }
   ],
@@ -82,7 +82,7 @@
     ]
   },
   "scenario": {
-    "scenarioId": "mast-power-24307ce40292177a98dfe86effe70b1e2c1a799fd3fcb8298c4874712334e7bb",
+    "scenarioId": "mast-power-369341dd03601fe1894f0e765c4689fd4068b35502d7e1612f60ff48d1d187f2",
     "request": {
       "schemaVersion": "skyline-mast-power-request/1.0.0",
       "site": "CR1",
@@ -124,10 +124,10 @@
     "profile": "geometric",
     "verticalAzimuthDeg": 90.0,
     "sourceScenarioIds": [
-      "scenario-bca7e181a72bf4060e7d28f325294c8dccdea0f00d9ee72e8ade7ce34bf85275",
-      "scenario-2627abb6b29bdb56107561097a682373fb3660e40b88cdc483cb157a630861cb",
-      "scenario-d4c7111e582c5e3f8f8ad8c01584b09807124a808fa29a5943ac64c18ff20d49",
-      "scenario-484503b97f0505ca7a4dc316351817633fa256e8e8de04565158d0303642bf0d"
+      "scenario-6935c0a02cc929d8cc419eb8b05b08adf7b9e7da83c21b55a3315674edbd1016",
+      "scenario-644633c1c167bdd80c4a5e935c33a29e0f4a58d1bca381bc5649d15284c7c758",
+      "scenario-3bdb1801002f983e537321690fab77238ef4dc6283ba16bdbf96b6d14afe21ba",
+      "scenario-0299322d079f98d243b434e77fa8652851daf913af1d9a02937d184f0d0177d8"
     ],
     "observer": {
       "siteId": "CR1",
