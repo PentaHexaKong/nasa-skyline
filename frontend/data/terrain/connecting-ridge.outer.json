@@ -1,0 +1,44 @@
+{
+  "kind": "lunar_terrain",
+  "synthetic": false,
+  "site_id": "connecting-ridge",
+  "tier": "outer",
+  "body": "moon",
+  "curvature": "drop d^2/2R applied",
+  "file": "connecting-ridge.outer.bin",
+  "encoding": "int16 little-endian, metres relative to the 1737.4 km reference sphere minus the drop d^2/2R, rows north to south, cols west to east",
+  "n": 257,
+  "radius_km": 60.0,
+  "cell_m": 468.75,
+  "frame": "MOON_ME_DE440_ME421; local east/north grid centred on the site, each cell placed at its great-circle distance d and bearing from the site; the drop d^2/(2R), R = 1737.4 km, is subtracted so elevation angles from the site stay true",
+  "ground_height_m": 1942.6,
+  "observer_height_m": 2.0,
+  "min_m": -5459,
+  "max_m": 1952,
+  "skyline_inside_share": 1.0,
+  "provenance": {
+    "algorithm_version": "0.4.0",
+    "dem_product": "LOLA PGDA product 90 (Barker et al. 2023), south polar stereographic, heights above the 1737.4 km sphere, ME frame",
+    "dem": [
+      {
+        "role": "far field",
+        "range_km": 200.0,
+        "file": "LDEM_60S_240MPP_ADJ.TIF",
+        "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+        "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+        "mode": "downloaded",
+        "window": {
+          "row_off": 3090,
+          "col_off": 2996,
+          "rows": 1679,
+          "cols": 1679
+        },
+        "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+        "reference_radius_m": 1737400.0,
+        "pixel_size_m": 240.0,
+        "dtype": "float32 metres relative to the reference sphere"
+      }
+    ],
+    "sampling": "bilinear"
+  }
+}
