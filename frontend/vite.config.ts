@@ -4,10 +4,21 @@ import viteReact from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import sites from './src/data/generated/sites.json'
 
+/**
+ * The Go API bridge (backend/) answers under /api, as Nginx routes it in the container (nginx.conf). The dev and preview
+ * servers forward /api to it too; BACKEND_URL changes where it runs.
+ */
+const env = (globalThis as unknown as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {}
+const api = {
+  '/api': { target: env.BACKEND_URL ?? 'http://127.0.0.1:8080', changeOrigin: true },
+}
+
 export default defineConfig({
   resolve: { tsconfigPaths: true },
   // Terrain heightmaps for the 3D island ship as raw Int16 files.
   assetsInclude: ['**/*.bin'],
+  server: { proxy: api },
+  preview: { proxy: api },
   plugins: [
     tailwindcss(),
     // Static output only: every page is pre-rendered, no server at runtime (ADR-0001).
