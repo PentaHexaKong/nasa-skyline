@@ -130,6 +130,26 @@ function Answer({ s, compact = false }: { s: SitePlan; compact?: boolean }) {
   )
 }
 
+/**
+ * The limit beside a reading and how far the reading is from it, so a planner sees whether 71.7 % against 70 % is a
+ * comfortable pass or a near miss without opening the table.
+ */
+function Margin({ q, site }: { q: Requirement; site: SitePlan }) {
+  const c = site.checks?.checks.find((x) => x.key === q.key)
+  if (!c) return null
+  const gap = q.bound === 'at least' ? c.value - c.limit : c.limit - c.value
+  const unit = q.unit === '%' ? 'pts' : 'h'
+  return (
+    <dd className="readout text-xs text-ink-faint">
+      {q.bound === 'at least' ? '≥' : '≤'} {c.limit} {q.unit}
+      <span className={c.pass ? '' : 'text-miss'}>
+        {' · '}
+        {Math.abs(gap).toFixed(1)} {unit} {gap >= 0 ? 'spare' : 'short'}
+      </span>
+    </dd>
+  )
+}
+
 const met = (s: SitePlan) => `${s.checks?.met} of ${s.checks?.checks.length}`
 const wasMet = (s: SitePlan, plan: Plan) => s.was && `was ${evaluate(s.was, plan.requirements).met}`
 
@@ -326,7 +346,7 @@ function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
     status: !s.checks ? 'not-computed' : siteResult(s).works ? 'works' : 'fails',
   }))
   return (
-    <section aria-labelledby="verdict" className="grid items-center gap-x-10 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+    <section aria-labelledby="verdict" className="grid items-center gap-x-10 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
       <div className="grid content-center gap-5">
         <Eyebrow pip>
           Result · {shortDate(plan.date)} {plan.date.slice(0, 4)}, {minuteLabel(plan.minute)} UTC · {plan.stay}-day stay
@@ -366,7 +386,8 @@ function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
           </button>
         </div>
       </div>
-      <MissionMoon markers={markers} at={plan.window.start} controls={false} className="h-[22rem] rounded-xl sm:h-[26rem]" />
+      {/* A small Moon: it locates the sites and shows the light at landing; the answer and the cards below carry the detail. */}
+      <MissionMoon markers={markers} at={plan.window.start} controls={false} className="h-[16rem] rounded-xl sm:h-[18rem]" />
     </section>
   )
 }
@@ -442,8 +463,13 @@ function SiteCard({ site, plan }: { site: SitePlan; plan: Plan }) {
               <dd className={`readout text-lg ${miss ? 'text-miss' : ''}`}>
                 {miss && <XIcon aria-label="Missed" weight="bold" className="mr-0.5 inline size-3.5" />}
                 {statValue(q, site)}
-                {open && ' +'}
+                {open && (
+                  <abbr title="The gap runs past the end of the stay, so it is at least this long" className="no-underline">
+                    {' +'}
+                  </abbr>
+                )}
               </dd>
+              <Margin q={q} site={site} />
             </div>
           )
         })}
