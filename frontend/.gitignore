@@ -1,0 +1,8 @@
+node_modules/
+.output/
+dist/
+.tanstack/
+src/data/generated/
+src/routeTree.gen.ts
+
+public/scientificClient/

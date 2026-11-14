@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "files": { "includes": ["**", "!src/routeTree.gen.ts", "!public", "!src/data/generated", "!data", "!.output", "!dist"] },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 140 },
+  "javascript": { "formatter": { "quoteStyle": "single", "semicolons": "asNeeded" } },
+  "css": { "parser": { "tailwindDirectives": true } },
+  "linter": { "rules": { "preset": "none" } }
+}
