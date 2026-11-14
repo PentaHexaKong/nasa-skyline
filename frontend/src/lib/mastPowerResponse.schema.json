@@ -1,0 +1,1553 @@
+{
+  "$defs": {
+    "ComputedResponse": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-scientific-response/1.0.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "dataState": {
+          "const": "computed",
+          "title": "Datastate",
+          "type": "string"
+        },
+        "scenarioId": {
+          "pattern": "^scenario-[0-9a-f]{64}$",
+          "title": "Scenarioid",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/ScientificRequest"
+        },
+        "units": {
+          "$ref": "#/$defs/Units"
+        },
+        "result": {
+          "$ref": "#/$defs/ScientificResult"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "error": {
+          "title": "Error",
+          "type": "null"
+        }
+      },
+      "required": ["schemaVersion", "dataState", "scenarioId", "request", "units", "result", "provenance", "error"],
+      "title": "ComputedResponse",
+      "type": "object"
+    },
+    "Constraints": {
+      "additionalProperties": false,
+      "properties": {
+        "minimumSolar": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumsolar",
+          "type": "number"
+        },
+        "minimumEarth": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumearth",
+          "type": "number"
+        },
+        "maximumSolarOutageS": {
+          "minimum": 0,
+          "title": "Maximumsolaroutages",
+          "type": "number"
+        },
+        "maximumEarthOutageS": {
+          "minimum": 0,
+          "title": "Maximumearthoutages",
+          "type": "number"
+        }
+      },
+      "title": "Constraints",
+      "type": "object"
+    },
+    "ContractError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": ["code", "message"],
+      "title": "ContractError",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "completeSearchRegion": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Completesearchregion"
+        },
+        "missingData": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missingdata"
+        },
+        "boundaryChecked": {
+          "title": "Boundarychecked",
+          "type": "boolean"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": ["completeSearchRegion", "missingData", "boundaryChecked", "reason"],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "DemIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "title": "Filename",
+          "type": "string"
+        },
+        "sourceUrl": {
+          "title": "Sourceurl",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "resolutionM": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Resolutionm",
+          "type": "array"
+        },
+        "boundsM": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Boundsm",
+          "type": "array"
+        },
+        "frame": {
+          "const": "MOON_ME_DE421",
+          "title": "Frame",
+          "type": "string"
+        },
+        "projection": {
+          "title": "Projection",
+          "type": "string"
+        }
+      },
+      "required": ["filename", "sourceUrl", "sha256", "resolutionM", "boundsM", "frame", "projection"],
+      "title": "DemIdentity",
+      "type": "object"
+    },
+    "Detection": {
+      "additionalProperties": false,
+      "properties": {
+        "possibleMissedEvents": {
+          "title": "Possiblemissedevents",
+          "type": "boolean"
+        },
+        "searchCadenceS": {
+          "minimum": 0,
+          "title": "Searchcadences",
+          "type": "number"
+        },
+        "probeStepS": {
+          "minimum": 0,
+          "title": "Probesteps",
+          "type": "number"
+        },
+        "numericalRootToleranceS": {
+          "minimum": 0,
+          "title": "Numericalroottolerances",
+          "type": "number"
+        },
+        "physicalUncertaintyS": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Physicaluncertaintys"
+        },
+        "completenessAssumption": {
+          "title": "Completenessassumption",
+          "type": "string"
+        },
+        "discontinuousSkyline": {
+          "const": true,
+          "title": "Discontinuousskyline",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "possibleMissedEvents",
+        "searchCadenceS",
+        "probeStepS",
+        "numericalRootToleranceS",
+        "physicalUncertaintyS",
+        "completenessAssumption",
+        "discontinuousSkyline"
+      ],
+      "title": "Detection",
+      "type": "object"
+    },
+    "EarthDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "visibilityRule": {
+          "const": "center clearance >= safety margin",
+          "title": "Visibilityrule",
+          "type": "string"
+        },
+        "safetyMarginDeg": {
+          "const": 0,
+          "title": "Safetymargindeg",
+          "type": "integer"
+        },
+        "rfConnectivity": {
+          "const": "not_computed",
+          "title": "Rfconnectivity",
+          "type": "string"
+        },
+        "interpretation": {
+          "title": "Interpretation",
+          "type": "string"
+        }
+      },
+      "required": ["visibilityRule", "safetyMarginDeg", "rfConnectivity", "interpretation"],
+      "title": "EarthDefinition",
+      "type": "object"
+    },
+    "EarthSample": {
+      "additionalProperties": false,
+      "properties": {
+        "azimuthDeg": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Azimuthdeg",
+          "type": "number"
+        },
+        "elevationDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Elevationdeg",
+          "type": "number"
+        },
+        "horizonElevationDeg": {
+          "title": "Horizonelevationdeg",
+          "type": "number"
+        },
+        "clearanceDeg": {
+          "title": "Clearancedeg",
+          "type": "number"
+        },
+        "centerVisible": {
+          "title": "Centervisible",
+          "type": "boolean"
+        }
+      },
+      "required": ["azimuthDeg", "elevationDeg", "horizonElevationDeg", "clearanceDeg", "centerVisible"],
+      "title": "EarthSample",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "timestampUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Timestamputc",
+          "type": "string"
+        },
+        "elapsedS": {
+          "minimum": 0,
+          "title": "Elapseds",
+          "type": "number"
+        },
+        "eventType": {
+          "enum": ["sunrise", "sunset", "earthrise", "earthset", "grazing"],
+          "title": "Eventtype",
+          "type": "string"
+        },
+        "numericalToleranceS": {
+          "minimum": 0,
+          "title": "Numericaltolerances",
+          "type": "number"
+        },
+        "physicalUncertaintyS": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Physicaluncertaintys"
+        },
+        "method": {
+          "enum": ["numerical transition estimate", "extremum estimate"],
+          "title": "Method",
+          "type": "string"
+        }
+      },
+      "required": ["timestampUtc", "elapsedS", "eventType", "numericalToleranceS", "physicalUncertaintyS", "method"],
+      "title": "Event",
+      "type": "object"
+    },
+    "HeightDifference": {
+      "additionalProperties": false,
+      "properties": {
+        "sunlightAvailabilityFraction": {
+          "title": "Sunlightavailabilityfraction",
+          "type": "number"
+        },
+        "directEarthAvailabilityFraction": {
+          "title": "Directearthavailabilityfraction",
+          "type": "number"
+        },
+        "longestDarknessS": {
+          "title": "Longestdarknesss",
+          "type": "number"
+        },
+        "longestDirectEarthBlackoutS": {
+          "title": "Longestdirectearthblackouts",
+          "type": "number"
+        },
+        "horizontalExposure": {
+          "title": "Horizontalexposure",
+          "type": "number"
+        },
+        "verticalExposure": {
+          "title": "Verticalexposure",
+          "type": "number"
+        },
+        "trackingExposure": {
+          "title": "Trackingexposure",
+          "type": "number"
+        },
+        "maximumRawHorizonIncreaseDeg": {
+          "title": "Maximumrawhorizonincreasedeg",
+          "type": "number"
+        },
+        "skylineNonincreasingWithinTolerance": {
+          "title": "Skylinenonincreasingwithintolerance",
+          "type": "boolean"
+        },
+        "angularToleranceDeg": {
+          "title": "Angulartolerancedeg",
+          "type": "number"
+        }
+      },
+      "required": [
+        "sunlightAvailabilityFraction",
+        "directEarthAvailabilityFraction",
+        "longestDarknessS",
+        "longestDirectEarthBlackoutS",
+        "horizontalExposure",
+        "verticalExposure",
+        "trackingExposure",
+        "maximumRawHorizonIncreaseDeg",
+        "skylineNonincreasingWithinTolerance",
+        "angularToleranceDeg"
+      ],
+      "title": "HeightDifference",
+      "type": "object"
+    },
+    "HeightOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "observerHeightM": {
+          "minimum": 0,
+          "title": "Observerheightm",
+          "type": "number"
+        },
+        "environment": {
+          "$ref": "#/$defs/ComputedResponse"
+        },
+        "panels": {
+          "$ref": "#/$defs/PanelScores"
+        },
+        "differenceFromGround": {
+          "$ref": "#/$defs/HeightDifference"
+        }
+      },
+      "required": ["observerHeightM", "environment", "panels", "differenceFromGround"],
+      "title": "HeightOutcome",
+      "type": "object"
+    },
+    "Interval": {
+      "additionalProperties": false,
+      "properties": {
+        "startUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Startutc",
+          "type": "string"
+        },
+        "endUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Endutc",
+          "type": "string"
+        },
+        "startS": {
+          "minimum": 0,
+          "title": "Starts",
+          "type": "number"
+        },
+        "endS": {
+          "minimum": 0,
+          "title": "Ends",
+          "type": "number"
+        },
+        "startClipped": {
+          "title": "Startclipped",
+          "type": "boolean"
+        },
+        "endClipped": {
+          "title": "Endclipped",
+          "type": "boolean"
+        }
+      },
+      "required": ["startUtc", "endUtc", "startS", "endS", "startClipped", "endClipped"],
+      "title": "Interval",
+      "type": "object"
+    },
+    "LongestInterval": {
+      "additionalProperties": false,
+      "properties": {
+        "durationS": {
+          "minimum": 0,
+          "title": "Durations",
+          "type": "number"
+        },
+        "interval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "touchesCoverageBoundary": {
+          "title": "Touchescoverageboundary",
+          "type": "boolean"
+        }
+      },
+      "required": ["durationS", "interval", "touchesCoverageBoundary"],
+      "title": "LongestInterval",
+      "type": "object"
+    },
+    "MastPowerComputed": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-mast-power-response/1.0.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "dataState": {
+          "const": "computed",
+          "title": "Datastate",
+          "type": "string"
+        },
+        "scenarioId": {
+          "pattern": "^mast-power-[0-9a-f]{64}$",
+          "title": "Scenarioid",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/MastPowerRequest"
+        },
+        "units": {
+          "$ref": "#/$defs/Units"
+        },
+        "result": {
+          "$ref": "#/$defs/MastPowerResult"
+        },
+        "provenance": {
+          "additionalProperties": true,
+          "title": "Provenance",
+          "type": "object"
+        },
+        "error": {
+          "title": "Error",
+          "type": "null"
+        }
+      },
+      "required": ["schemaVersion", "dataState", "scenarioId", "request", "units", "result", "provenance", "error"],
+      "title": "MastPowerComputed",
+      "type": "object"
+    },
+    "MastPowerFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-mast-power-response/1.0.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "dataState": {
+          "enum": ["unsupported", "not_computed", "unavailable", "failed"],
+          "title": "Datastate",
+          "type": "string"
+        },
+        "scenarioId": {
+          "title": "Scenarioid",
+          "type": "null"
+        },
+        "request": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MastPowerRequest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "units": {
+          "$ref": "#/$defs/Units"
+        },
+        "result": {
+          "title": "Result",
+          "type": "null"
+        },
+        "provenance": {
+          "title": "Provenance",
+          "type": "null"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Coverage"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "$ref": "#/$defs/ContractError"
+        }
+      },
+      "required": ["schemaVersion", "dataState", "scenarioId", "request", "units", "result", "provenance", "coverage", "error"],
+      "title": "MastPowerFailure",
+      "type": "object"
+    },
+    "MastPowerRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-mast-power-request/1.0.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "site": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Site"
+            }
+          ],
+          "title": "Site"
+        },
+        "startUtc": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$",
+          "title": "Startutc",
+          "type": "string"
+        },
+        "durationS": {
+          "maximum": 31536000,
+          "minimum": 60,
+          "title": "Durations",
+          "type": "number"
+        },
+        "cadenceS": {
+          "maximum": 3600,
+          "minimum": 30,
+          "title": "Cadences",
+          "type": "number"
+        },
+        "profile": {
+          "enum": ["geometric", "apparent"],
+          "title": "Profile",
+          "type": "string"
+        },
+        "solarDefinition": {
+          "enum": ["center", "anyDisk", "fullDisk"],
+          "title": "Solardefinition",
+          "type": "string"
+        },
+        "earthDefinition": {
+          "const": "center",
+          "title": "Earthdefinition",
+          "type": "string"
+        },
+        "horizonOffsetDeg": {
+          "maximum": 5,
+          "minimum": -5,
+          "title": "Horizonoffsetdeg",
+          "type": "number"
+        },
+        "localResolutionM": {
+          "enum": [20, 80],
+          "title": "Localresolutionm",
+          "type": "integer"
+        },
+        "eventToleranceS": {
+          "maximum": 30,
+          "minimum": 0.01,
+          "title": "Eventtolerances",
+          "type": "number"
+        },
+        "constraints": {
+          "$ref": "#/$defs/Constraints"
+        },
+        "observerHeightM": {
+          "const": 0,
+          "title": "Observerheightm",
+          "type": "integer"
+        },
+        "mastHeightsM": {
+          "items": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Mastheightsm",
+          "type": "array"
+        },
+        "verticalAzimuthDeg": {
+          "title": "Verticalazimuthdeg",
+          "type": "number"
+        }
+      },
+      "required": ["startUtc", "mastHeightsM", "verticalAzimuthDeg"],
+      "title": "MastPowerRequest",
+      "type": "object"
+    },
+    "MastPowerResult": {
+      "additionalProperties": false,
+      "properties": {
+        "baselineHeightM": {
+          "const": 0,
+          "title": "Baselineheightm",
+          "type": "integer"
+        },
+        "verticalAzimuthDeg": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Verticalazimuthdeg",
+          "type": "number"
+        },
+        "outcomes": {
+          "items": {
+            "$ref": "#/$defs/HeightOutcome"
+          },
+          "title": "Outcomes",
+          "type": "array"
+        },
+        "panelModel": {
+          "title": "Panelmodel",
+          "type": "string"
+        },
+        "trackingAssumption": {
+          "title": "Trackingassumption",
+          "type": "string"
+        },
+        "exposureIntegration": {
+          "title": "Exposureintegration",
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "baselineHeightM",
+        "verticalAzimuthDeg",
+        "outcomes",
+        "panelModel",
+        "trackingAssumption",
+        "exposureIntegration",
+        "limitations"
+      ],
+      "title": "MastPowerResult",
+      "type": "object"
+    },
+    "MissionMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "sunlightDurationS": {
+          "minimum": 0,
+          "title": "Sunlightdurations",
+          "type": "number"
+        },
+        "sunlightAvailabilityFraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Sunlightavailabilityfraction",
+          "type": "number"
+        },
+        "directEarthDurationS": {
+          "minimum": 0,
+          "title": "Directearthdurations",
+          "type": "number"
+        },
+        "directEarthAvailabilityFraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Directearthavailabilityfraction",
+          "type": "number"
+        },
+        "meanVisibleSolarDiskFraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Meanvisiblesolardiskfraction",
+          "type": "number"
+        },
+        "longestDarkness": {
+          "$ref": "#/$defs/LongestInterval"
+        },
+        "longestDirectEarthBlackout": {
+          "$ref": "#/$defs/LongestInterval"
+        },
+        "denominatorS": {
+          "minimum": 0,
+          "title": "Denominators",
+          "type": "number"
+        },
+        "denominatorSemantics": {
+          "title": "Denominatorsemantics",
+          "type": "string"
+        },
+        "meanDiskFractionMethod": {
+          "title": "Meandiskfractionmethod",
+          "type": "string"
+        }
+      },
+      "required": [
+        "sunlightDurationS",
+        "sunlightAvailabilityFraction",
+        "directEarthDurationS",
+        "directEarthAvailabilityFraction",
+        "meanVisibleSolarDiskFraction",
+        "longestDarkness",
+        "longestDirectEarthBlackout",
+        "denominatorS",
+        "denominatorSemantics",
+        "meanDiskFractionMethod"
+      ],
+      "title": "MissionMetrics",
+      "type": "object"
+    },
+    "Observer": {
+      "additionalProperties": false,
+      "properties": {
+        "siteId": {
+          "title": "Siteid",
+          "type": "string"
+        },
+        "latitudeDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitudedeg",
+          "type": "number"
+        },
+        "longitudeDegEast": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Longitudedegeast",
+          "type": "number"
+        },
+        "frame": {
+          "const": "MOON_ME_DE421",
+          "title": "Frame",
+          "type": "string"
+        },
+        "coordinateSource": {
+          "title": "Coordinatesource",
+          "type": "string"
+        },
+        "coordinateUncertaintyM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coordinateuncertaintym"
+        },
+        "groundElevationM": {
+          "title": "Groundelevationm",
+          "type": "number"
+        },
+        "observerHeightM": {
+          "title": "Observerheightm",
+          "type": "number"
+        },
+        "radialReferenceM": {
+          "title": "Radialreferencem",
+          "type": "number"
+        },
+        "positionM": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "title": "Positionm",
+          "type": "array"
+        },
+        "datum": {
+          "title": "Datum",
+          "type": "string"
+        }
+      },
+      "required": [
+        "siteId",
+        "latitudeDeg",
+        "longitudeDegEast",
+        "frame",
+        "coordinateSource",
+        "coordinateUncertaintyM",
+        "groundElevationM",
+        "observerHeightM",
+        "radialReferenceM",
+        "positionM",
+        "datum"
+      ],
+      "title": "Observer",
+      "type": "object"
+    },
+    "PanelScore": {
+      "additionalProperties": false,
+      "properties": {
+        "incidenceFactor": {
+          "items": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "title": "Incidencefactor",
+          "type": "array"
+        },
+        "exposureFactor": {
+          "items": {
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "title": "Exposurefactor",
+          "type": "array"
+        },
+        "meanGeometricExposure": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Meangeometricexposure",
+          "type": "number"
+        }
+      },
+      "required": ["incidenceFactor", "exposureFactor", "meanGeometricExposure"],
+      "title": "PanelScore",
+      "type": "object"
+    },
+    "PanelScores": {
+      "additionalProperties": false,
+      "properties": {
+        "horizontal": {
+          "$ref": "#/$defs/PanelScore"
+        },
+        "vertical": {
+          "$ref": "#/$defs/PanelScore"
+        },
+        "tracking": {
+          "$ref": "#/$defs/PanelScore"
+        }
+      },
+      "required": ["horizontal", "vertical", "tracking"],
+      "title": "PanelScores",
+      "type": "object"
+    },
+    "Period": {
+      "additionalProperties": false,
+      "properties": {
+        "startUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Startutc",
+          "type": "string"
+        },
+        "endUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Endutc",
+          "type": "string"
+        },
+        "durationS": {
+          "minimum": 0,
+          "title": "Durations",
+          "type": "number"
+        },
+        "intervalConvention": {
+          "const": "[start,end)",
+          "title": "Intervalconvention",
+          "type": "string"
+        },
+        "durationScale": {
+          "const": "elapsed SPICE ET seconds",
+          "title": "Durationscale",
+          "type": "string"
+        }
+      },
+      "required": ["startUtc", "endUtc", "durationS", "intervalConvention", "durationScale"],
+      "title": "Period",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "engineVersion": {
+          "title": "Engineversion",
+          "type": "string"
+        },
+        "algorithmVersion": {
+          "title": "Algorithmversion",
+          "type": "string"
+        },
+        "implementation": {
+          "additionalProperties": true,
+          "title": "Implementation",
+          "type": "object"
+        },
+        "scientificProfile": {
+          "enum": ["geometric", "apparent"],
+          "title": "Scientificprofile",
+          "type": "string"
+        },
+        "aberrationCorrection": {
+          "enum": ["NONE", "LT+S"],
+          "title": "Aberrationcorrection",
+          "type": "string"
+        },
+        "kernels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Kernels",
+          "type": "object"
+        },
+        "dems": {
+          "items": {
+            "$ref": "#/$defs/DemIdentity"
+          },
+          "title": "Dems",
+          "type": "array"
+        },
+        "cacheKey": {
+          "title": "Cachekey",
+          "type": "string"
+        },
+        "execution": {
+          "title": "Execution",
+          "type": "string"
+        },
+        "validationStatus": {
+          "const": "computed",
+          "title": "Validationstatus",
+          "type": "string"
+        },
+        "independentlyValidated": {
+          "const": false,
+          "title": "Independentlyvalidated",
+          "type": "boolean"
+        },
+        "validationEvidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Validationevidence",
+          "type": "array"
+        },
+        "sampling": {
+          "additionalProperties": true,
+          "title": "Sampling",
+          "type": "object"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "engineVersion",
+        "algorithmVersion",
+        "implementation",
+        "scientificProfile",
+        "aberrationCorrection",
+        "kernels",
+        "dems",
+        "cacheKey",
+        "execution",
+        "validationStatus",
+        "independentlyValidated",
+        "validationEvidence",
+        "sampling",
+        "assumptions",
+        "limitations"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "ScientificRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-scientific-request/1.0.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "site": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/Site"
+            }
+          ],
+          "title": "Site"
+        },
+        "startUtc": {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$",
+          "title": "Startutc",
+          "type": "string"
+        },
+        "durationS": {
+          "maximum": 31536000,
+          "minimum": 60,
+          "title": "Durations",
+          "type": "number"
+        },
+        "cadenceS": {
+          "maximum": 3600,
+          "minimum": 30,
+          "title": "Cadences",
+          "type": "number"
+        },
+        "profile": {
+          "enum": ["geometric", "apparent"],
+          "title": "Profile",
+          "type": "string"
+        },
+        "solarDefinition": {
+          "enum": ["center", "anyDisk", "fullDisk"],
+          "title": "Solardefinition",
+          "type": "string"
+        },
+        "earthDefinition": {
+          "const": "center",
+          "title": "Earthdefinition",
+          "type": "string"
+        },
+        "horizonOffsetDeg": {
+          "maximum": 5,
+          "minimum": -5,
+          "title": "Horizonoffsetdeg",
+          "type": "number"
+        },
+        "localResolutionM": {
+          "enum": [20, 80],
+          "title": "Localresolutionm",
+          "type": "integer"
+        },
+        "eventToleranceS": {
+          "maximum": 30,
+          "minimum": 0.01,
+          "title": "Eventtolerances",
+          "type": "number"
+        },
+        "constraints": {
+          "$ref": "#/$defs/Constraints"
+        },
+        "observerHeightM": {
+          "minimum": 0,
+          "title": "Observerheightm",
+          "type": "number"
+        }
+      },
+      "required": ["startUtc"],
+      "title": "ScientificRequest",
+      "type": "object"
+    },
+    "ScientificResult": {
+      "additionalProperties": false,
+      "properties": {
+        "period": {
+          "$ref": "#/$defs/Period"
+        },
+        "observer": {
+          "$ref": "#/$defs/Observer"
+        },
+        "skyline": {
+          "$ref": "#/$defs/Skyline"
+        },
+        "samples": {
+          "items": {
+            "$ref": "#/$defs/TrackSample"
+          },
+          "minItems": 2,
+          "title": "Samples",
+          "type": "array"
+        },
+        "solarVisibility": {
+          "$ref": "#/$defs/SolarDefinition"
+        },
+        "directEarthVisibility": {
+          "$ref": "#/$defs/EarthDefinition"
+        },
+        "sunlightIntervals": {
+          "$ref": "#/$defs/VisibilityWindows"
+        },
+        "directEarthIntervals": {
+          "$ref": "#/$defs/VisibilityWindows"
+        },
+        "metrics": {
+          "$ref": "#/$defs/MissionMetrics"
+        },
+        "cadenceS": {
+          "minimum": 0,
+          "title": "Cadences",
+          "type": "number"
+        }
+      },
+      "required": [
+        "period",
+        "observer",
+        "skyline",
+        "samples",
+        "solarVisibility",
+        "directEarthVisibility",
+        "sunlightIntervals",
+        "directEarthIntervals",
+        "metrics",
+        "cadenceS"
+      ],
+      "title": "ScientificResult",
+      "type": "object"
+    },
+    "Site": {
+      "additionalProperties": false,
+      "properties": {
+        "siteId": {
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Siteid",
+          "type": "string"
+        },
+        "latitudeDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitudedeg",
+          "type": "number"
+        },
+        "longitudeDeg": {
+          "maximum": 360,
+          "minimum": -360,
+          "title": "Longitudedeg",
+          "type": "number"
+        },
+        "sourceFrame": {
+          "const": "MOON_ME_DE421",
+          "title": "Sourceframe",
+          "type": "string"
+        },
+        "sourceUrl": {
+          "title": "Sourceurl",
+          "type": "string"
+        }
+      },
+      "required": ["siteId", "latitudeDeg", "longitudeDeg"],
+      "title": "Site",
+      "type": "object"
+    },
+    "Skyline": {
+      "additionalProperties": false,
+      "properties": {
+        "azimuthDeg": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Azimuthdeg",
+          "type": "array"
+        },
+        "terrainElevationDeg": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Terrainelevationdeg",
+          "type": "array"
+        },
+        "visibilityHorizonElevationDeg": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Visibilityhorizonelevationdeg",
+          "type": "array"
+        },
+        "azimuthStepDeg": {
+          "exclusiveMinimum": 0,
+          "title": "Azimuthstepdeg",
+          "type": "number"
+        },
+        "azimuthReference": {
+          "const": "local north, clockwise, east at 90 deg",
+          "title": "Azimuthreference",
+          "type": "string"
+        },
+        "binConvention": {
+          "const": "left-inclusive periodic sectors in [0,360)",
+          "title": "Binconvention",
+          "type": "string"
+        },
+        "horizonOffsetDeg": {
+          "title": "Horizonoffsetdeg",
+          "type": "number"
+        },
+        "minimumElevationDeg": {
+          "const": 0,
+          "title": "Minimumelevationdeg",
+          "type": "integer"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "curvature": {
+          "title": "Curvature",
+          "type": "string"
+        },
+        "computationSettings": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Computationsettings",
+          "type": "object"
+        },
+        "farTerrainUpperElevationDeg": {
+          "title": "Farterrainupperelevationdeg",
+          "type": "number"
+        },
+        "minimumTargetRangeM": {
+          "exclusiveMinimum": 0,
+          "title": "Minimumtargetrangem",
+          "type": "number"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "azimuthDeg",
+        "terrainElevationDeg",
+        "visibilityHorizonElevationDeg",
+        "azimuthStepDeg",
+        "azimuthReference",
+        "binConvention",
+        "horizonOffsetDeg",
+        "minimumElevationDeg",
+        "model",
+        "curvature",
+        "computationSettings",
+        "farTerrainUpperElevationDeg",
+        "minimumTargetRangeM",
+        "assumptions",
+        "coverage"
+      ],
+      "title": "Skyline",
+      "type": "object"
+    },
+    "SolarDefinition": {
+      "additionalProperties": false,
+      "properties": {
+        "availabilityRule": {
+          "enum": ["anyDisk", "center", "fullDisk"],
+          "title": "Availabilityrule",
+          "type": "string"
+        },
+        "diskFractionThreshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Diskfractionthreshold"
+        },
+        "thresholdOperator": {
+          "enum": ["greater_than", "greater_than_or_equal", "center_clearance_nonnegative"],
+          "title": "Thresholdoperator",
+          "type": "string"
+        },
+        "diskModel": {
+          "title": "Diskmodel",
+          "type": "string"
+        },
+        "classification": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Classification",
+          "type": "object"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": ["availabilityRule", "diskFractionThreshold", "thresholdOperator", "diskModel", "classification", "limitations"],
+      "title": "SolarDefinition",
+      "type": "object"
+    },
+    "SolarSample": {
+      "additionalProperties": false,
+      "properties": {
+        "azimuthDeg": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Azimuthdeg",
+          "type": "number"
+        },
+        "elevationDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Elevationdeg",
+          "type": "number"
+        },
+        "horizonElevationDeg": {
+          "title": "Horizonelevationdeg",
+          "type": "number"
+        },
+        "clearanceDeg": {
+          "title": "Clearancedeg",
+          "type": "number"
+        },
+        "angularRadiusDeg": {
+          "exclusiveMinimum": 0,
+          "title": "Angularradiusdeg",
+          "type": "number"
+        },
+        "visibleDiskFraction": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Visiblediskfraction",
+          "type": "number"
+        },
+        "diskState": {
+          "enum": ["fully_visible", "partially_visible", "obscured"],
+          "title": "Diskstate",
+          "type": "string"
+        },
+        "sunlightVisible": {
+          "title": "Sunlightvisible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "azimuthDeg",
+        "elevationDeg",
+        "horizonElevationDeg",
+        "clearanceDeg",
+        "angularRadiusDeg",
+        "visibleDiskFraction",
+        "diskState",
+        "sunlightVisible"
+      ],
+      "title": "SolarSample",
+      "type": "object"
+    },
+    "TrackSample": {
+      "additionalProperties": false,
+      "properties": {
+        "timestampUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Timestamputc",
+          "type": "string"
+        },
+        "elapsedS": {
+          "minimum": 0,
+          "title": "Elapseds",
+          "type": "number"
+        },
+        "scientificProfile": {
+          "enum": ["geometric", "apparent"],
+          "title": "Scientificprofile",
+          "type": "string"
+        },
+        "endpointContext": {
+          "title": "Endpointcontext",
+          "type": "boolean"
+        },
+        "sun": {
+          "$ref": "#/$defs/SolarSample"
+        },
+        "earth": {
+          "$ref": "#/$defs/EarthSample"
+        }
+      },
+      "required": ["timestampUtc", "elapsedS", "scientificProfile", "endpointContext", "sun", "earth"],
+      "title": "TrackSample",
+      "type": "object"
+    },
+    "Units": {
+      "additionalProperties": false,
+      "properties": {
+        "angles": {
+          "const": "deg",
+          "title": "Angles",
+          "type": "string"
+        },
+        "distances": {
+          "const": "m",
+          "title": "Distances",
+          "type": "string"
+        },
+        "durations": {
+          "const": "s",
+          "title": "Durations",
+          "type": "string"
+        },
+        "fractions": {
+          "const": "fraction",
+          "title": "Fractions",
+          "type": "string"
+        },
+        "timestamps": {
+          "const": "UTC ISO 8601",
+          "title": "Timestamps",
+          "type": "string"
+        }
+      },
+      "required": ["angles", "distances", "durations", "fractions", "timestamps"],
+      "title": "Units",
+      "type": "object"
+    },
+    "VisibilityWindows": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "items": {
+            "$ref": "#/$defs/Interval"
+          },
+          "title": "Available",
+          "type": "array"
+        },
+        "unavailable": {
+          "items": {
+            "$ref": "#/$defs/Interval"
+          },
+          "title": "Unavailable",
+          "type": "array"
+        },
+        "events": {
+          "items": {
+            "$ref": "#/$defs/Event"
+          },
+          "title": "Events",
+          "type": "array"
+        },
+        "detection": {
+          "$ref": "#/$defs/Detection"
+        }
+      },
+      "required": ["available", "unavailable", "events", "detection"],
+      "title": "VisibilityWindows",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "computed": "#/$defs/MastPowerComputed",
+      "failed": "#/$defs/MastPowerFailure",
+      "not_computed": "#/$defs/MastPowerFailure",
+      "unavailable": "#/$defs/MastPowerFailure",
+      "unsupported": "#/$defs/MastPowerFailure"
+    },
+    "propertyName": "dataState"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/MastPowerComputed"
+    },
+    {
+      "$ref": "#/$defs/MastPowerFailure"
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

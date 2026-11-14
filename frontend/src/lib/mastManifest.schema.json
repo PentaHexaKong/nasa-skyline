@@ -1,0 +1,28 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-mast-manifest/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "siteId": {
+      "title": "Siteid",
+      "type": "string"
+    },
+    "scenarioSelectionRequired": {
+      "const": true,
+      "title": "Scenarioselectionrequired",
+      "type": "boolean"
+    },
+    "scenarioPathTemplate": {
+      "const": "scenarios/{scenarioId}.json",
+      "title": "Scenariopathtemplate",
+      "type": "string"
+    }
+  },
+  "required": ["schemaVersion", "siteId", "scenarioSelectionRequired", "scenarioPathTemplate"],
+  "title": "MastManifest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
