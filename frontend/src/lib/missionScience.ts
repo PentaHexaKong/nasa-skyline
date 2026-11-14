@@ -270,6 +270,8 @@ export async function evaluateAll(
       return
     }
     const response: unknown = await res.json().catch(() => undefined)
+    // A run cancelled while the body was still arriving belongs to an older plan: never report it against the new one.
+    signal?.throwIfAborted()
     // The backend answers in the contract's own envelope; this code means it could not reach the service at all.
     const code = (response as { error?: { code?: unknown } } | undefined)?.error?.code
     const error = code === 'mission_science_unavailable' ? { code: 'unreachable', message: '' } : null
