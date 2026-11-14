@@ -1,5 +1,6 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { MoonStage } from '~/components/MoonStage'
 import styles from '~/styles.css?url'
 
 export const Route = createRootRoute({
@@ -47,6 +48,8 @@ function Document({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        {/* Above the routes, so the front door, Explore and Understand share one Moon that glides between pages. */}
+        <MoonStage />
         {children}
         <Scripts />
       </body>

@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import { MOON_FULL as FULL, MOON_PREVIEW } from '~/components/moonTextures'
 
+// Every globe loads the same few maps. Kept in memory, a second globe (Explore's true-scale scene beside the page's
+// Moon) gets them at once instead of fetching and decoding a 4k image again.
+THREE.Cache.enabled = true
+
 /**
  * Loads a texture: sRGB for colour maps, linear for data maps; `done` runs once it has arrived, `failed` if it cannot
  * be loaded.
@@ -93,8 +97,19 @@ export function moonMaterial(tex: TextureLoad, onColour?: () => void, progressiv
   return { material, capRot }
 }
 
-/** A soft glow outside a limb, from the height of each view ray's closest approach above the surface. */
-export function halo(r: number, thick: number, color: [number, number, number], gain: number, k: number, sunDir: { value: THREE.Vector3 }) {
+/**
+ * A soft glow outside a limb, from the height of each view ray's closest approach above the surface. `strength` scales
+ * it, for crossfading two glows.
+ */
+export function halo(
+  r: number,
+  thick: number,
+  color: [number, number, number],
+  gain: number,
+  k: number,
+  sunDir: { value: THREE.Vector3 },
+  strength: { value: number } = { value: 1 },
+) {
   return new THREE.Mesh(
     new THREE.SphereGeometry(r * (1 + thick), 128, 64),
     new THREE.ShaderMaterial({
@@ -102,15 +117,15 @@ export function halo(r: number, thick: number, color: [number, number, number], 
       depthWrite: false,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
-      uniforms: { sunDir },
+      uniforms: { sunDir, strength },
       vertexShader: `varying vec3 vW; varying vec3 vC;
         void main(){ vec4 w = modelMatrix*vec4(position,1.); vW = w.xyz; vC = (modelMatrix*vec4(0.,0.,0.,1.)).xyz; gl_Position = projectionMatrix*viewMatrix*w; }`,
-      fragmentShader: `uniform vec3 sunDir; varying vec3 vW; varying vec3 vC;
+      fragmentShader: `uniform vec3 sunDir; uniform float strength; varying vec3 vW; varying vec3 vC;
         void main(){
           vec3 d = normalize(vW - cameraPosition); vec3 p = cameraPosition + d * dot(vC - cameraPosition, d);
           float h = (length(p - vC) / ${r.toFixed(4)} - 1.0) / ${thick.toFixed(4)}; if (h < 0.0) discard;
           float lit = smoothstep(-0.25, 0.6, dot(normalize(p - vC), sunDir));
-          gl_FragColor = vec4(vec3(${color.join(',')}) * exp(-h * ${k.toFixed(1)}) * (1.0 - h) * lit * ${gain.toFixed(2)}, 1.0); }`,
+          gl_FragColor = vec4(vec3(${color.join(',')}) * exp(-h * ${k.toFixed(1)}) * (1.0 - h) * lit * ${gain.toFixed(2)} * strength, 1.0); }`,
     }),
   )
 }

@@ -65,3 +65,37 @@ export function reaim(
   e[14] = (-2 * far * near) / (far - near)
   return out.premultiply(toBox)
 }
+
+/**
+ * The Moon glides from one page's place to the next (ParallaxMoon, kept by MoonStage across the pages that show it).
+ * Heavy work on the arriving page (a terrain trace) waits for the glide, so it never stalls the Moon mid-move.
+ */
+const glide = { on: false, waiting: [] as (() => void)[] }
+
+/** Runs `fn` on the next frame, or once the Moon has settled if it is gliding. Returns a cancel. */
+export function afterGlide(fn: () => void) {
+  let raf = 0
+  const run = () => {
+    raf = requestAnimationFrame(fn)
+  }
+  if (glide.on) glide.waiting.push(run)
+  else run()
+  return () => {
+    glide.waiting = glide.waiting.filter((f) => f !== run)
+    cancelAnimationFrame(raf)
+  }
+}
+
+/** The Moon has started gliding to a new page's place. */
+export function beginGlide() {
+  glide.on = true
+}
+
+/** The Moon has settled (or stopped drawing): run what waited for it. */
+export function endGlide() {
+  if (!glide.on) return
+  glide.on = false
+  const waiting = glide.waiting
+  glide.waiting = []
+  for (const f of waiting) f()
+}

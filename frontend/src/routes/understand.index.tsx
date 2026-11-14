@@ -1,19 +1,16 @@
-import { createFileRoute, useHydrated } from '@tanstack/react-router'
-import { lazy, type ReactNode, Suspense, useMemo } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import { type ReactNode, useMemo } from 'react'
 import { LabJourney } from '~/components/lab/LabJourney'
 import { LESSONS, type Lesson } from '~/components/lessons'
+import { useMoonScene } from '~/components/MoonStage'
 import { MOON_PREVIEW } from '~/components/moonTextures'
-import type { MoonPose, TourSite } from '~/components/ParallaxMoon'
+import type { MoonPose, MoonScene, TourSite } from '~/components/ParallaxMoon'
 import { Eyebrow, Footer, Shell } from '~/components/Shell'
 import { Bubble, Mascot, StandHereLink } from '~/components/story'
 import { loadMoonEphemeris, loadSummary, MOON_SITES, type MoonEphemeris, type Summary } from '~/lib/data'
 import { shortName } from '~/lib/mission'
 import { bestHour, SYNODIC_HOURS, subPoints, whenAt } from '~/lib/moonLight'
 import { longDate } from '~/lib/time'
-
-const loadParallaxMoon = () => import('~/components/ParallaxMoon')
-if (typeof window !== 'undefined') void loadParallaxMoon()
-const ParallaxMoon = lazy(loadParallaxMoon)
 
 /**
  * Understand: the learning journey. The same Moon as Explore turns to each question's place while the reader scrolls;
@@ -80,17 +77,17 @@ const lesson = (id: string) => {
 
 function UnderstandPage() {
   const { eph, summaries } = Route.useLoaderData()
-  const hydrated = useHydrated()
   const data = useMemo(() => Object.fromEntries(summaries.map((s) => [s.site.id, s])), [summaries])
-  const sites: TourSite[] = summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east }))
+  const sites = useMemo<TourSite[]>(
+    () => summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east })),
+    [summaries],
+  )
+  const moon = useMemo<MoonScene>(() => ({ kind: 'tour', poses: CHAPTERS.map((c) => c.pose), sites, textPanels: true }), [sites])
+  useMoonScene(moon, eph)
   return (
     <Shell>
-      <main className="relative overflow-x-clip bg-bg text-ink">
-        {hydrated && (
-          <Suspense fallback={null}>
-            <ParallaxMoon textPanels poses={CHAPTERS.map((c) => c.pose)} sites={sites} eph={eph} />
-          </Suspense>
-        )}
+      {/* No background of its own: the shared Moon (MoonStage) sits behind the page, on the page colour of <html>. */}
+      <main className="relative overflow-x-clip text-ink">
         <div className="relative z-[1]">
           <Landing />
           <LessonChapter n={1} lesson={lesson('lunar-day')} data={data} tall />
