@@ -1,0 +1,38 @@
+{
+  "note": "Display-only first-look copies of the globe textures; the page replaces them with the full maps once loaded.",
+  "previews": [
+    {
+      "file": "preview/color-2k.jpg",
+      "from": "color-4k.jpg",
+      "from_sha256": "3332db85d3abe9592896b54aa5dbd3d2b050cbe44af5f263e41f7f3fff0c63c9",
+      "size_px": [
+        2048,
+        1024
+      ],
+      "jpeg_quality": 80,
+      "resample": "Lanczos"
+    },
+    {
+      "file": "preview/normal-1k.jpg",
+      "from": "normal-2k.jpg",
+      "from_sha256": "4ba8b6f344da73376b8dd9726469b2e8f994a09cc093f698ff7fbeb7788e9271",
+      "size_px": [
+        1024,
+        512
+      ],
+      "jpeg_quality": 85,
+      "resample": "Lanczos"
+    },
+    {
+      "file": "preview/cap-normal-512.jpg",
+      "from": "cap-normal-2k.jpg",
+      "from_sha256": "0f6e8364f4c0e5cd07ce8a540cc239db890fe6edcb857dd4d2035fd0c94d0cf8",
+      "size_px": [
+        512,
+        512
+      ],
+      "jpeg_quality": 85,
+      "resample": "Lanczos"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "credit": "NASA's Scientific Visualization Studio (CGI Moon Kit)",
+  "page": "https://svs.gsfc.nasa.gov/4720",
+  "color": {
+    "file": "color-4k.jpg",
+    "size_px": [
+      4096,
+      2048
+    ],
+    "projection": "equirectangular, centred on 0 deg longitude, +X east, north up",
+    "source_url": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_16bit_srgb_4k.tif",
+    "source_file": "lroc_color_16bit_srgb_4k.tif",
+    "source_sha256": "9731fa8af425b6c2f88f277ecca82bf8c603f3743894f64ed7b25c5bfefa22ff",
+    "source": "2025 LROC WAC Hapke normalized mosaic colour map, 16-bit sRGB TIFF, 4k",
+    "jpeg_quality": 85,
+    "note": "NASA: this color map is optimized for aesthetics, not science. Scientific applications should use the source LROC WAC Hapke normalized mosaic."
+  },
+  "normal": {
+    "file": "normal-2k.jpg",
+    "size_px": [
+      2048,
+      1024
+    ],
+    "convention": "tangent space, +X east, +Y north (three.js normalMap), centred on 0 deg longitude",
+    "source_url": "https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_16.tif",
+    "source_file": "ldem_16.tif",
+    "source_sha256": "1ea42bf44f7e9d694f79c3afa7145f97fbf06cc67372067d9fe73dce43bad796",
+    "source": "LOLA gridded elevation at 16 pixels per degree, float32 km relative to a 1737.4 km sphere",
+    "source_size_px": [
+      5760,
+      2880
+    ],
+    "radius_km": 1737.4,
+    "vertical_exaggeration": 6.0,
+    "method": "block-average heights to output size, widen a longitude blur toward the poles, central differences on the sphere, normal = normalize(-dh/dx, -dh/dy, 1) with heights scaled by the exaggeration",
+    "note": "Visual relief only. The exaggeration makes this unfit for any measurement."
+  },
+  "cap": {
+    "file": "cap-normal-2k.jpg",
+    "size_px": [
+      2048,
+      2048
+    ],
+    "edge_lat_deg": -75.0,
+    "projection": "orthographic view of the unit sphere from the south pole in the globe's scene frame: u = x / cos(edge), v = z / cos(edge); row 0 is v = +1",
+    "convention": "object-space normals, RGB = n * 0.5 + 0.5, scene frame x = cos lat cos lon, y = sin lat, z = -cos lat sin lon",
+    "source_file": "LDEM_60S_240MPP_ADJ.TIF",
+    "source_sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+    "source": "LOLA PGDA product 90, south polar stereographic, 240 m, heights above the 1737.4 km sphere",
+    "pixel_km": 0.439,
+    "vertical_exaggeration": 1.0,
+    "note": "True-scale relief, lit live by the Sun in the app."
+  }
+}
