@@ -5,6 +5,7 @@ import { createFileRoute, Link, notFound } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { LESSONS, lessonById } from '~/components/lessons'
 import { Eyebrow, Shell } from '~/components/Shell'
+import { StandHereLink } from '~/components/story'
 import { loadSummary } from '~/lib/data'
 
 export const Route = createFileRoute('/understand/$lessonId')({
@@ -63,8 +64,8 @@ function LessonPage() {
       <main className="mx-auto grid max-w-5xl gap-10 px-4 pt-10 pb-20 sm:px-6 lg:pt-16">
         <header className="grid gap-4">
           <Eyebrow pip>
-            <Link to="/" hash="lessons" className="hover:text-ink">
-              Lessons
+            <Link to="/understand" className="hover:text-ink">
+              Understand
             </Link>
             <span aria-hidden>·</span>
             Lesson {index + 1} of {LESSONS.length}
@@ -132,10 +133,14 @@ function LessonPage() {
               <ul className="flex flex-wrap gap-2">
                 {lesson.tryIt.map((t) => (
                   <li key={t.href}>
-                    <LinkButton href={t.href} variant="secondary">
-                      {t.label}
-                      <ArrowRightIcon aria-hidden className="size-3.5" />
-                    </LinkButton>
+                    {t.href.startsWith('/explore/') ? (
+                      <StandHereLink href={t.href} label={t.label} />
+                    ) : (
+                      <LinkButton href={t.href} variant="secondary">
+                        {t.label}
+                        <ArrowRightIcon aria-hidden className="size-3.5" />
+                      </LinkButton>
+                    )}
                   </li>
                 ))}
               </ul>
