@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "origin": "computed",
+  "site_id": "CR1",
+  "period": {
+    "start_utc": "2025-01-06T00:00:00.000000Z",
+    "end_utc": "2025-01-06T23:59:59.999971Z"
+  },
+  "outcomes": [
+    {
+      "mast_m": 0.0,
+      "sun_share": 1.0,
+      "longest_no_sun_h": 0.0,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.3625714404906783,
+      "longest_no_earth_h": 15.298285428223721,
+      "longest_no_earth_truncated": true,
+      "potential_vertical": 0.0,
+      "potential_horizontal": 0.01017539598214749,
+      "potential_tracking": 0.505121660329601
+    },
+    {
+      "mast_m": 2.0,
+      "sun_share": 1.0,
+      "longest_no_sun_h": 0.0,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.7525603975926987,
+      "longest_no_earth_h": 5.938550457775232,
+      "longest_no_earth_truncated": true,
+      "potential_vertical": 0.0,
+      "potential_horizontal": 0.02009486953940076,
+      "potential_tracking": 1.0
+    },
+    {
+      "mast_m": 10.0,
+      "sun_share": 1.0,
+      "longest_no_sun_h": 0.0,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.7525596289500185,
+      "longest_no_earth_h": 5.938568905199557,
+      "longest_no_earth_truncated": true,
+      "potential_vertical": 0.0,
+      "potential_horizontal": 0.020094869485024498,
+      "potential_tracking": 1.0
+    },
+    {
+      "mast_m": 30.0,
+      "sun_share": 1.0,
+      "longest_no_sun_h": 0.0,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.7525577073433062,
+      "longest_no_earth_h": 5.938615023760654,
+      "longest_no_earth_truncated": true,
+      "potential_vertical": 0.0,
+      "potential_horizontal": 0.02009486934908383,
+      "potential_tracking": 1.0
+    }
+  ],
+  "provenance": {
+    "algorithm_version": "0.4.0",
+    "sources": [
+      "LDEM_60S_240MPP_ADJ.TIF:3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+      "LDEM_80S_80MPP_ADJ.TIF:82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+      "de440s.bsp:c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+      "moon_080317.tf:78732477b96f9863e7b0d65bcee3c22b8707ca5ed0db56d1173319cb2e8c7993",
+      "moon_de440_250416.tf:a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768",
+      "moon_pa_de421_1900-2050.bpc:656f90616403d75a75f0cd6c8830fc5b44f8cb4facb5ccb8915e752b397520cf",
+      "moon_pa_de440_200625.bpc:60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f",
+      "naif0012.tls:678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+      "pck00011.tpc:3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1"
+    ],
+    "assumptions": [
+      "solar-center-incidence-times-visible-disk-fraction/1.0.0",
+      "Ideal unconstrained single-sided panel normal tracks the solar center; no slew, pointing or mechanical limits",
+      "Trapezoidal time integral of center incidence times visible-disk fraction divided by elapsed ET duration",
+      "Dimensionless geometric exposure; no electrical, thermal, area or efficiency model",
+      "Incidence is evaluated at the solar center, not integrated over the visible disk",
+      "Near-limb horizontal exposure can be underestimated when the solar center is below the local horizontal plane",
+      "A zero-degree visibility floor limits height benefits over negative terrain horizons",
+      "Finite-target parallax and event/discretization error can affect visibility monotonicity",
+      "Numerical and physical event uncertainties remain those of each environment evaluation"
+    ]
+  },
+  "scenario": {
+    "scenarioId": "mast-power-369341dd03601fe1894f0e765c4689fd4068b35502d7e1612f60ff48d1d187f2",
+    "request": {
+      "schemaVersion": "skyline-mast-power-request/1.0.0",
+      "site": "CR1",
+      "startUtc": "2025-01-06T00:00:00Z",
+      "durationS": 86400.0,
+      "cadenceS": 3600.0,
+      "profile": "geometric",
+      "solarDefinition": "anyDisk",
+      "earthDefinition": "center",
+      "horizonOffsetDeg": 0.0,
+      "localResolutionM": 80,
+      "eventToleranceS": 1.0,
+      "constraints": {
+        "minimumSolar": 0.0,
+        "minimumEarth": 0.0,
+        "maximumSolarOutageS": 31536000.0,
+        "maximumEarthOutageS": 31536000.0
+      },
+      "observerHeightM": 0,
+      "mastHeightsM": [
+        0.0,
+        2.0,
+        10.0,
+        30.0
+      ],
+      "verticalAzimuthDeg": 90.0
+    },
+    "engineVersion": "0.1.0",
+    "algorithmVersion": "0.4.0",
+    "siteId": "CR1",
+    "startUtc": "2025-01-06T00:00:00.000000Z",
+    "durationS": 86400.0,
+    "observerHeightsM": [
+      0.0,
+      2.0,
+      10.0,
+      30.0
+    ],
+    "profile": "geometric",
+    "verticalAzimuthDeg": 90.0,
+    "sourceScenarioIds": [
+      "scenario-6935c0a02cc929d8cc419eb8b05b08adf7b9e7da83c21b55a3315674edbd1016",
+      "scenario-644633c1c167bdd80c4a5e935c33a29e0f4a58d1bca381bc5649d15284c7c758",
+      "scenario-3bdb1801002f983e537321690fab77238ef4dc6283ba16bdbf96b6d14afe21ba",
+      "scenario-0299322d079f98d243b434e77fa8652851daf913af1d9a02937d184f0d0177d8"
+    ],
+    "observer": {
+      "siteId": "CR1",
+      "latitudeDeg": -89.4679,
+      "longitudeDegEast": 222.589,
+      "frame": "MOON_ME_DE421",
+      "coordinateSource": "https://arxiv.org/pdf/1208.5587#page=55",
+      "coordinateUncertaintyM": null,
+      "groundElevationM": 1942.8549873634875,
+      "observerHeightM": 0.0,
+      "radialReferenceM": 1737400.0,
+      "positionM": [
+        -11892.176223883383,
+        -10931.203677354175,
+        -1739267.849448847
+      ],
+      "datum": "radial metres above 1737400 m sphere"
+    }
+  },
+  "panelGeometry": {
+    "verticalAzimuthDeg": 90.0,
+    "incidenceModel": "solar-center-incidence-times-visible-disk-fraction/1.0.0",
+    "trackingAssumption": "Ideal unconstrained single-sided panel normal tracks the solar center; no slew, pointing or mechanical limits"
+  }
+}
