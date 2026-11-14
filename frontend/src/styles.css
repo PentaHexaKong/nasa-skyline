@@ -19,7 +19,7 @@
   2. Chart tokens Kumo has no word for: the Sun (amber), the comms target (cyan),
      terrain. In the data, colour means only those two subjects.
 
-  Brand (see DESIGN.md): black and white carry the interface, and colour only ever means
+  Brand (see docs/design.md): black and white carry the interface, and colour only ever means
   something. Actions and the active page are ink on canvas. Amber is the Sun, cyan is Earth,
   red is the current moment and alerts. Barlow for text, DM Mono for numbers and small labels.
   No NASA insignia, worm or seal anywhere: third parties may not use them (14 CFR 1221).
@@ -50,6 +50,19 @@
   /* Axis labels and footnotes: one step quieter than kumo-subtle, still 4.5:1 on canvas. */
   --faint: light-dark(oklch(0.54 0 0), oklch(0.58 0 0));
   --grid: light-dark(oklch(0.955 0 0), oklch(0.22 0 0));
+  /*
+    The storyboard's two extra voices (docs/design.md, "Story pages"). Indigo is the mascot's scarf: the call to action on
+    Home, Explore and Understand, never data. Go green and miss red mark a landing that works or does not in Analyze,
+    always with a tick or a cross beside them. Green sits at hue 155, far from the Sun's amber (hue 75).
+  */
+  --story: oklch(0.56 0.2 275);
+  --story-hover: oklch(0.62 0.19 275);
+  --story-ink: oklch(0.78 0.11 275);
+  --flare: oklch(0.66 0.19 33);
+  --go: oklch(0.76 0.15 155);
+  --go-fill: oklch(0.32 0.07 155);
+  --miss: oklch(0.7 0.17 25);
+  --miss-fill: oklch(0.3 0.08 25);
 }
 
 /*
@@ -177,6 +190,14 @@
   --color-terrain-edge: var(--terrain-edge);
   --color-shade: var(--shade);
   --color-daylight: var(--daylight);
+  --color-story: var(--story);
+  --color-story-hover: var(--story-hover);
+  --color-story-ink: var(--story-ink);
+  --color-flare: var(--flare);
+  --color-go: var(--go);
+  --color-go-fill: var(--go-fill);
+  --color-miss: var(--miss);
+  --color-miss-fill: var(--miss-fill);
 }
 
 @theme {
@@ -275,7 +296,7 @@
   }
 }
 
-/* Relay contact is always dashed: pink and Earth cyan merge under deuteranopia (DESIGN.md). */
+/* Relay contact is always dashed: pink and Earth cyan merge under deuteranopia (docs/design.md). */
 .lane-relay {
   background: repeating-linear-gradient(90deg, var(--relay) 0 6px, transparent 6px 9px);
 }
@@ -595,11 +616,22 @@
   linear fade for its share of the sky (ParallaxMoon.tsx reads --sky-fade).
 */
 :root {
-  --sky-fade: 3rem;
+  --sky-fade: 5rem;
 }
 .sky-edges {
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--sky-fade), #000 calc(100% - var(--sky-fade)), transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 var(--sky-fade), #000 calc(100% - var(--sky-fade)), transparent);
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(0 0 0 / 0.16) calc(var(--sky-fade) * 0.25),
+    rgb(0 0 0 / 0.5) calc(var(--sky-fade) * 0.5),
+    rgb(0 0 0 / 0.84) calc(var(--sky-fade) * 0.75),
+    #000 var(--sky-fade),
+    #000 calc(100% - var(--sky-fade)),
+    rgb(0 0 0 / 0.84) calc(100% - var(--sky-fade) * 0.75),
+    rgb(0 0 0 / 0.5) calc(100% - var(--sky-fade) * 0.5),
+    rgb(0 0 0 / 0.16) calc(100% - var(--sky-fade) * 0.25),
+    transparent
+  );
 }
 .tour-scrim {
   background: linear-gradient(
@@ -628,33 +660,276 @@
   right: auto;
   left: var(--page-edge);
 }
-/*
-  The panel's ground runs edge to edge; the page clips it (overflow-x: clip), so it never scrolls sideways. It is black
-  fog at both ends: it thickens over the Moon at the top and thins out again over the panel's empty bottom padding
-  (at least 4rem in every chapter), so the Moon of the next chapter, or the scene's sky, comes up through it instead of
-  starting at a hard edge. Eased stops, so neither end shows a band.
-*/
+/* A viewport fade keeps the reading area dark without stacking rectangular fog panels between chapters. */
 @media (width < 64rem) {
   .tour-panel {
     position: relative;
     padding-top: 6rem;
   }
-  .tour-panel::before {
-    content: "";
-    position: absolute;
-    inset: 0 -100vmax;
-    z-index: -1;
-    background: linear-gradient(
+  .tour-reading-scene {
+    mask-image: linear-gradient(
       to bottom,
-      transparent 0,
-      color-mix(in oklab, var(--color-bg) 30%, transparent) 2rem,
-      color-mix(in oklab, var(--color-bg) 72%, transparent) 4rem,
-      var(--color-bg) 6rem,
-      var(--color-bg) calc(100% - 4rem),
-      color-mix(in oklab, var(--color-bg) 72%, transparent) calc(100% - 2.5rem),
-      color-mix(in oklab, var(--color-bg) 30%, transparent) calc(100% - 1.25rem),
-      transparent 100%
+      #000 0%,
+      #000 28%,
+      rgb(0 0 0 / 0.94) 40%,
+      rgb(0 0 0 / 0.65) 53%,
+      rgb(0 0 0 / 0.25) 68%,
+      rgb(0 0 0 / 0.06) 82%,
+      transparent 96%
     );
-    pointer-events: none;
+  }
+}
+
+/*
+  Story pages (Home, Explore, Understand): the storyboard's call-to-action button, the mascot's speech bubble, the
+  starfield and the scroll parallax. Parallax layers move with --p, a number the page sets from scroll (0 at the
+  section's top, 1 at its end); reduced motion holds every layer still.
+*/
+.story-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 1.125rem;
+  border-radius: var(--radius-lg);
+  background: var(--story);
+  color: #fff;
+  font-weight: 500;
+  transition:
+    background-color var(--duration-base) ease-out,
+    translate var(--duration-base) var(--ease-out-quart);
+}
+
+.learning-journey::before {
+  content: "";
+  position: absolute;
+  inset: -12rem 0 auto;
+  height: 12rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(0 0 0 / 0.06) 18%,
+    rgb(0 0 0 / 0.25) 38%,
+    rgb(0 0 0 / 0.65) 65%,
+    rgb(0 0 0 / 0.94) 85%,
+    var(--color-bg)
+  );
+}
+.site-selection-sky {
+  background-color: #070c12;
+  background-image:
+    linear-gradient(rgb(100 170 190 / 0.04) 1px, transparent 1px), linear-gradient(90deg, rgb(100 170 190 / 0.04) 1px, transparent 1px),
+    radial-gradient(ellipse at center, rgb(50 120 145 / 0.12), transparent 65%);
+  background-size:
+    28px 28px,
+    28px 28px,
+    100% 100%;
+}
+.learning-dialog {
+  width: min(76rem, calc(100vw - 2rem));
+  max-width: none;
+  max-height: calc(100dvh - 3rem);
+  margin: auto;
+  padding: 0;
+  overflow-x: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 1rem;
+  background: #090c11;
+  color: var(--color-ink);
+  box-shadow: 0 24px 100px rgb(0 0 0 / 0.65);
+}
+.learning-dialog[open] {
+  animation: learning-pop 240ms var(--ease-out-quart) both;
+}
+.learning-dialog::backdrop {
+  background: rgb(0 0 0 / 0.8);
+  animation: learning-backdrop 200ms ease-out both;
+}
+.learning-dialog[data-closing] {
+  animation: learning-pop 180ms ease-in reverse both;
+}
+.learning-dialog[data-closing]::backdrop {
+  animation: learning-backdrop 180ms ease-in reverse both;
+}
+.lab-step-content {
+  animation: learning-step 180ms ease-out both;
+}
+@keyframes learning-pop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes learning-step {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+@keyframes learning-backdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (width < 40rem) {
+  .learning-dialog {
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+    border-radius: 0.75rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .learning-dialog[open],
+  .learning-dialog::backdrop,
+  .lab-step-content {
+    animation: none;
+  }
+  .journey-step {
+    transform: none;
+    transition: none;
+  }
+}
+.story-button:hover {
+  background: var(--story-hover);
+}
+.story-button:active {
+  translate: 0 1px;
+}
+.bubble {
+  position: relative;
+  border-radius: 0.875rem;
+  background: #fff;
+  color: #111;
+  padding: 0.625rem 0.875rem;
+  font-size: var(--text-sm);
+  line-height: 1.35;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.35);
+}
+.bubble::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  bottom: 14px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  rotate: 45deg;
+  border-radius: 2px;
+}
+.mascot img {
+  filter: drop-shadow(0 2px 8px rgb(0 0 0 / 0.2));
+}
+.starfield {
+  background-color: #04050a;
+  --starfield-image:
+    radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.7), transparent 60%),
+    radial-gradient(1px 1px at 72% 12%, rgb(255 255 255 / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 33% 64%, rgb(255 255 255 / 0.55), transparent 60%),
+    radial-gradient(1px 1px at 86% 72%, rgb(255 255 255 / 0.6), transparent 60%),
+    radial-gradient(1.5px 1.5px at 52% 38%, rgb(255 255 255 / 0.45), transparent 60%),
+    radial-gradient(1px 1px at 8% 82%, rgb(255 255 255 / 0.5), transparent 60%),
+    radial-gradient(1px 1px at 92% 34%, rgb(255 255 255 / 0.4), transparent 60%),
+    radial-gradient(1px 1px at 24% 42%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1px 1px at 62% 86%, rgb(255 255 255 / 0.45), transparent 60%);
+  background-image: var(--starfield-image);
+  background-size: 420px 420px;
+}
+/* Only the scenery fades; text, guides and controls keep their contrast and hit areas. */
+.scene-edges {
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(0 0 0 / 0.15) 4%,
+    rgb(0 0 0 / 0.5) 10%,
+    #000 22%,
+    #000 78%,
+    rgb(0 0 0 / 0.5) 90%,
+    rgb(0 0 0 / 0.15) 96%,
+    transparent
+  );
+}
+.story-bridge {
+  isolation: isolate;
+  background-color: transparent;
+  background-image: none;
+}
+.story-bridge::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -8rem 0 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgb(4 5 10 / 0.08) 2rem,
+    rgb(4 5 10 / 0.32) 5rem,
+    rgb(4 5 10 / 0.68) 8rem,
+    rgb(4 5 10 / 0.92) 12rem,
+    #04050a 17rem,
+    #04050a calc(100% - 10rem),
+    var(--color-bg)
+  );
+}
+.story-bridge::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background-image: var(--starfield-image);
+  background-size: 420px 420px;
+  mask-image: linear-gradient(to bottom, transparent, #000 10rem, #000 calc(100% - 6rem), transparent);
+}
+.story-bridge > :first-child {
+  mask-image: linear-gradient(to bottom, transparent, #000 10rem, #000 calc(100% - 6rem), transparent);
+}
+.parallax {
+  translate: 0 calc((var(--p, 0.5) - 0.5) * var(--depth, 0px));
+  will-change: translate;
+}
+.zoom-in {
+  scale: calc(1 + var(--p, 0) * var(--zoom, 0.2));
+  will-change: scale;
+}
+@media (prefers-reduced-motion: reduce) {
+  .parallax,
+  .zoom-in {
+    translate: none;
+    scale: none;
+  }
+}
+/* The quiet blue orbit behind the closing sections. */
+.orbit-ring {
+  position: absolute;
+  border: 1px solid color-mix(in oklab, var(--story) 55%, transparent);
+  border-radius: 50%;
+  rotate: -14deg;
+  pointer-events: none;
+}
+@keyframes drift {
+  to {
+    rotate: 346deg;
+  }
+}
+.orbit-ring[data-spin] {
+  animation: drift 120s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-ring[data-spin] {
+    animation: none;
   }
 }
