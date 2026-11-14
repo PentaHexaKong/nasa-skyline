@@ -1,0 +1,22 @@
+import { expect, test } from 'vitest'
+import { Route as Planner } from '~/routes/analyze.index'
+import { scenarioSearch } from '~/routes/analyze.scenario.$piece'
+import { Route as Moon } from '~/routes/index'
+import { siteSearch } from './useSiteView'
+
+const parse = (route: { options: { validateSearch?: unknown } }, input: object) =>
+  (route.options.validateSearch as typeof siteSearch).parse(input)
+
+test('the planner drops a bad value and keeps the good ones', () => {
+  expect(parse(Planner, { step: 'nonsense', stay: 999, day: 'hello', sites: 5, minSun: 80 })).toEqual({ minSun: 80 })
+})
+
+test('the moon and site views drop a bad value and keep the good ones', () => {
+  expect(parse(Moon, { view: 'nonsense', t: 720 })).toEqual({ t: 720 })
+  expect(siteSearch.parse({ day: 'hello', t: 720 })).toEqual({ t: 720 })
+})
+
+test('scenario links keep valid mission inputs and accept only the explicit preview flag', () => {
+  expect(scenarioSearch.parse({ stay: 12, minSun: 80, preview: 1 })).toEqual({ stay: 12, minSun: 80, preview: '1' })
+  expect(scenarioSearch.parse({ stay: 999, minSun: 80, preview: 'nonsense' })).toEqual({ minSun: 80 })
+})
