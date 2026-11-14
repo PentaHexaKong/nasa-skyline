@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "skyline-relay-manifest/1.0.0",
+  "siteId": "GR1",
+  "scenarioSelectionRequired": true,
+  "scenarioPathTemplate": "scenarios/{scenarioId}.json"
+}

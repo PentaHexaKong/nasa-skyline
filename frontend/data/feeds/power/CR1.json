@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "skyline-power-manifest/1.0.0",
+  "siteId": "CR1",
+  "scenarioSelectionRequired": true,
+  "scenarioPathTemplate": "scenarios/{scenarioId}.json"
+}
