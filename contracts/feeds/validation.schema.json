@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "number",
+      "const": 1
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "computed",
+        "fixture"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "algorithm_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "assumptions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "algorithm_version",
+        "sources",
+        "assumptions"
+      ]
+    },
+    "rows": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "ours": {
+            "type": "object",
+            "properties": {
+              "sun_share": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "earth_any_share": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "period": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observer_height_m": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "sun_share",
+              "earth_any_share",
+              "period",
+              "observer_height_m"
+            ]
+          },
+          "reference": {
+            "type": "object",
+            "properties": {
+              "sun_share": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "earth_any_share": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "period": {
+                "type": "string",
+                "minLength": 1
+              },
+              "product": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "sun_share",
+              "earth_any_share",
+              "period",
+              "product"
+            ]
+          },
+          "difference_notes": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "site_id",
+          "ours",
+          "reference",
+          "difference_notes"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "origin",
+    "provenance",
+    "rows"
+  ]
+}

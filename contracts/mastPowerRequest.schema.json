@@ -1,0 +1,198 @@
+{
+  "$defs": {
+    "Constraints": {
+      "additionalProperties": false,
+      "properties": {
+        "minimumSolar": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumsolar",
+          "type": "number"
+        },
+        "minimumEarth": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumearth",
+          "type": "number"
+        },
+        "maximumSolarOutageS": {
+          "default": 31536000,
+          "minimum": 0,
+          "title": "Maximumsolaroutages",
+          "type": "number"
+        },
+        "maximumEarthOutageS": {
+          "default": 31536000,
+          "minimum": 0,
+          "title": "Maximumearthoutages",
+          "type": "number"
+        }
+      },
+      "title": "Constraints",
+      "type": "object"
+    },
+    "Site": {
+      "additionalProperties": false,
+      "properties": {
+        "siteId": {
+          "maxLength": 80,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Siteid",
+          "type": "string"
+        },
+        "latitudeDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitudedeg",
+          "type": "number"
+        },
+        "longitudeDeg": {
+          "maximum": 360,
+          "minimum": -360,
+          "title": "Longitudedeg",
+          "type": "number"
+        },
+        "sourceFrame": {
+          "const": "MOON_ME_DE421",
+          "default": "MOON_ME_DE421",
+          "title": "Sourceframe",
+          "type": "string"
+        },
+        "sourceUrl": {
+          "default": "user supplied coordinates",
+          "title": "Sourceurl",
+          "type": "string"
+        }
+      },
+      "required": [
+        "siteId",
+        "latitudeDeg",
+        "longitudeDeg"
+      ],
+      "title": "Site",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-mast-power-request/1.0.0",
+      "default": "skyline-mast-power-request/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "site": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/Site"
+        }
+      ],
+      "default": "CR1",
+      "title": "Site"
+    },
+    "startUtc": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$",
+      "title": "Startutc",
+      "type": "string"
+    },
+    "durationS": {
+      "default": 86400,
+      "maximum": 31536000,
+      "minimum": 60,
+      "title": "Durations",
+      "type": "number"
+    },
+    "cadenceS": {
+      "default": 600,
+      "maximum": 3600,
+      "minimum": 30,
+      "title": "Cadences",
+      "type": "number"
+    },
+    "profile": {
+      "default": "geometric",
+      "enum": [
+        "geometric",
+        "apparent"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "solarDefinition": {
+      "default": "anyDisk",
+      "enum": [
+        "center",
+        "anyDisk",
+        "fullDisk"
+      ],
+      "title": "Solardefinition",
+      "type": "string"
+    },
+    "earthDefinition": {
+      "const": "center",
+      "default": "center",
+      "title": "Earthdefinition",
+      "type": "string"
+    },
+    "horizonOffsetDeg": {
+      "default": 0,
+      "maximum": 5,
+      "minimum": -5,
+      "title": "Horizonoffsetdeg",
+      "type": "number"
+    },
+    "localResolutionM": {
+      "default": 80,
+      "enum": [
+        20,
+        80
+      ],
+      "title": "Localresolutionm",
+      "type": "integer"
+    },
+    "eventToleranceS": {
+      "default": 1,
+      "maximum": 30,
+      "minimum": 0.01,
+      "title": "Eventtolerances",
+      "type": "number"
+    },
+    "constraints": {
+      "$ref": "#/$defs/Constraints"
+    },
+    "observerHeightM": {
+      "const": 0,
+      "default": 0,
+      "title": "Observerheightm",
+      "type": "integer"
+    },
+    "mastHeightsM": {
+      "items": {
+        "minimum": 0,
+        "type": "number"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Mastheightsm",
+      "type": "array"
+    },
+    "verticalAzimuthDeg": {
+      "title": "Verticalazimuthdeg",
+      "type": "number"
+    }
+  },
+  "required": [
+    "startUtc",
+    "mastHeightsM",
+    "verticalAzimuthDeg"
+  ],
+  "title": "MastPowerRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

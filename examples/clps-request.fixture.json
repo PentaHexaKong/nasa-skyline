@@ -1,0 +1,20 @@
+{
+  "input": {
+    "schema_version": "clps-analysis-v1",
+    "site": {
+      "id": "synthetic-demo-site",
+      "latitude_deg": -89,
+      "longitude_deg_east": 0,
+      "observer_height_m": 2,
+      "body_fixed_frame": "TEAM_MUST_SPECIFY_FRAME"
+    },
+    "time": {
+      "start_utc": "2026-11-14T00:00:00Z",
+      "end_utc": "2026-11-15T00:00:00Z",
+      "step_seconds": 600
+    },
+    "earth_elevation_margin_deg": 0,
+    "relay_scenario_id": "direct_only"
+  },
+  "run_ml": false
+}

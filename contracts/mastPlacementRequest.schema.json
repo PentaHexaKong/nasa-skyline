@@ -1,0 +1,221 @@
+{
+  "$defs": {
+    "Constraints": {
+      "additionalProperties": false,
+      "properties": {
+        "minimumSolar": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumsolar",
+          "type": "number"
+        },
+        "minimumEarth": {
+          "default": 0,
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Minimumearth",
+          "type": "number"
+        },
+        "maximumSolarOutageS": {
+          "default": 31536000,
+          "minimum": 0,
+          "title": "Maximumsolaroutages",
+          "type": "number"
+        },
+        "maximumEarthOutageS": {
+          "default": 31536000,
+          "minimum": 0,
+          "title": "Maximumearthoutages",
+          "type": "number"
+        }
+      },
+      "title": "Constraints",
+      "type": "object"
+    },
+    "PlacementBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maxEvaluations": {
+          "maximum": 64,
+          "minimum": 1,
+          "title": "Maxevaluations",
+          "type": "integer"
+        },
+        "maxWallTimeS": {
+          "default": 120,
+          "maximum": 300,
+          "minimum": 0.01,
+          "title": "Maxwalltimes",
+          "type": "number"
+        }
+      },
+      "required": [
+        "maxEvaluations"
+      ],
+      "title": "PlacementBudget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-mast-placement-request/1.0.0",
+      "default": "skyline-mast-placement-request/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "site": {
+      "default": "CR1",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "title": "Site",
+      "type": "string"
+    },
+    "startUtc": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$",
+      "title": "Startutc",
+      "type": "string"
+    },
+    "durationS": {
+      "default": 86400,
+      "maximum": 31536000,
+      "minimum": 60,
+      "title": "Durations",
+      "type": "number"
+    },
+    "cadenceS": {
+      "default": 600,
+      "maximum": 3600,
+      "minimum": 30,
+      "title": "Cadences",
+      "type": "number"
+    },
+    "profile": {
+      "default": "geometric",
+      "enum": [
+        "geometric",
+        "apparent"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "solarDefinition": {
+      "default": "anyDisk",
+      "enum": [
+        "center",
+        "anyDisk",
+        "fullDisk"
+      ],
+      "title": "Solardefinition",
+      "type": "string"
+    },
+    "earthDefinition": {
+      "const": "center",
+      "default": "center",
+      "title": "Earthdefinition",
+      "type": "string"
+    },
+    "horizonOffsetDeg": {
+      "default": 0,
+      "maximum": 5,
+      "minimum": -5,
+      "title": "Horizonoffsetdeg",
+      "type": "number"
+    },
+    "localResolutionM": {
+      "default": 80,
+      "enum": [
+        20,
+        80
+      ],
+      "title": "Localresolutionm",
+      "type": "integer"
+    },
+    "eventToleranceS": {
+      "default": 1,
+      "maximum": 30,
+      "minimum": 0.01,
+      "title": "Eventtolerances",
+      "type": "number"
+    },
+    "constraints": {
+      "$ref": "#/$defs/Constraints"
+    },
+    "observerHeightM": {
+      "const": 0,
+      "default": 0,
+      "title": "Observerheightm",
+      "type": "integer"
+    },
+    "searchRadiusM": {
+      "maximum": 5000,
+      "minimum": 0,
+      "title": "Searchradiusm",
+      "type": "number"
+    },
+    "gridResolutionM": {
+      "exclusiveMinimum": 0,
+      "maximum": 10000,
+      "title": "Gridresolutionm",
+      "type": "number"
+    },
+    "mastHeightsM": {
+      "items": {
+        "minimum": 0,
+        "type": "number"
+      },
+      "maxItems": 8,
+      "minItems": 1,
+      "title": "Mastheightsm",
+      "type": "array"
+    },
+    "maximumCableLengthM": {
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Maximumcablelengthm",
+      "type": "number"
+    },
+    "maximumSlopeDeg": {
+      "anyOf": [
+        {
+          "maximum": 90,
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Maximumslopedeg"
+    },
+    "verticalAzimuthDeg": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Verticalazimuthdeg"
+    },
+    "evaluationBudget": {
+      "$ref": "#/$defs/PlacementBudget"
+    }
+  },
+  "required": [
+    "startUtc",
+    "searchRadiusM",
+    "gridResolutionM",
+    "mastHeightsM",
+    "maximumCableLengthM",
+    "evaluationBudget"
+  ],
+  "title": "MastPlacementRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

@@ -1,0 +1,193 @@
+{
+  "$defs": {
+    "RoverBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maxGeometryEvaluations": {
+          "default": 21,
+          "maximum": 21,
+          "minimum": 0,
+          "title": "Maxgeometryevaluations",
+          "type": "integer"
+        },
+        "maxGraphNodes": {
+          "default": 1089,
+          "maximum": 1089,
+          "minimum": 1,
+          "title": "Maxgraphnodes",
+          "type": "integer"
+        },
+        "maxTransitions": {
+          "default": 10000,
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Maxtransitions",
+          "type": "integer"
+        },
+        "maxWallTimeS": {
+          "default": 300,
+          "maximum": 300,
+          "minimum": 0.01,
+          "title": "Maxwalltimes",
+          "type": "number"
+        }
+      },
+      "title": "RoverBudget",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-rover-request/0.1.0",
+      "default": "skyline-rover-request/0.1.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "site": {
+      "default": "CR1",
+      "maxLength": 60,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "title": "Site",
+      "type": "string"
+    },
+    "startUtc": {
+      "format": "date-time",
+      "title": "Startutc",
+      "type": "string"
+    },
+    "durationS": {
+      "default": 1800,
+      "maximum": 7200,
+      "minimum": 60,
+      "title": "Durations",
+      "type": "integer"
+    },
+    "timeStepS": {
+      "default": 120,
+      "maximum": 600,
+      "minimum": 30,
+      "title": "Timesteps",
+      "type": "integer"
+    },
+    "terrainDemId": {
+      "const": "LDEM_80S_80MPP_ADJ.TIF",
+      "default": "LDEM_80S_80MPP_ADJ.TIF",
+      "title": "Terraindemid",
+      "type": "string"
+    },
+    "projectionId": {
+      "const": "LOLA-south-polar-stereographic-DE421",
+      "default": "LOLA-south-polar-stereographic-DE421",
+      "title": "Projectionid",
+      "type": "string"
+    },
+    "gridRadiusCells": {
+      "default": 1,
+      "enum": [
+        0,
+        1
+      ],
+      "title": "Gridradiuscells",
+      "type": "integer"
+    },
+    "gridResolutionM": {
+      "default": 80,
+      "maximum": 320,
+      "minimum": 80,
+      "title": "Gridresolutionm",
+      "type": "number"
+    },
+    "observerHeightM": {
+      "default": 0,
+      "maximum": 20,
+      "minimum": 0,
+      "title": "Observerheightm",
+      "type": "number"
+    },
+    "speedMps": {
+      "exclusiveMinimum": 0,
+      "title": "Speedmps",
+      "type": "number"
+    },
+    "maximumSlopeDeg": {
+      "maximum": 90,
+      "minimum": 0,
+      "title": "Maximumslopedeg",
+      "type": "number"
+    },
+    "movementRule": {
+      "const": "four-neighbor-no-diagonals",
+      "default": "four-neighbor-no-diagonals",
+      "title": "Movementrule",
+      "type": "string"
+    },
+    "allowWaiting": {
+      "default": true,
+      "title": "Allowwaiting",
+      "type": "boolean"
+    },
+    "movementRequiresSunlight": {
+      "default": true,
+      "title": "Movementrequiressunlight",
+      "type": "boolean"
+    },
+    "movementRequiresCommunication": {
+      "default": true,
+      "title": "Movementrequirescommunication",
+      "type": "boolean"
+    },
+    "stoppingRequiresSunlight": {
+      "default": true,
+      "title": "Stoppingrequiressunlight",
+      "type": "boolean"
+    },
+    "stoppingRequiresCommunication": {
+      "default": true,
+      "title": "Stoppingrequirescommunication",
+      "type": "boolean"
+    },
+    "solarDefinition": {
+      "default": "anyDisk",
+      "enum": [
+        "anyDisk",
+        "center",
+        "fullDisk"
+      ],
+      "title": "Solardefinition",
+      "type": "string"
+    },
+    "profile": {
+      "const": "geometric",
+      "default": "geometric",
+      "title": "Profile",
+      "type": "string"
+    },
+    "horizonOffsetDeg": {
+      "const": 0,
+      "default": 0,
+      "title": "Horizonoffsetdeg",
+      "type": "integer"
+    },
+    "communicationMode": {
+      "default": "direct-only",
+      "enum": [
+        "direct-only",
+        "relay-assisted"
+      ],
+      "title": "Communicationmode",
+      "type": "string"
+    },
+    "budget": {
+      "$ref": "#/$defs/RoverBudget"
+    }
+  },
+  "required": [
+    "startUtc",
+    "speedMps",
+    "maximumSlopeDeg"
+  ],
+  "title": "RoverRequest",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

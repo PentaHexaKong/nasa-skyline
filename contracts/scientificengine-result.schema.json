@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:skyline:scientific-result:1.0.0",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "dataState",
+    "result",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-scientific-engine/1.0.0"
+    },
+    "dataState": {
+      "enum": [
+        "computed",
+        "unavailable"
+      ]
+    },
+    "operation": {},
+    "profile": {
+      "enum": [
+        "engine-v1",
+        "spice-geometric-v1",
+        "lola-horizon-v1",
+        "lola-geometric-center-v1",
+        "lunar-rf-analytical-v1",
+        "third-body-dop853-v1",
+        "md2c-v1"
+      ]
+    },
+    "result": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "provenance": {
+      "type": "object"
+    },
+    "error": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "dataState": {
+            "const": "computed"
+          }
+        },
+        "required": [
+          "dataState"
+        ]
+      },
+      "then": {
+        "required": [
+          "operation",
+          "profile"
+        ],
+        "properties": {
+          "operation": {
+            "enum": [
+              "describe",
+              "ephemeris",
+              "terrain",
+              "surface",
+              "rf",
+              "propagate",
+              "mission"
+            ]
+          },
+          "result": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

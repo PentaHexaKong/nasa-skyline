@@ -1,0 +1,273 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "number",
+      "const": 1
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "computed",
+        "fixture"
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "algorithm_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "assumptions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "algorithm_version",
+        "sources",
+        "assumptions"
+      ]
+    },
+    "site_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "period": {
+      "type": "object",
+      "properties": {
+        "start_utc": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            {
+              "type": "string",
+              "pattern": "^(?:\\d{4}-06-30|\\d{4}-12-31)T23:59:60(?:\\.\\d+)?Z$"
+            }
+          ]
+        },
+        "end_utc": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            {
+              "type": "string",
+              "pattern": "^(?:\\d{4}-06-30|\\d{4}-12-31)T23:59:60(?:\\.\\d+)?Z$"
+            }
+          ]
+        }
+      },
+      "required": [
+        "start_utc",
+        "end_utc"
+      ]
+    },
+    "outcomes": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mast_m": {
+            "type": "number",
+            "minimum": 0
+          },
+          "sun_share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "longest_no_sun_h": {
+            "type": "number",
+            "minimum": 0
+          },
+          "longest_no_sun_truncated": {
+            "type": "boolean"
+          },
+          "earth_center_share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "longest_no_earth_h": {
+            "type": "number",
+            "minimum": 0
+          },
+          "longest_no_earth_truncated": {
+            "type": "boolean"
+          },
+          "potential_vertical": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "potential_horizontal": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "potential_tracking": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "mast_m",
+          "sun_share",
+          "longest_no_sun_h",
+          "longest_no_sun_truncated",
+          "earth_center_share",
+          "longest_no_earth_h",
+          "longest_no_earth_truncated",
+          "potential_vertical",
+          "potential_horizontal"
+        ]
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "scenarioId": {
+          "type": "string",
+          "pattern": "^mast-power-[0-9a-f]{64}$"
+        },
+        "siteId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startUtc": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            {
+              "type": "string",
+              "pattern": "^(?:\\d{4}-06-30|\\d{4}-12-31)T23:59:60(?:\\.\\d+)?Z$"
+            }
+          ]
+        },
+        "durationS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "observerHeightsM": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "profile": {
+          "type": "string",
+          "enum": [
+            "geometric",
+            "apparent"
+          ]
+        },
+        "verticalAzimuthDeg": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 360
+        },
+        "sourceScenarioIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "request": {
+          "type": "object",
+          "properties": {
+            "solarDefinition": {
+              "type": "string",
+              "enum": [
+                "center",
+                "anyDisk",
+                "fullDisk"
+              ]
+            }
+          },
+          "required": [
+            "solarDefinition"
+          ],
+          "additionalProperties": {}
+        },
+        "engineVersion": {
+          "type": "string"
+        },
+        "algorithmVersion": {
+          "type": "string"
+        },
+        "observer": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "scenarioId",
+        "siteId",
+        "startUtc",
+        "durationS",
+        "observerHeightsM",
+        "profile",
+        "verticalAzimuthDeg",
+        "sourceScenarioIds"
+      ]
+    },
+    "panelGeometry": {
+      "type": "object",
+      "properties": {
+        "verticalAzimuthDeg": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 360
+        },
+        "incidenceModel": {
+          "type": "string"
+        },
+        "trackingAssumption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "verticalAzimuthDeg",
+        "incidenceModel",
+        "trackingAssumption"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "origin",
+    "provenance",
+    "site_id",
+    "period",
+    "outcomes"
+  ]
+}

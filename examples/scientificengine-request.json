@@ -1,0 +1,11 @@
+{
+  "input": {
+    "schemaVersion": "skyline-science-request/1.0.0",
+    "operation": "mission",
+    "parameters": {
+      "scope": "S1_CR1_CONNECTING_RIDGE",
+      "orbit": "C4",
+      "mastHeightM": 0
+    }
+  }
+}
