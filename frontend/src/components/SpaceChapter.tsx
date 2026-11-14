@@ -22,6 +22,13 @@ export const VIEWS: { value: SpaceView; label: string }[] = [
   { value: 'fromEarth', label: 'From Earth' },
   { value: 'sun', label: 'Sun' },
 ]
+/**
+ * The views offered as tabs: where the site is, how Earth stands to it, and the orbit. The others stay reachable from
+ * shared links (and appear while one is open) but no longer compete for the reader's choice.
+ */
+const OFFERED: SpaceView[] = ['moon', 'pair', 'orbit']
+const offered = (view: SpaceView) => VIEWS.filter((v) => OFFERED.includes(v.value) || v.value === view)
+
 /** Views where Earth's distance can be shortened without misleading: the outside views that frame both bodies. */
 const SCALABLE: SpaceView[] = ['earth', 'pair', 'orbit', 'sun']
 const SPEEDS = { '1': '1 h/s', '6': '6 h/s', '24': '1 day/s', '72': '3 days/s' }
@@ -220,13 +227,13 @@ export function SpaceChapter({
         <div className="pointer-events-auto order-first flex flex-wrap items-center gap-2 sm:order-none sm:flex-col sm:items-end">
           <div className="flex flex-wrap items-center gap-2 sm:justify-end">
             <div className="hidden lg:block">
-              <Tabs variant="segmented" size="sm" tabs={VIEWS} value={view} onValueChange={(v) => go({ view: v as SpaceView })} />
+              <Tabs variant="segmented" size="sm" tabs={offered(view)} value={view} onValueChange={(v) => go({ view: v as SpaceView })} />
             </div>
             <Select
               aria-label="View"
               className="w-44 lg:hidden"
               value={view}
-              items={Object.fromEntries(VIEWS.map((v) => [v.value, v.label]))}
+              items={Object.fromEntries(offered(view).map((v) => [v.value, v.label]))}
               onValueChange={(v) => v && go({ view: v as SpaceView })}
             />
             <Button

@@ -288,6 +288,27 @@ export function Panorama({
  * gets a background-coloured halo so it stays legible where it crosses the ridge or a path.
  */
 function Leader({ x, y, width, text, className }: { x: number; y: number; width: number; text: string; className: string }) {
+  // A narrow chart has no room beside the mark for a label this long: stack it above, anchored to stay inside the plot.
+  if (width < 640) {
+    const anchor = x < width / 3 ? 'start' : x > (width * 2) / 3 ? 'end' : 'middle'
+    const tx = anchor === 'start' ? Math.max(4 - x, -8) : anchor === 'end' ? Math.min(width - 4 - x, 8) : 0
+    return (
+      <g transform={`translate(${x},${y})`} className={className}>
+        <line x1={0} x2={0} y1={-8} y2={-18} strokeWidth={1} />
+        <text
+          x={tx}
+          y={-23}
+          textAnchor={anchor}
+          className="stroke-bg text-2xs tracking-[0.06em] uppercase"
+          strokeWidth={5}
+          paintOrder="stroke"
+          strokeLinejoin="round"
+        >
+          {text}
+        </text>
+      </g>
+    )
+  }
   const left = x > width - 360
   const d = left ? -1 : 1
   return (

@@ -333,6 +333,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
       <MissionMoon
         markers={markers}
         at={preview.at}
+        // Dots only: labels would collide with the four choices at the corners, and the answer bar names each site.
         labels={false}
         controls={false}
         zoom={zoom}
