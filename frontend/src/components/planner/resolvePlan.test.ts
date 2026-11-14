@@ -1,5 +1,6 @@
 import { beforeAll, expect, test } from 'vitest'
 import { loadSummary, MOON_SITES, type Summary } from '~/lib/data'
+import { siteResult } from '~/lib/mission'
 import { planSearch, stepOf } from './plan'
 import { resolvePlan, reviewSearch } from './resolvePlan'
 
@@ -42,7 +43,9 @@ test('an unknown site, focus or out-of-range date falls back consistently', () =
   const plan = resolvePlan(all, planSearch.parse({ sites: 'unknown', focus: 'unknown', day: '2099-01-01' }))
   expect(plan.date).toBe(plan.profile.day)
   expect(plan.sites.length).toBeGreaterThan(0)
-  expect(plan.focus).toBe(plan.sites[0]?.data.site.id)
+  // Falls back to the first site that works, so follow-ups open on a result; to the first site when none works.
+  const working = plan.sites.find((s) => siteResult(s).works)
+  expect(plan.focus).toBe((working ?? plan.sites[0])?.data.site.id)
 })
 
 test('stays outside the computed coverage remain uncomputed on scenario pages', () => {

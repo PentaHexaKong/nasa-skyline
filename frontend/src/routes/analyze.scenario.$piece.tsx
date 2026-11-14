@@ -134,8 +134,8 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
     )
   }
   return (
-    <section aria-labelledby="scenario-result" className="flex gap-3 rounded-xl border border-sun/40 bg-sun-fill/20 p-4">
-      <WarningCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-sun" />
+    <section aria-labelledby="scenario-result" className="flex gap-3 rounded-xl border border-line-strong p-4">
+      <WarningCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-muted" />
       <div className="grid gap-1">
         <h2 id="scenario-result" className="font-medium">
           Scenario result · not computed
@@ -143,6 +143,13 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
         <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
           A computed result matching this site and the exact mission period is not available. Any improvement over your starting point is
           not computed.
+        </p>
+        <p className="max-w-[72ch] text-sm text-pretty">
+          Meanwhile, the site report shows how the Sun clears this site’s ridge, hour by hour:{' '}
+          <Link to="/analyze/$siteId" params={{ siteId }} className="font-medium underline underline-offset-3 hover:text-ink">
+            open the {shortName(plan.sites.find((x) => x.data.site.id === siteId)?.data ?? plan.sites[0]!.data)} report
+          </Link>
+          .
         </p>
         {feed.state === 'invalid' && (
           <p className="text-sm text-ink-muted">The delivered file could not be validated, so its results are hidden.</p>
@@ -211,8 +218,9 @@ function ScenarioPage() {
             ))}
           </nav>
         </header>
-        <Baseline plan={plan} />
+        {/* The answer first; the starting point it is measured against follows. */}
         <ScenarioResult key={`${piece}-${plan.focus}`} plan={plan} piece={piece} />
+        <Baseline plan={plan} />
         {Preview && (
           <section aria-labelledby="scenario-preview" className="grid gap-4 border-t border-line pt-6">
             <div className="flex flex-wrap items-center gap-3">

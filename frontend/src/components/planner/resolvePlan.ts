@@ -1,7 +1,7 @@
 import { elevationRange } from '~/components/Panorama'
 import type { Plan, PlanSearch } from '~/components/planner/plan'
 import type { Summary } from '~/lib/data'
-import { DAY_MS, planSite, siteSpans } from '~/lib/mission'
+import { DAY_MS, planSite, siteResult, siteSpans } from '~/lib/mission'
 import { profileById } from '~/lib/profiles'
 
 const PROFILE_KEYS = ['sites', 'day', 'base', 't', 'stay', 'minSun', 'maxNoSun', 'minEarth', 'maxNoEarth'] as const
@@ -41,11 +41,14 @@ export function resolvePlan(all: Summary[], p: PlanSearch): Plan {
   const stayMs = stay * DAY_MS
   const scale = scaleFor(chosen)
   const mission = { dates, index, minute, stayMs, requirements, baseIndex }
+  const sites = chosen.map((data) => planSite(data, siteSpans(data), scale(data), mission))
+  // With no site asked for, follow-ups open on one that works, so they show a result rather than a dead end.
+  const working = sites.find((s) => siteResult(s).works)?.data.site.id
   return {
     profile,
     edited: PROFILE_KEYS.some((k) => p[k] != null),
     all,
-    sites: chosen.map((data) => planSite(data, siteSpans(data), scale(data), mission)),
+    sites,
     dates,
     index,
     date,
@@ -55,7 +58,7 @@ export function resolvePlan(all: Summary[], p: PlanSearch): Plan {
     window: { start, end: start + stayMs },
     base: baseIndex == null ? null : (dates[baseIndex] ?? null),
     slip: baseIndex == null ? 0 : index - baseIndex,
-    focus: chosen.some((s) => s.site.id === p.focus) ? p.focus : chosen[0]?.site.id,
+    focus: chosen.some((s) => s.site.id === p.focus) ? p.focus : (working ?? chosen[0]?.site.id),
   }
 }
 
