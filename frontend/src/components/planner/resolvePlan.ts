@@ -68,3 +68,11 @@ export const reviewSearch = (search: PlanSearch, focus?: string): PlanSearch => 
   step: 'result',
   focus: focus ?? search.focus,
 })
+
+/** Add-ons on the same plan, opened on one tool (or the suggested one when `piece` is left out). */
+export const addonsSearch = (search: PlanSearch, piece?: PlanSearch['piece'], focus?: string): PlanSearch => ({
+  ...search,
+  step: 'addons',
+  piece,
+  focus: focus ?? search.focus,
+})

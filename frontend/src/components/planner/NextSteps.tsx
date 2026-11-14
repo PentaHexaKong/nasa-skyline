@@ -3,7 +3,7 @@ import { ArrowRightIcon, CalendarBlankIcon, CheckCircleIcon, StackIcon, WarningC
 import { Link } from '@tanstack/react-router'
 import { ScenarioScene } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
-import { reviewSearch } from '~/components/planner/resolvePlan'
+import { addonsSearch, reviewSearch } from '~/components/planner/resolvePlan'
 import { ScenarioIcon } from '~/components/planner/ScenarioIcon'
 import { Eyebrow } from '~/components/Shell'
 import { type SitePlan, shortName, siteResult } from '~/lib/mission'
@@ -195,9 +195,8 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
                     </ul>
                   )}
                   <Link
-                    to="/analyze/scenario/$piece"
-                    params={{ piece }}
-                    search={context}
+                    to="/analyze"
+                    search={addonsSearch(context, piece)}
                     className="inline-flex w-max items-center gap-2 font-medium underline-offset-4 hover:underline"
                   >
                     Open analysis <ArrowRightIcon aria-hidden />

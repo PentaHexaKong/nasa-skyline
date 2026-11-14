@@ -2,6 +2,7 @@ import { createFileRoute, useHydrated, useNavigate } from '@tanstack/react-route
 import { useMemo } from 'react'
 import { useMoonScene } from '~/components/MoonStage'
 import type { MoonScene } from '~/components/ParallaxMoon'
+import { AddonsStep } from '~/components/planner/AddonsStep'
 import { DatesStep } from '~/components/planner/DatesStep'
 import { type Plan, type PlanActions, type PlanSearch, planSearch, type StepId, stepOf } from '~/components/planner/plan'
 import { ResultStep } from '~/components/planner/ResultStep'
@@ -12,7 +13,7 @@ import { Shell } from '~/components/Shell'
 import { loadMoonEphemeris, loadSummary, MOON_SITES } from '~/lib/data'
 import { buildBrief } from '~/lib/mission'
 
-// The flow starts at Set up; links that mean the answer (the scenario pages' way back) ask for Result by name.
+// The flow starts at Set up; links that mean the answer ask for Result by name.
 const DEFAULT_STEP: StepId = 'setup'
 
 export const Route = createFileRoute('/analyze/')({
@@ -101,6 +102,7 @@ function PlannerPage() {
         <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
           {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
           {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
+          {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} />}
         </main>
       )}
       {step !== 'setup' && (

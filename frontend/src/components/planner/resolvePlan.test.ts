@@ -2,7 +2,7 @@ import { beforeAll, expect, test } from 'vitest'
 import { loadSummary, MOON_SITES, type Summary } from '~/lib/data'
 import { siteResult } from '~/lib/mission'
 import { planSearch, stepOf } from './plan'
-import { resolvePlan, reviewSearch } from './resolvePlan'
+import { addonsSearch, resolvePlan, reviewSearch } from './resolvePlan'
 
 let all: Summary[]
 beforeAll(async () => {
@@ -58,4 +58,24 @@ test('older review links open Result, where Review now lives', () => {
   expect(stepOf(planSearch.parse({ step: 'review' }).step)).toBe('result')
   expect(stepOf('dates')).toBe('dates')
   expect(stepOf(undefined)).toBeUndefined()
+})
+
+test('Add-ons is a step of its own and keeps a valid tool in the URL', () => {
+  expect(planSearch.parse({ step: 'addons', piece: 'mast' })).toEqual({ step: 'addons', piece: 'mast' })
+  expect(planSearch.parse({ step: 'addons', piece: 'telescope' })).toEqual({ step: 'addons' })
+  expect(stepOf('addons')).toBe('addons')
+})
+
+test('opening an add-on keeps every mission setting and the baseline', () => {
+  const search = planSearch.parse({
+    profile: 'lunar-day',
+    step: 'result',
+    sites: 'shackleton-rim',
+    day: '2026-12-05',
+    stay: 12,
+    minSun: 52,
+  })
+  const addons = addonsSearch(search, 'relay')
+  expect(addons).toEqual({ ...search, step: 'addons', piece: 'relay' })
+  expect(resolvePlan(all, planSearch.parse(addons))).toEqual(resolvePlan(all, search))
 })

@@ -2,6 +2,7 @@ import { z } from 'zod'
 import type { Summary } from '~/lib/data'
 import type { MissionWindow, Requirements, SitePlan } from '~/lib/mission'
 import { PROFILE_IDS, type Profile } from '~/lib/profiles'
+import { SCENARIO_PIECES } from '~/lib/scenarios'
 import { forgiving } from '~/lib/useSiteView'
 
 /**
@@ -11,7 +12,8 @@ import { forgiving } from '~/lib/useSiteView'
 export const STEPS = [
   { id: 'setup', label: 'Set up', next: 'See the result' },
   { id: 'result', label: 'Result', next: 'See dates' },
-  { id: 'dates', label: 'Dates', next: null },
+  { id: 'dates', label: 'Dates', next: 'See add-ons' },
+  { id: 'addons', label: 'Add-ons', next: null },
 ] as const
 export type StepId = (typeof STEPS)[number]['id']
 /** `review` is kept so older links still open; it now shows Result. */
@@ -19,7 +21,7 @@ export const stepOf = (s: PlanSearch['step']): StepId | undefined => (s === 'rev
 
 export const planSearch = z.object({
   profile: forgiving(z.enum(PROFILE_IDS)),
-  step: forgiving(z.enum(['setup', 'result', 'dates', 'review'])),
+  step: forgiving(z.enum(['setup', 'result', 'dates', 'addons', 'review'])),
   sites: forgiving(z.string()),
   day: forgiving(z.iso.date()),
   base: forgiving(z.iso.date()),
@@ -30,6 +32,10 @@ export const planSearch = z.object({
   minEarth: forgiving(z.coerce.number().min(0).max(100)),
   maxNoEarth: forgiving(z.coerce.number().min(0)),
   focus: forgiving(z.string()),
+  /** The Add-ons tool on show. */
+  piece: forgiving(z.enum(SCENARIO_PIECES)),
+  /** Dev only: opens Add-ons' sample simulation. Links may carry it as a number, so it is coerced. */
+  preview: forgiving(z.coerce.string().pipe(z.literal('1'))),
 })
 export type PlanSearch = z.infer<typeof planSearch>
 
