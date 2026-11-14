@@ -8,12 +8,12 @@ import { SiteDock } from '~/components/SiteDock'
 import { loadSummary, SITES } from '~/lib/data'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
-import { headline, siteSearch, sunHud, useSiteView } from '~/lib/useSiteView'
+import { headline, siteFromUnderstandSearch, sunHud, useSiteView } from '~/lib/useSiteView'
 
 const SiteIsland = lazy(() => import('~/components/SiteIsland'))
 
 export const Route = createFileRoute('/explore/$siteId')({
-  validateSearch: siteSearch,
+  validateSearch: siteFromUnderstandSearch,
   loader: async ({ params }) => {
     if (!SITES.some((s) => s.id === params.siteId)) throw notFound()
     return loadSummary(params.siteId)
@@ -25,17 +25,18 @@ export const Route = createFileRoute('/explore/$siteId')({
 /** The 3D island on its own, edge to edge under the header; readouts and the dock float over it. */
 function ExplorePage() {
   const data = Route.useLoaderData()
-  const { day, t } = Route.useSearch()
+  const { day, t, back: from } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const go = (s: { day?: string; t?: number }) => navigate({ search: (prev) => ({ ...prev, ...s }), replace: true, resetScroll: false })
   const view = useSiteView(data, { day, t }, go)
   const { hydrated, current, track, minute, m } = view
   const comms = earthTarget(data, track, current.date, minute)
   const ref = comms?.reference
-  const back = `/explore?from=${data.site.id}&day=${current.date}&t=${minute}#space`
+  // Opened from an Understand lesson, this stays a part of Understand and leads back to the lesson, not to the Moon.
+  const back = from ?? `/explore?from=${data.site.id}&day=${current.date}&t=${minute}#space`
 
   return (
-    <Shell>
+    <Shell active={from ? '/understand' : undefined}>
       <main className="relative h-[calc(100dvh-3.5rem-1px)] overflow-hidden">
         {hydrated ? (
           <Suspense fallback={null}>
@@ -53,7 +54,7 @@ function ExplorePage() {
               skylineKm={data.params.skyline_max_km}
               tools={
                 <LinkButton href={back} variant="secondary" size="sm" icon={ArrowsInIcon}>
-                  <span className="hidden sm:inline">Back to Moon</span>
+                  <span className="hidden sm:inline">{from ? 'Back to lesson' : 'Back to Moon'}</span>
                   <span className="sm:hidden">Back</span>
                 </LinkButton>
               }
@@ -64,7 +65,7 @@ function ExplorePage() {
 
         <div className="scene-text pointer-events-none absolute top-4 left-4 grid max-w-[min(26rem,calc(100%-2rem))] gap-3 sm:left-(--page-edge)">
           <Eyebrow pip>
-            Explore › {data.site.name} · {shortDate(current.date)} {current.date.slice(0, 4)}
+            {from ? 'Understand' : 'Explore'} › {data.site.name} · {shortDate(current.date)} {current.date.slice(0, 4)}
           </Eyebrow>
           <h1 className="text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] leading-[1.05] font-medium">{headline(current)}</h1>
           <dl className="grid grid-cols-[4.5rem_1fr] items-center gap-x-3 gap-y-2">
@@ -112,7 +113,9 @@ function ExplorePage() {
             data={data}
             view={view}
             go={go}
-            onSite={(id) => navigate({ to: '/explore/$siteId', params: { siteId: id }, search: { day: current.date, t: minute } })}
+            onSite={(id) =>
+              navigate({ to: '/explore/$siteId', params: { siteId: id }, search: { day: current.date, t: minute, back: from } })
+            }
           />
         </div>
       </main>

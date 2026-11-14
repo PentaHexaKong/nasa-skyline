@@ -239,6 +239,11 @@ function MethodPage() {
               Moon: NASA SVS CGI Moon Kit, relief exaggerated. Earth: NASA Blue Marble, colour-graded for display, Black Marble city lights
               and the Blue Marble cloud map, a 2002 composite, not any real day. Stars: NASA SVS Deep Star Maps 2020. Sun: NASA SDO.
             </dd>
+            <dt className="font-medium">Follow-up images</dt>
+            <dd className="text-ink-muted">
+              Artist’s renderings from NASA, shown for illustration only: the Moon Base and rover images from NASA’s Moon Base Renderings
+              gallery, and the Gateway concept (credit NASA) from the NASA image library. They are not results of this analysis.
+            </dd>
           </dl>
         </Section>
 

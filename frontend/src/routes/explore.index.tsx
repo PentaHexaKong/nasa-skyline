@@ -1,12 +1,12 @@
-import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CubeIcon } from '@phosphor-icons/react'
+import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { Landscape, type LandscapeMode, type Moment, momentLabel } from '~/components/explore/Landscape'
 import { useMoonScene } from '~/components/MoonStage'
 import { MOON_PREVIEW } from '~/components/moonTextures'
 import type { MoonPose, MoonScene } from '~/components/ParallaxMoon'
-import { Eyebrow, Footer, Shell } from '~/components/Shell'
+import { Footer, Shell } from '~/components/Shell'
 import { SpaceChapter, type SpaceSearch } from '~/components/SpaceChapter'
 import { Bubble, Guide, Mascot, Orbits, StoryLink, useScrollProgress } from '~/components/story'
 import { loadMoonEphemeris, loadSummary, MOON_SITES, type Summary } from '~/lib/data'
@@ -55,22 +55,6 @@ const POSES: MoonPose[] = [
   { cam: [-20, 60, 14], opacity: 0, side: 'right' },
 ]
 
-/** What each place teaches, as the storyboard's table puts it. The numbers beside it are computed. */
-const PLACES: Record<string, { hook: string; insight: string }> = {
-  'shackleton-rim': {
-    hook: 'At the edge of deep shadow.',
-    insight: 'The rim sees almost endless light, while the crater beside it stays dark: the strongest contrast of the three.',
-  },
-  'connecting-ridge': {
-    hook: 'Follow the higher ground.',
-    insight: 'Height changes the view: from the ridge you see over some hills, but not all of them.',
-  },
-  'de-gerlache-rim': {
-    hook: 'Another crater. Another skyline.',
-    insight: 'A different crater shape gives a different horizon, and with it different light and a different view of Earth.',
-  },
-}
-
 function ExplorePage() {
   const { eph, summaries } = Route.useLoaderData()
   const search = Route.useSearch()
@@ -112,7 +96,7 @@ function ExplorePage() {
         <div className={`relative ${full ? 'z-(--z-popover)' : 'z-[1]'}`}>
           <Opening />
           {rim && <Discovery site={rim} />}
-          <section id="space" data-moon-chapter aria-labelledby="pick-title" className="scroll-mt-[-1rem]">
+          <section id="space" data-moon-chapter aria-labelledby="space-title" className="scroll-mt-[-1rem]">
             <SpaceChapter
               onFull={setFull}
               eph={eph}
@@ -124,7 +108,6 @@ function ExplorePage() {
               onArrive={(id, day, t) => navigate({ to: '/explore/$siteId', params: { siteId: id }, search: { day, t } })}
             />
           </section>
-          <PickPlace summaries={summaries} />
           <Ending />
           <Footer />
         </div>
@@ -344,86 +327,6 @@ function Discovery({ site }: { site: Summary }) {
               {shortName(site)} · LOLA terrain{moment ? `, ${moment.km} km square` : ''} · shadows traced inside this square only
             </p>
           </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/** 3. Pick a place: the reader chooses the chapter. Each place has its own challenge, with the numbers behind it. */
-function PickPlace({ summaries }: { summaries: Summary[] }) {
-  const ordered = useMemo(() => [...summaries].sort((a, b) => a.site.lat_deg - b.site.lat_deg), [summaries])
-  const [chosen, setChosen] = useState(ordered[0]?.site.id ?? '')
-  const pick = ordered.find((s) => s.site.id === chosen) ?? ordered[0]
-  const listRef = useRef<HTMLUListElement>(null)
-  if (!pick) return null
-  const place = PLACES[pick.site.id]
-  return (
-    <section aria-labelledby="pick-title" className="relative bg-bg">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-20 sm:px-6">
-        <header className="grid max-w-[40rem] gap-3">
-          <p className="eyebrow text-story-ink">Where do we go next?</p>
-          <h2 id="pick-title" className="text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] leading-[1.05] font-medium text-balance">
-            Choose a place to investigate.
-          </h2>
-          <p className="text-lg text-ink-muted text-pretty">
-            Each place shows a different lunar challenge. Pick one on the Moon above, or here, then stand on it in 3D.
-          </p>
-        </header>
-        <div className="grid items-start gap-8 lg:grid-cols-[1fr_20rem]">
-          <ul ref={listRef} className="grid gap-4 md:grid-cols-3">
-            {ordered.map((s) => {
-              const spans = siteSpans(s)
-              const m = measure(spans, spans.coverage)
-              const on = s.site.id === pick.site.id
-              const p = PLACES[s.site.id]
-              return (
-                <li key={s.site.id}>
-                  <button
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => setChosen(s.site.id)}
-                    className={`grid h-full w-full cursor-pointer content-start gap-4 rounded-xl border p-5 text-left transition-[border-color,background-color] duration-200 ${
-                      on ? 'border-brand bg-white/[0.04]' : 'border-line bg-surface/40 hover:border-line-strong'
-                    }`}
-                  >
-                    <span className="eyebrow text-ink-faint">
-                      {Math.abs(s.site.lat_deg).toFixed(1)}°S · {Math.round(s.site.ground_height_m)} m
-                    </span>
-                    <span className="text-xl font-medium">{shortName(s)}</span>
-                    {p && <span className="text-lg leading-snug text-story-ink">“{p.hook}”</span>}
-                    <dl className="grid grid-cols-2 gap-3 border-t border-line pt-3">
-                      <div>
-                        <dt className="text-xs text-ink-muted">Sun in view</dt>
-                        <dd className="readout text-xl text-sun">{Math.round(m.sunShare * 100)} %</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-ink-muted">Earth in view</dt>
-                        <dd className="readout text-xl text-comms">{Math.round((s.earth?.visible_share ?? 0) * 100)} %</dd>
-                      </div>
-                    </dl>
-                    <span className="text-xs text-ink-faint">Over the computed year from {s.params.start}.</span>
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-          <aside aria-live="polite" className="grid gap-4 rounded-xl border border-line bg-surface/40 p-5">
-            <div className="flex items-end gap-3">
-              <Mascot pose="explorer-magnifier" className="size-24 shrink-0" />
-              {place && <Bubble className="mb-4">{place.hook}</Bubble>}
-            </div>
-            <Eyebrow pip>Key insight · {shortName(pick)}</Eyebrow>
-            {place && <p className="text-pretty">{place.insight}</p>}
-            <Link
-              to="/explore/$siteId"
-              params={{ siteId: pick.site.id }}
-              className="inline-flex items-center gap-2 justify-self-start rounded-md border border-line-strong px-3 py-2 text-sm hover:bg-surface-hover"
-            >
-              <CubeIcon aria-hidden className="size-4" />
-              Stand on {shortName(pick)} in 3D
-            </Link>
-          </aside>
         </div>
       </div>
     </section>

@@ -1,6 +1,7 @@
 import { ArrowRightIcon, ArrowUpRightIcon, CubeIcon } from '@phosphor-icons/react'
-import { Link, type LinkProps } from '@tanstack/react-router'
+import { Link, type LinkProps, useRouterState } from '@tanstack/react-router'
 import { type CSSProperties, type ReactNode, type RefObject, useEffect, useRef } from 'react'
+import { understandBack } from '~/lib/useSiteView'
 
 /**
  * Pieces shared by the story pages (Home, Explore, Understand): the mascot, its speech bubble, the call-to-action
@@ -25,10 +26,12 @@ export function Mascot({ pose, className = '' }: { pose: MascotPose; className?:
   return <div className={`mascot ${className}`}>{img}</div>
 }
 
-export function StandHereLink({ href, label }: { href: string; label: string }) {
+/** `anchor`: the lesson section this button sits in, so the 3D view can lead back to it. */
+export function StandHereLink({ href, label, anchor }: { href: string; label: string; anchor?: string }) {
+  const path = useRouterState({ select: (s) => s.location.pathname })
   return (
     <a
-      href={href}
+      href={`${href}?back=${encodeURIComponent(understandBack(path, anchor))}`}
       className="group inline-flex w-full max-w-sm cursor-pointer items-center gap-3 rounded-xl border border-line-strong bg-[#111720] p-3 text-sm transition-[border-color,background-color,transform] duration-200 hover:border-white/60 hover:bg-[#1a2330] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white motion-safe:hover:-translate-y-0.5"
     >
       <Mascot pose="explorer-pointing" className="size-16 shrink-0 transition-transform duration-200 motion-safe:group-hover:-rotate-3" />

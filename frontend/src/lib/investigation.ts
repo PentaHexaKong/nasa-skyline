@@ -15,7 +15,7 @@ export const INVESTIGATIONS = [
     kicker: '01 / Light & landscape',
     question: 'Can a mountain hide the Sun?',
     change: 'Keep the place. Change the time.',
-    task: 'Keep your region fixed. Predict how changing time will affect whether the Sun clears the terrain.',
+    task: 'Here is one exact moment at one place. Guess what an observer standing there would see, then test your guess in the 3D model.',
     variable: 'time',
     site: 'connecting-ridge',
   },
@@ -24,7 +24,7 @@ export const INVESTIGATIONS = [
     kicker: '02 / Think in trade-offs',
     question: 'Is more light always better?',
     change: 'Keep the time. Compare two places.',
-    task: 'Keep the time fixed. Predict whether the place with more sunlight also keeps Earth in view.',
+    task: 'Here is one exact moment at two places. Guess what an observer would see at each one, then test your guesses in the 3D model.',
     variable: 'place',
     site: 'shackleton-rim',
   },
@@ -33,7 +33,7 @@ export const INVESTIGATIONS = [
     kicker: '03 / A change of plans',
     question: 'What if we arrive a day later?',
     change: 'Keep the place. Delay arrival.',
-    task: 'Keep your region fixed. Predict what a one-day delay changes for sunlight and for Earth.',
+    task: 'Here is one place on two days, one day apart. Guess what an observer would see on each day, then test your guesses in the 3D model.',
     variable: 'day',
     site: 'de-gerlache-rim',
   },
@@ -48,9 +48,29 @@ export const LAB_STEPS = [
   { id: 'choose', label: 'Choose', hint: 'Pick a question to explore.' },
   { id: 'try', label: 'Try', hint: 'Make a prediction before you test.' },
   { id: 'observe', label: 'Observe', hint: 'Move time and watch what changes.' },
-  { id: 'explain', label: 'Explain', hint: 'Write what changed and your evidence.' },
+  { id: 'explain', label: 'Explain', hint: 'Say why it happened.' },
 ] as const
 export type LabStep = (typeof LAB_STEPS)[number]['id']
+
+/** One thing to guess: whether the Sun, or Earth, is in view at one place on one slider day. */
+export type PredictionItem = { id: string; site: string; day: number; about: 'sun' | 'earth' }
+
+/** The default moment the questions open on, when no ridge moment is found. */
+export const DEFAULT_DAY = 8
+
+/**
+ * The exact moments a learner is asked about, so a guess can be checked against the computed answer.
+ * `openingDay` is the first moment the Sun is up but hidden (found from the tracks), used by the mountain question.
+ */
+export function predictionItems(q: Investigation, openingDay: number | null): PredictionItem[] {
+  const pair = (site: string, day: number, key: string): PredictionItem[] => [
+    { id: `${key}-sun`, site, day, about: 'sun' },
+    { id: `${key}-earth`, site, day, about: 'earth' },
+  ]
+  if (q.id === 'mountain') return pair(q.site, openingDay ?? DEFAULT_DAY, 'a')
+  if (q.id === 'light') return [...pair('shackleton-rim', DEFAULT_DAY, 'a'), ...pair('connecting-ridge', DEFAULT_DAY, 'b')]
+  return [...pair(q.site, DEFAULT_DAY, 'a'), ...pair(q.site, DEFAULT_DAY + 1, 'b')]
+}
 
 /** One synodic month: the slider runs over one lunar day and night. */
 export const LUNAR_DAYS = 29.5
@@ -123,6 +143,12 @@ export function hiddenSunDay(data: Summary, tracks: Record<string, Track>): numb
   return null
 }
 
+/** What the computed data says about one guess: true when the Sun, or Earth, is in view; null when it was not computed. */
+export function predictionTruth(item: PredictionItem, data: Summary, track: Track | undefined): boolean | null {
+  const o = observe(data, track, item.day)
+  return item.about === 'sun' ? o.sun.inView : (o.earth?.inView ?? null)
+}
+
 const deg = (x: number | null) => (x == null ? 'not computed' : `${x.toFixed(1)}°`)
 
 export const sunWords = (o: Observation) => (o.sun.inView ? 'Sun in view' : o.sun.up ? 'Sun behind terrain' : 'Sun below the horizon')
@@ -144,12 +170,13 @@ export function differences(a: Observation, b: Observation) {
 export function investigationRecord(input: {
   investigation: Investigation
   prediction: string
+  guesses?: string[]
   observations: Observation[]
   explanation: string
   sources: { site: string; algorithm: string; provenance?: Summary['provenance'] }[]
   link: string
 }) {
-  const { investigation: q, prediction, observations, explanation, sources, link } = input
+  const { investigation: q, prediction, observations, explanation, sources, link, guesses = [] } = input
   const lines = [
     `# ${q.question}`,
     '',
@@ -157,7 +184,8 @@ export function investigationRecord(input: {
     '',
     '## 1 · Predict',
     '',
-    prediction.trim() || '_No prediction written._',
+    ...(guesses.length ? [...guesses.map((g) => `- ${g}`), ''] : []),
+    prediction.trim() || '_No reason written._',
     '',
     '## 2 · Test',
     '',
@@ -176,7 +204,7 @@ export function investigationRecord(input: {
         ]
       : []),
     '',
-    '## 3 · Explain',
+    '## 3 · Why?',
     '',
     explanation.trim() || '_No explanation written._',
     '',

@@ -34,6 +34,8 @@ export type SiteIslandProps = {
   className?: string
   /** Extra buttons for the toolbar, such as the full-screen link. */
   tools?: ReactNode
+  /** Turn the home view to face the Sun or Earth; a new `nonce` re-aims it. */
+  focus?: { target: 'sun' | 'earth'; nonce: number }
 }
 
 // The sky sits on a sphere far beyond the terrain, so the Sun, Earth and their paths read as distant, as they are.
@@ -879,7 +881,14 @@ export default function SiteIsland(props: SiteIslandProps) {
       // Face the Sun; with a comms target, face between the two when both fit in one view.
       let face = up && s ? s.az : ref ? ref.az_deg : 180
       let top = Math.max(8, up && s ? s.el : (ref?.el_deg ?? 0))
-      if (up && s && ref) {
+      const focus = latest.current.focus?.target
+      if (focus === 'earth' && ref) {
+        face = ref.az_deg
+        top = Math.max(8, ref.el_deg)
+      } else if (focus === 'sun' && up && s) {
+        face = s.az
+        top = Math.max(8, s.el)
+      } else if (up && s && ref) {
         const gap = ((ref.az_deg - s.az + 540) % 360) - 180
         if (Math.abs(gap) < 60) {
           face = s.az + gap / 2
@@ -1011,6 +1020,11 @@ export default function SiteIsland(props: SiteIslandProps) {
   useEffect(() => {
     api.current?.set(props)
   })
+
+  // "Look at the Sun / Earth": re-aim the home view each time the focus is asked for again.
+  useEffect(() => {
+    if (props.focus) api.current?.reset()
+  }, [props.focus?.nonce])
 
   const toggleView = () => {
     const next = view === 'eye' ? 'island' : 'eye'

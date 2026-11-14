@@ -14,6 +14,17 @@ export const siteSearch = z.object({
   t: forgiving(z.coerce.number().int().min(0).max(1439)),
 })
 export type SiteSearch = z.infer<typeof siteSearch>
+
+/**
+ * Where the 3D view was opened from, so it can say so and lead back. Only Understand pages (and a section of one) are
+ * accepted: this is a path in our own app, never a free-form address.
+ */
+export const BACK_TO_UNDERSTAND = /^\/understand(\/[a-z0-9-]+)?(#[a-z0-9-]+)?$/
+export const siteFromUnderstandSearch = siteSearch.extend({ back: forgiving(z.string().regex(BACK_TO_UNDERSTAND)) })
+
+/** The place to return to from the 3D view: this Understand page, at the lesson section the reader pressed the button in. */
+export const understandBack = (pathname: string, anchor?: string) =>
+  pathname === '/understand' && anchor ? `${pathname}#${anchor}` : pathname
 export type SiteView = ReturnType<typeof useSiteView>
 
 /**

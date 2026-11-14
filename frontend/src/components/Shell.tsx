@@ -50,7 +50,18 @@ const SECTIONS = [
 ] as const
 
 /** `bare`: no header, for a page that is its own way in (the front door). */
-export function Shell({ children, tools, bare = false }: { children: ReactNode; tools?: ReactNode; bare?: boolean }) {
+export function Shell({
+  children,
+  tools,
+  bare = false,
+  active,
+}: {
+  children: ReactNode
+  tools?: ReactNode
+  bare?: boolean
+  /** Highlight this way in instead of the one the path belongs to: a page reached from another way in keeps that way lit. */
+  active?: (typeof SECTIONS)[number]['to']
+}) {
   const path = useRouterState({ select: (s) => s.location.pathname })
   return (
     <LinkProvider component={AppLink}>
@@ -65,11 +76,13 @@ export function Shell({ children, tools, bare = false }: { children: ReactNode; 
                 </Link>
                 <nav aria-label="Main" className="flex min-w-0 items-center overflow-x-auto [scrollbar-width:none]">
                   {SECTIONS.map((s) => {
-                    const on = s.owns(path)
+                    const on = active ? s.to === active : s.owns(path)
                     return (
                       <Link
                         key={s.to}
                         to={s.to}
+                        // The router lights a link by path prefix; when a page names its own way in, only that one is lit.
+                        activeOptions={active ? { exact: true } : undefined}
                         data-status={on ? 'active' : undefined}
                         aria-current={on ? 'page' : undefined}
                         className={navLink}

@@ -1,6 +1,6 @@
 import { Link as KLink } from '@cloudflare/kumo/components/link'
-import { Link } from '@tanstack/react-router'
-import { type ReactNode, useMemo, useState } from 'react'
+import { Link, useRouterState } from '@tanstack/react-router'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { TimeSlider } from '~/components/Controls'
 import { Lanes } from '~/components/Lanes'
 import { moment, PhaseBadge } from '~/components/Moment'
@@ -8,6 +8,7 @@ import { azWindow, Panorama } from '~/components/Panorama'
 import type { Summary, Track } from '~/lib/data'
 import { DAY_MS, longestGap, measure, siteSpans } from '~/lib/mission'
 import { longDate, shortDate } from '~/lib/time'
+import { understandBack } from '~/lib/useSiteView'
 import { useTracks } from '~/lib/useTracks'
 
 /**
@@ -125,11 +126,56 @@ function hiddenMoment(tracks: Record<string, Track>) {
   return best
 }
 
+/** How fast the day loops: the same pace as Play on the 3D page, a full day in 6 s. */
+const LOOP_MIN_PER_S = 1440 / 6
+
 function RidgeSee({ data }: { data: Record<string, Summary> }) {
   const s = need(data, 'connecting-ridge')
   const tracks = useTracks(s.site.id)
   const found = useMemo(() => (tracks ? hiddenMoment(tracks) : undefined), [tracks])
   const [minute, setMinute] = useState<number>()
+  const path = useRouterState({ select: (r) => r.location.pathname })
+  const [held, setHeld] = useState(false)
+  const [inView, setInView] = useState(true)
+  const stage = useRef<HTMLDivElement>(null)
+  const pos = useRef<number | undefined>(undefined)
+  const seek = (m: number) => {
+    pos.current = m
+    setMinute(m)
+  }
+  useEffect(() => {
+    const el = stage.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setInView(e?.isIntersecting ?? true))
+    io.observe(el)
+    return () => io.disconnect()
+  }, [tracks])
+  // The day plays on a loop; holding the slider takes over, letting go carries on from there.
+  useEffect(() => {
+    if (!tracks || !found || held || !inView || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let raf = 0
+    let last = performance.now()
+    pos.current ??= found.minute
+    const tick = (now: number) => {
+      pos.current = ((pos.current ?? 0) + ((now - last) / 1000) * LOOP_MIN_PER_S) % 1440
+      last = now
+      const m = Math.floor(pos.current)
+      setMinute((prev) => (prev === m ? prev : m))
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [tracks, found, held, inView])
+  useEffect(() => {
+    if (!held) return
+    const up = () => setHeld(false)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
+    return () => {
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+    }
+  }, [held])
   if (!tracks) return <div className="grid h-[22rem] place-items-center text-ink-muted">Loading the Sun’s path…</div>
   if (!found) return <p className="text-ink-muted">This site has no moment with the Sun up and hidden.</p>
   const track = tracks[found.date]
@@ -157,14 +203,31 @@ function RidgeSee({ data }: { data: Record<string, Summary> }) {
             Sun {now.sun ? `${now.sun.el.toFixed(1)}°` : 'below −1°'} · ridge {now.horizon != null ? `${now.horizon.toFixed(1)}°` : '…'}
           </span>
           <PhaseBadge phase={now.phase} />
-          <KLink className="ml-auto" render={<Link to="/explore/$siteId" params={{ siteId: s.site.id }} search={{ day: found.date, t }} />}>
+          <KLink
+            className="ml-auto"
+            render={
+              <Link
+                to="/explore/$siteId"
+                params={{ siteId: s.site.id }}
+                search={{ day: found.date, t, back: understandBack(path, 'ridge') }}
+              />
+            }
+          >
             Stand here in 3D
           </KLink>
         </div>
-        <div className="max-w-xl">
-          <TimeSlider value={t} onChange={setMinute} />
+        <div
+          ref={stage}
+          className="max-w-xl"
+          onPointerDown={() => setHeld(true)}
+          onKeyDown={() => setHeld(true)}
+          onBlur={() => setHeld(false)}
+        >
+          <TimeSlider value={t} onChange={seek} step={1} />
         </div>
-        <p className="text-xs text-ink-faint">Drag the time to watch the Sun come out from behind the ridge. Times in UTC.</p>
+        <p className="text-xs text-ink-faint">
+          The day plays on a loop: watch the Sun come out from behind the ridge. Drag the time to take over. Times in UTC.
+        </p>
       </div>
     </div>
   )
