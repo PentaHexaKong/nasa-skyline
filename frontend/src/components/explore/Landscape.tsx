@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { afterGlide } from '~/components/moonBridge'
 import type { Summary, Terrain, Track } from '~/lib/data'
 import { loadTerrain } from '~/lib/data'
 import { clearShare, downsample, extremes, lineOfSight, nearest, relief, type Spot } from '~/lib/landscape'
@@ -148,13 +149,13 @@ export function Landscape({
 
   useEffect(() => {
     if (!terrain || !moment) return
-    // One frame after the page has painted, so the trace never holds up the first scroll.
-    const id = requestAnimationFrame(() => {
+    // One frame after the page has painted, and after the Moon arriving from the front door has settled, so the trace
+    // never holds up the first scroll or the Moon's glide.
+    return afterGlide(() => {
       const l = paint(terrain, moment)
       setLayers(l)
       onMoment?.(moment, l)
     })
-    return () => cancelAnimationFrame(id)
   }, [terrain, moment, onMoment])
 
   useEffect(() => {
