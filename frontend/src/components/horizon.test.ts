@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { loadMoonEphemeris } from '~/lib/data'
 import { SYNODIC_HOURS, subPoints } from '~/lib/moonLight'
-import { horizonFrame, MAX_RADIUS, quarterHour, RISE, SUN_EAST } from './HorizonMoon'
+import { horizonFrame, MAX_RADIUS, quarterHour, RISE, SUN_EAST } from './horizon'
 
 test('the front door starts lit at a real moment in the data, with the Sun SUN_EAST degrees east of the near side', async () => {
   const eph = await loadMoonEphemeris()

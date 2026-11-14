@@ -188,8 +188,17 @@ export const MoonEphemerisSchema = z.object({
 export type MoonEphemeris = z.infer<typeof MoonEphemerisSchema>
 const moonEphemeris = import.meta.glob<{ default: unknown }>('../data/generated/moon/ephemeris.json')
 
-export async function loadMoonEphemeris() {
-  const load = moonEphemeris['../data/generated/moon/ephemeris.json']
-  if (!load) throw new Error('No Moon ephemeris; run the lunar pipeline')
-  return MoonEphemerisSchema.parse((await load()).default)
+let ephemeris: Promise<MoonEphemeris> | null = null
+/** Parsed once: every page that shows the Moon gets the same object. */
+export function loadMoonEphemeris() {
+  ephemeris ??= (async () => {
+    const load = moonEphemeris['../data/generated/moon/ephemeris.json']
+    if (!load) throw new Error('No Moon ephemeris; run the lunar pipeline')
+    return MoonEphemerisSchema.parse((await load()).default)
+  })()
+  // A failed load is not kept, so the next page can try again.
+  ephemeris.catch(() => {
+    ephemeris = null
+  })
+  return ephemeris
 }

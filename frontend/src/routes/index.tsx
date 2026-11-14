@@ -1,14 +1,11 @@
-import { createFileRoute, Link, useHydrated } from '@tanstack/react-router'
-import { lazy, Suspense, useRef } from 'react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { useMemo, useRef } from 'react'
+import { useMoonScene } from '~/components/MoonStage'
 import { MOON_PREVIEW } from '~/components/moonTextures'
 import { Shell } from '~/components/Shell'
 import { Mascot, type MascotPose, StoryLink, useScrollProgress } from '~/components/story'
 import { Wordmark } from '~/components/Wordmark'
 import { loadMoonEphemeris } from '~/lib/data'
-
-const loadHorizonMoon = () => import('~/components/HorizonMoon')
-if (typeof window !== 'undefined') void loadHorizonMoon()
-const HorizonMoon = lazy(loadHorizonMoon)
 
 /**
  * The front door: three ways in, one per audience. Explore for the curious, Understand for classrooms and anyone who
@@ -50,16 +47,16 @@ const DOORS: { pose: MascotPose; ask: string; go: string; to: '/explore' | '/und
 function Home() {
   const ref = useScrollProgress<HTMLElement>()
   const eph = Route.useLoaderData()
-  const hydrated = useHydrated()
   const doors = useRef<HTMLUListElement>(null)
+  // The accurate globe rises from the bottom edge, below the doors (ParallaxMoon's horizon mode, kept by MoonStage, so
+  // taking a door to Explore or Understand glides this same Moon into that page). The starfield sits behind it there.
+  useMoonScene(
+    useMemo(() => ({ kind: 'horizon', frame: ref, clearOf: doors }), [ref]),
+    eph,
+  )
   return (
     <Shell bare>
-      <main ref={ref} className="starfield relative grid min-h-svh overflow-hidden">
-        {hydrated && (
-          <Suspense fallback={null}>
-            <HorizonMoon eph={eph} clearOf={doors} />
-          </Suspense>
-        )}
+      <main ref={ref} className="relative grid min-h-svh overflow-hidden">
         {/* The Moon fades into the night at the bottom edge, so the footer line stays legible over it. */}
         <div
           aria-hidden
@@ -85,7 +82,7 @@ function Home() {
               </li>
             ))}
           </ul>
-          {/* Room for the Moon on a page taller than the screen; on one screen the Moon fills whatever is left (HorizonMoon). */}
+          {/* Room for the Moon on a page taller than the screen; on one screen the Moon fills whatever is left (horizon.ts). */}
           <div className="min-h-20" />
           <div className="eyebrow flex w-full items-baseline justify-between gap-4 text-2xs text-ink-faint">
             <Link to="/method" className="hover:text-ink">

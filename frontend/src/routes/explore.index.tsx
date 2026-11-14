@@ -1,20 +1,17 @@
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, CubeIcon } from '@phosphor-icons/react'
-import { createFileRoute, Link, useHydrated, useNavigate } from '@tanstack/react-router'
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { Landscape, type LandscapeMode, type Moment, momentLabel } from '~/components/explore/Landscape'
+import { useMoonScene } from '~/components/MoonStage'
 import { MOON_PREVIEW } from '~/components/moonTextures'
-import type { MoonPose, TourSite } from '~/components/ParallaxMoon'
+import type { MoonPose, MoonScene } from '~/components/ParallaxMoon'
 import { Eyebrow, Footer, Shell } from '~/components/Shell'
 import { SpaceChapter, type SpaceSearch } from '~/components/SpaceChapter'
 import { Bubble, Guide, Mascot, Orbits, StoryLink, useScrollProgress } from '~/components/story'
 import { loadMoonEphemeris, loadSummary, MOON_SITES, type Summary } from '~/lib/data'
 import { measure, shortName, siteSpans } from '~/lib/mission'
 import { forgiving } from '~/lib/useSiteView'
-
-const loadParallaxMoon = () => import('~/components/ParallaxMoon')
-if (typeof window !== 'undefined') void loadParallaxMoon()
-const ParallaxMoon = lazy(loadParallaxMoon)
 
 /**
  * Explore: the public's way in. One scroll that gets closer to the Moon: the whole Moon, then a real polar landscape
@@ -46,7 +43,7 @@ export const Route = createFileRoute('/explore/')({
   component: ExplorePage,
 })
 
-/** One pose per `[data-moon-chapter]` section, in page order (ParallaxMoon reads them). */
+/** One pose per `[data-moon-chapter]` section, in page order (the shared Moon, ParallaxMoon, reads them). */
 const POSES: MoonPose[] = [
   // The whole Moon, centred, lit as on the moment in the corner.
   { cam: [-30, 10, 5.2], side: 'center' },
@@ -77,7 +74,6 @@ function ExplorePage() {
   const { eph, summaries } = Route.useLoaderData()
   const search = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
-  const hydrated = useHydrated()
   const [full, setFull] = useState(false)
 
   // A shared link into the scene (a view, a moment, or back from a site) opens at the scene.
@@ -85,7 +81,15 @@ function ExplorePage() {
     if ((search.from || search.view || search.day) && !window.location.hash) document.getElementById('space')?.scrollIntoView()
   }, [search.from, search.view, search.day])
 
-  const sites: TourSite[] = summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east }))
+  const moon = useMemo<MoonScene>(
+    () => ({
+      kind: 'tour',
+      poses: POSES,
+      sites: summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east })),
+    }),
+    [summaries],
+  )
+  useMoonScene(moon, eph)
   const globeSites = summaries.map((s) => {
     const spans = siteSpans(s)
     const m = measure(spans, spans.coverage)
@@ -101,12 +105,8 @@ function ExplorePage() {
 
   return (
     <Shell>
-      <main className="relative overflow-x-clip bg-bg text-ink">
-        {hydrated && (
-          <Suspense fallback={null}>
-            <ParallaxMoon poses={POSES} sites={sites} eph={eph} />
-          </Suspense>
-        )}
+      {/* No background of its own: the shared Moon (MoonStage) sits behind the page, on the page colour of <html>. */}
+      <main className="relative overflow-x-clip text-ink">
         <div className={`relative ${full ? 'z-(--z-popover)' : 'z-[1]'}`}>
           <Opening />
           {rim && <Discovery site={rim} />}
