@@ -1,7 +1,6 @@
 import { Select } from '@cloudflare/kumo/components/select'
 import { ArrowRightIcon, CalendarBlankIcon, CheckCircleIcon, StackIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react'
 import { Link } from '@tanstack/react-router'
-import { ScenarioScene } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { reviewSearch } from '~/components/planner/resolvePlan'
 import { ScenarioIcon } from '~/components/planner/ScenarioIcon'
@@ -13,6 +12,19 @@ const BLURB = {
   mast: 'A higher or nearby spot may see more Sun and Earth.',
   relay: 'What a relay spacecraft adds to direct contact.',
   rover: 'What a rover could reach from here.',
+} as const
+
+/** NASA artist's renderings, one per follow-up. Credits are listed on the Method page. */
+const PHOTO = {
+  mast: {
+    src: '/next-steps/mast.jpg',
+    alt: "NASA artist's rendering of a Moon Base near the lunar south pole, with tall solar arrays on the ridge.",
+  },
+  relay: {
+    src: '/next-steps/relay.jpg',
+    alt: "NASA artist's concept of the Gateway lunar space station, with its antennas and solar arrays.",
+  },
+  rover: { src: '/next-steps/rover.jpg', alt: "NASA artist's rendering of a rover driving on the lunar surface." },
 } as const
 
 /** A share against its limit: the bar is the share, the tick is the limit, the words say which side of it the share falls. */
@@ -165,7 +177,15 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
             const missed = piece === 'mast' ? guidance.sun : piece === 'relay' ? guidance.earth : []
             return (
               <li key={piece} className="overflow-hidden rounded-lg border border-line bg-surface/40">
-                <ScenarioScene piece={piece} />
+                <img
+                  src={PHOTO[piece].src}
+                  alt={PHOTO[piece].alt}
+                  loading="lazy"
+                  decoding="async"
+                  width={1600}
+                  height={900}
+                  className="aspect-video w-full object-cover"
+                />
                 <div className="grid gap-3 p-4">
                   <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-start gap-3">
                     <ScenarioIcon piece={piece} />
@@ -207,7 +227,7 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
             )
           })}
         </ul>
-        <p className="text-xs text-ink-faint">Drawings. Follow-up results are not computed yet.</p>
+        <p className="text-xs text-ink-faint">NASA artist’s renderings, for illustration. Follow-up results are not computed yet.</p>
       </div>
     </section>
   )

@@ -181,13 +181,13 @@ function StepBar({ step, onStep }: { step: LabStep; onStep: (s: LabStep) => void
                 aria-current={on ? 'step' : undefined}
                 onClick={() => onStep(s.id)}
                 className={`grid h-full w-full cursor-pointer content-start gap-1 rounded-md border px-3 py-3 text-left transition-colors ${
-                  on ? 'border-flare bg-[#0e141c] ring-1 ring-flare' : 'border-line bg-[#0e141c] hover:border-line-strong'
+                  on ? 'border-story bg-[#0e141c] ring-1 ring-story' : 'border-line bg-[#0e141c] hover:border-line-strong'
                 }`}
               >
-                <span className={`readout text-sm ${on ? 'text-flare' : 'text-ink-faint'}`}>{String(i + 1).padStart(2, '0')}</span>
+                <span className={`readout text-sm ${on ? 'text-story-ink' : 'text-ink-faint'}`}>{String(i + 1).padStart(2, '0')}</span>
                 <span className="grid">
                   <span className="font-medium">{s.label}</span>
-                  <span className={`hidden text-xs sm:block ${on ? 'text-flare' : 'text-ink-faint'}`}>{s.hint}</span>
+                  <span className={`hidden text-xs sm:block ${on ? 'text-story-ink' : 'text-ink-faint'}`}>{s.hint}</span>
                 </span>
               </button>
             </li>
@@ -206,7 +206,7 @@ function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick:
         <h2 id="choose-title" className="text-[clamp(2rem,1.4rem+2.6vw,3.5rem)] leading-[1.02] font-medium">
           What would you
           <br />
-          <span className="text-flare">like to discover?</span>
+          <span className="text-story-ink">like to discover?</span>
         </h2>
         <div className="flex items-center gap-5">
           <Mascot pose="scientist-question" className="size-28 shrink-0" />
@@ -216,7 +216,7 @@ function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick:
         </div>
       </div>
       <p className="border-y border-line py-3 text-sm">
-        <span className="eyebrow mr-3 text-flare">What you will learn</span>
+        <span className="eyebrow mr-3 text-story-ink">What you will learn</span>
         How <strong className="font-medium">place, terrain and time</strong> change a view of the Sun and Earth.
       </p>
       <ul className="grid gap-4 md:grid-cols-3">
@@ -227,7 +227,7 @@ function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick:
               onClick={() => onPick(i.id)}
               aria-pressed={current?.id === i.id}
               className={`group grid h-full w-full cursor-pointer grid-rows-[auto_1fr] overflow-hidden rounded-lg border text-left transition-colors ${
-                current?.id === i.id ? 'border-flare bg-flare/10' : 'border-line bg-surface/50 hover:border-flare/60 hover:bg-flare/5'
+                current?.id === i.id ? 'border-story bg-story/10' : 'border-line bg-surface/50 hover:border-story/60 hover:bg-story/5'
               }`}
             >
               <ScenarioArt id={i.id} className="h-40 w-full" />
@@ -248,13 +248,13 @@ function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick:
       </ul>
       <div className="flex flex-wrap items-center justify-between gap-6 rounded-md border border-line bg-surface/50 p-6">
         <div className="grid gap-1">
-          <p className="eyebrow text-flare">Prefer to experiment freely?</p>
+          <p className="eyebrow text-story-ink">Prefer to experiment freely?</p>
           <p className="text-2xl font-medium">Take the controls.</p>
           <p className="text-sm text-ink-muted">
             Move through time in the true-scale Moon, Earth and Sun, and watch the orbit. No worksheet required.
           </p>
         </div>
-        <button type="button" onClick={onOrbit} className="rounded-md bg-flare px-5 py-3 font-medium text-white hover:brightness-110">
+        <button type="button" onClick={onOrbit} className="rounded-md bg-story px-5 py-3 font-medium text-white hover:brightness-110">
           Explore the orbit freely ↗
         </button>
       </div>
@@ -397,7 +397,7 @@ function Try({
                     value={notes.prediction}
                     onChange={(e) => setNotes({ prediction: e.target.value })}
                     placeholder="I think… because…"
-                    className="w-full rounded-md border border-line-strong bg-black/40 p-3 text-base outline-none focus:border-flare"
+                    className="w-full rounded-md border border-line-strong bg-black/40 p-3 text-base outline-none focus:border-story"
                   />
                 </label>
               </div>
@@ -410,7 +410,7 @@ function Try({
               <button
                 type="submit"
                 disabled={!ready || !answered}
-                className="cursor-pointer rounded-md bg-flare px-5 py-3 font-medium text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+                className="cursor-pointer rounded-md bg-story px-5 py-3 font-medium text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Test my prediction ↗
               </button>
@@ -433,7 +433,7 @@ function Try({
           <h2 id="try-title" className="text-[clamp(2rem,1.4rem+2.6vw,3.25rem)] leading-[1.02] font-medium">
             Move time.
             <br />
-            <span className="text-flare">See the answer.</span>
+            <span className="text-story-ink">See the answer.</span>
           </h2>
         </div>
         <p className="text-ink-muted text-pretty">
@@ -444,7 +444,7 @@ function Try({
       <div className="grid overflow-hidden rounded-md border border-line lg:grid-cols-[1fr_22rem]">
         <div className="relative min-h-[28rem] bg-black lg:min-h-[36rem]">
           <p className="eyebrow absolute top-3 left-3 z-[2] flex items-center gap-2 text-ink">
-            <span aria-hidden className="size-1.5 rounded-full bg-flare" />
+            <span aria-hidden className="size-1.5 rounded-full bg-story" />
             Lunar observatory
             <span className="text-ink-faint">· NASA LRO terrain model · {track ? 'ready' : 'loading'}</span>
           </p>
@@ -486,7 +486,7 @@ function Try({
                 type="button"
                 aria-pressed={tab === id}
                 onClick={() => setTab(id)}
-                className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${tab === id ? 'border-flare bg-flare text-white' : 'border-line hover:bg-surface-hover'}`}
+                className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${tab === id ? 'border-story bg-story text-white' : 'border-line hover:bg-surface-hover'}`}
               >
                 {label}
               </button>
@@ -519,7 +519,7 @@ function Try({
                       setLook(w)
                       setFocus({ target: w, nonce: Date.now() })
                     }}
-                    className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${focus?.target === w ? 'border-flare text-flare' : 'border-line hover:bg-surface-hover'}`}
+                    className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${focus?.target === w ? 'border-story text-story-ink' : 'border-line hover:bg-surface-hover'}`}
                   >
                     Look at {w === 'sun' ? 'the Sun' : 'Earth'}
                   </button>
@@ -567,7 +567,7 @@ function Try({
                 block: 'start',
               })
             }
-            className="rounded-md bg-flare px-3 py-2.5 text-sm font-medium text-white hover:brightness-110"
+            className="rounded-md bg-story px-3 py-2.5 text-sm font-medium text-white hover:brightness-110"
           >
             Next: compare two moments →
           </button>
@@ -665,7 +665,7 @@ function DayControl({
         </button>
         <div className="grid flex-1">
           <span className="text-sm text-ink-muted">Choose day</span>
-          <span className="readout text-2xl text-flare">Day {day.toFixed(1)}</span>
+          <span className="readout text-2xl text-story-ink">Day {day.toFixed(1)}</span>
         </div>
         <button
           type="button"
@@ -686,10 +686,10 @@ function DayControl({
         <Slider.Label className="sr-only">Day of the lunar month</Slider.Label>
         <Slider.Control className="flex h-6 cursor-pointer touch-none items-center">
           <Slider.Track className="relative h-1.5 w-full rounded-full bg-kumo-fill">
-            <Slider.Indicator className="rounded-full bg-flare" />
+            <Slider.Indicator className="rounded-full bg-story" />
             <Slider.Thumb
               getAriaValueText={() => label}
-              className="size-4 rounded-full bg-flare shadow-sm outline-none has-focus-visible:ring-2 has-focus-visible:ring-kumo-focus"
+              className="size-4 rounded-full bg-story shadow-sm outline-none has-focus-visible:ring-2 has-focus-visible:ring-kumo-focus"
             />
           </Slider.Track>
         </Slider.Control>
@@ -771,7 +771,7 @@ function GuessRow({
         {(['yes', 'no'] as const).map((v) => (
           <label
             key={v}
-            className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-center text-sm transition-colors hover:bg-surface-hover has-[:checked]:border-flare has-[:checked]:bg-flare/10 has-[:checked]:text-flare has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-flare"
+            className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-center text-sm transition-colors hover:bg-surface-hover has-[:checked]:border-story has-[:checked]:bg-story/10 has-[:checked]:text-story-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-story"
           >
             <input type="radio" className="sr-only" name={item.id} value={v} checked={value === v} onChange={() => onChange(v)} />
             {guessWords(v)}
@@ -800,7 +800,7 @@ function Observe({
       <div className="grid gap-2">
         <p className="eyebrow text-ink-muted">Step 03 / Observe</p>
         <h2 id="observe-title" className="text-[clamp(2rem,1.4rem+2.6vw,3.25rem)] leading-[1.02] font-medium">
-          Compare two <span className="text-flare">moments.</span>
+          Compare two <span className="text-story-ink">moments.</span>
         </h2>
         <p className="max-w-[60ch] text-ink-muted">{q.change} Your last two observations are compared here.</p>
       </div>
@@ -810,8 +810,8 @@ function Observe({
             <ObservationCard o={a} n={notes.observations.length - 1} />
             <ObservationCard o={b} n={notes.observations.length} />
           </div>
-          <div className="grid gap-2 rounded-md border border-flare/40 bg-flare/5 p-4">
-            <p className="eyebrow text-flare">What changed</p>
+          <div className="grid gap-2 rounded-md border border-story/40 bg-story/5 p-4">
+            <p className="eyebrow text-story-ink">What changed</p>
             <ul className="grid gap-1">
               {differences(a, b).map((d) => (
                 <li key={d}>{d}</li>
@@ -856,7 +856,7 @@ function Observe({
         <button
           type="button"
           onClick={() => go({ step: 'explain' }, true)}
-          className="rounded-md bg-flare px-4 py-2.5 font-medium text-white hover:brightness-110"
+          className="rounded-md bg-story px-4 py-2.5 font-medium text-white hover:brightness-110"
         >
           Next: explain your discovery →
         </button>
@@ -952,7 +952,7 @@ function Explain({
                       <li>
                         The data says: {actual == null ? 'not computed' : actual ? 'In view' : 'Not in view'}
                         {match != null && (
-                          <span className={match ? 'text-comms' : 'text-flare'}>
+                          <span className={match ? 'text-comms' : 'text-story-ink'}>
                             {match ? ' · you were right' : ' · different from your guess'}
                           </span>
                         )}
@@ -1006,7 +1006,7 @@ function Explain({
           value={notes.explanation}
           onChange={(event) => setNotes({ explanation: event.target.value })}
           placeholder="It happened because…"
-          className="w-full rounded-md border border-line-strong bg-[#161d26] p-3 outline-none focus:border-flare"
+          className="w-full rounded-md border border-line-strong bg-[#161d26] p-3 outline-none focus:border-story"
         />
         <div className="flex flex-wrap items-center gap-4">
           <button
@@ -1029,7 +1029,7 @@ function Explain({
                 `skyline-investigation-${q.id}.md`,
               )
             }
-            className="flex cursor-pointer items-center gap-2 rounded-md bg-flare px-5 py-3 font-medium text-black"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-story px-5 py-3 font-medium text-white"
           >
             Download investigation <DownloadSimpleIcon aria-hidden />
           </button>

@@ -129,7 +129,7 @@ function Landing() {
     <Column id="top" label="understand-title">
       <h1 id="understand-title" className="rise text-[clamp(2.5rem,1.6rem+4vw,4.75rem)] leading-[0.98] font-medium text-balance">
         A different place.
-        <br />A different <span className="text-flare">perspective.</span>
+        <br />A different <span className="text-story-ink">perspective.</span>
       </h1>
       <p className="rise max-w-[40ch] text-lg leading-relaxed text-ink-muted text-pretty [--i:1]">
         Follow the light around the Moon. Change the time, explore the landscape, and discover when the Sun and Earth can come into view.

@@ -52,7 +52,7 @@ export function LabJourney({
             size="size-24"
           />
           <h2 id="journey-title" className="text-[clamp(2.25rem,1.5rem+3vw,4rem)] leading-[1.08] font-medium text-balance">
-            Four steps. <span className="text-flare">One question at a time.</span>
+            Four steps. <span className="text-story-ink">One question at a time.</span>
           </h2>
         </div>
         <div className="grid gap-6 lg:self-end">
@@ -63,7 +63,7 @@ export function LabJourney({
                   type="button"
                   onClick={() => start(step.id)}
                   aria-haspopup="dialog"
-                  className="journey-step group grid h-full w-full cursor-pointer content-start gap-1 rounded-lg border border-line bg-[#0e141c] p-3 text-left transition-[border-color,transform] hover:-translate-y-1 hover:border-flare focus-visible:outline-2 focus-visible:outline-flare"
+                  className="journey-step group grid h-full w-full cursor-pointer content-start gap-1 rounded-lg border border-line bg-[#0e141c] p-3 text-left transition-[border-color,transform] hover:-translate-y-1 hover:border-story focus-visible:outline-2 focus-visible:outline-story"
                 >
                   <span className="eyebrow text-ink-muted">0{i + 1}</span>
                   <span className="font-medium">{step.label}</span>
