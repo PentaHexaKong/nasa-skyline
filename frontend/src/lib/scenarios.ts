@@ -56,7 +56,10 @@ export function scenarioGuidance(site: Pick<SitePlan, 'stay' | 'checks' | 'touch
       ? 'This stay is not fully computed.'
       : missed.length > 0
         ? 'Start with the limits this site misses.'
-        : 'This site meets your limits over the stay.',
+        : site.touchdown !== 'both'
+          ? // Touchdown and stay are separate tests: say which one failed, so "doesn't work" never sits beside "meets".
+            'Over the stay it meets every limit; only the touchdown moment fails, so another landing time may be enough.'
+          : 'This site meets your limits over the stay.',
     detail: !checks
       ? 'Choose an earlier date or a shorter stay before comparing changes.'
       : missed.length > 0

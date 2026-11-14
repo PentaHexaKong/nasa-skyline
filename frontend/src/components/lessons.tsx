@@ -105,8 +105,9 @@ function PolarDaySee({ data }: { data: Record<string, Summary> }) {
         />
       </div>
       <Finding>
-        Neither. At {short(s)} the Sun is in view <strong className="font-medium text-sun">{pct(m.sunShare)}</strong> of the year. Half of
-        its spells of shadow last under <strong className="font-medium">{days(median(dark))}</strong>; the longest lasts{' '}
+        Mostly sun, broken by spells of shadow. At {short(s)} the Sun is in view{' '}
+        <strong className="font-medium text-sun">{pct(m.sunShare)}</strong> of the year. Half of its spells of shadow last under{' '}
+        <strong className="font-medium">{days(median(dark))}</strong>; the longest lasts{' '}
         <strong className="font-medium">{days(Math.max(...dark))}</strong>.
       </Finding>
     </div>

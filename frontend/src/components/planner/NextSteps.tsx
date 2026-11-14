@@ -61,7 +61,7 @@ function Status({ site, plan }: { site: SitePlan; plan: Plan }) {
     <div className="grid content-start gap-3">
       <span className={`inline-flex w-max items-center gap-1.5 text-sm font-medium ${r.works ? 'text-go' : 'text-miss'}`}>
         {r.works ? <CheckCircleIcon aria-hidden weight="fill" /> : <WarningCircleIcon aria-hidden weight="fill" />}
-        {r.works ? 'Works for this landing' : 'Needs attention'}
+        {r.works ? 'Works for this landing' : 'Doesn’t work for this landing'}
       </span>
       <p className="text-lg leading-snug text-pretty">
         {r.works

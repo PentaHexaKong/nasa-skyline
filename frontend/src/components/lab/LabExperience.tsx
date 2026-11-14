@@ -594,7 +594,7 @@ function DayControl({
           {playing ? <PauseIcon aria-hidden weight="fill" /> : <PlayIcon aria-hidden weight="fill" />}
         </button>
         <div className="grid flex-1">
-          <span className="text-sm text-ink-muted">Choose day</span>
+          <span className="text-sm text-ink-muted">Day of the lunar month</span>
           <span className="readout text-2xl text-flare">Day {day.toFixed(1)}</span>
         </div>
         <button
