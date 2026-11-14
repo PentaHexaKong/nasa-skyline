@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light"><meta name="description" content="Demo antarmuka Lunar Landing Site Navigation: eksplorasi cahaya, visibilitas Bumi, dan perbandingan relay dengan data ilustrasi.">
+<title>Luna / Lunar Landing Site Navigation</title>
+<link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Lewati ke konten</a>
+<header class="topbar">
+<a class="brand" href="./" aria-label="Luna halaman utama"><span class="brand-moon" aria-hidden="true"></span><span>LUNA<span class="brand-sub">LANDING SITE NAVIGATOR</span></span></a>
+<nav class="navigation" aria-label="Navigasi utama"><button type="button" class="nav-item active" id="explore-tab" aria-current="page">Eksplorasi</button><button type="button" class="nav-item" id="compare-tab">Bandingkan <span id="compare-count" class="count">0</span></button></nav>
+<button type="button" class="help-button" id="help-open"><span aria-hidden="true">?</span> Cara membaca</button>
+</header>
+<div class="demo-banner"><span class="status-dot" aria-hidden="true"></span><strong>Demo UI · data ilustrasi</strong><span class="banner-detail">Medan, lintasan, orbit, dan angka dibuat untuk menjelaskan alur. Bukan hasil sains lunar.</span></div>
+<main id="main">
+<section id="explore-view" aria-labelledby="page-title">
+<div class="page-heading"><div><p class="eyebrow">MISSION PLANNING, MADE VISIBLE</p><h1 id="page-title">Satu lokasi. Tiga pertanyaan.</h1><p class="heading-sub">Ada cahaya? Bumi terlihat? Seberapa besar relay membantu?</p></div><div class="step-guide"><span><b>01</b> Pilih</span><span aria-hidden="true">→</span><span><b>02</b> Jelajahi</span><span aria-hidden="true">→</span><span><b>03</b> Bandingkan</span></div></div>
+<div class="workspace">
+<aside class="settings panel" aria-labelledby="settings-title">
+<div class="section-kicker"><span class="step-number">01</span><h2 id="settings-title">Tentukan skenario</h2></div>
+<fieldset class="site-group"><legend>Lokasi pengamat <span class="small-tag">CONTOH</span></legend>
+<label class="site-option"><input type="radio" name="site" value="a" checked><span class="site-letter">A</span><span class="site-text"><strong>Punggung A</strong><small>Medan relatif terbuka</small></span><span class="radio-indicator" aria-hidden="true"></span></label>
+<label class="site-option"><input type="radio" name="site" value="b"><span class="site-letter">B</span><span class="site-text"><strong>Tepi kawah B</strong><small>Penghalang di beberapa arah</small></span><span class="radio-indicator" aria-hidden="true"></span></label>
+<label class="site-option"><input type="radio" name="site" value="c"><span class="site-letter">C</span><span class="site-text"><strong>Cekungan C</strong><small>Horizon medan lebih tinggi</small></span><span class="radio-indicator" aria-hidden="true"></span></label>
+</fieldset>
+<div class="polar-map"><svg viewBox="0 0 240 134" role="img" aria-label="Sketsa posisi tiga lokasi contoh, bukan peta Bulan sebenarnya"><defs><radialGradient id="map-fill"><stop stop-color="#d6e3de"/><stop offset="1" stop-color="#edf2ee"/></radialGradient></defs><ellipse cx="120" cy="78" rx="83" ry="62" fill="url(#map-fill)"/><g fill="none" stroke="#c0cfc8" stroke-width="1"><ellipse cx="120" cy="78" rx="62" ry="44"/><ellipse cx="120" cy="78" rx="39" ry="28"/><path d="M38 78H202M120 16V134M65 32L176 123M65 123L175 32" stroke-dasharray="3 5"/><path d="M55 81Q86 49 106 72T170 67M73 107Q97 79 137 103T190 92"/></g><text x="14" y="20" fill="#73817b" font-size="9" font-family="monospace">POLAR SKETCH</text><g id="map-points"></g><text x="120" y="131" text-anchor="middle" fill="#7a8882" font-size="9">Kutub selatan · posisi ilustratif</text></svg></div>
+<label class="field-label" for="start-date">Tanggal awal <span>UTC</span></label><input class="input" id="start-date" type="date" value="2026-11-14" min="2026-11-14" max="2030-12-31">
+<label class="field-label" for="duration">Periode pengamatan</label><select class="input" id="duration"><option value="7">7 hari</option><option value="14" selected>14 hari</option><option value="30">30 hari</option></select>
+<div class="settings-note"><span aria-hidden="true">↳</span><p>Ubah lokasi atau tanggal untuk melihat bagaimana satu pilihan mengubah pilihan lainnya.</p></div>
+<button class="button primary" id="save-scenario" type="button">＋ Tambah ke perbandingan</button><p class="microcopy">Simpan hingga 3 skenario dalam sesi ini.</p>
+</aside>
+<div class="results">
+<section class="sky-panel" aria-labelledby="sky-title"><div class="sky-heading"><div><p class="eyebrow light">02 / LIHAT DARI PERMUKAAN</p><h2 id="sky-title">Langit dari Punggung A</h2><p id="scenario-caption">Lokasi dan waktu ilustrasi</p></div><span class="dark-pill">SKYLINE 360°</span></div>
+<div class="chart-legend"><span><i class="legend-dot sun-color"></i>Matahari</span><span><i class="legend-dot earth-color"></i>Bumi</span><span><i class="legend-line"></i>Medan penghalang</span><span id="relay-legend" hidden><i class="legend-dot relay-color"></i>Relay</span></div>
+<div id="sky-chart" class="sky-chart"></div>
+<div class="sky-status"><span id="sun-status"></span><span id="earth-status"></span><span id="relay-status" hidden></span></div>
+<div class="time-controls"><button class="play-button" id="play" type="button" aria-label="Putar waktu"><span id="play-icon" aria-hidden="true">▶</span></button><div class="time-track"><div class="time-track-heading"><label for="time-slider">Geser waktu</label><output id="cursor-label" for="time-slider"></output></div><input id="time-slider" type="range" min="0" max="167" value="30"><div class="time-ticks"><span id="range-start"></span><span id="range-end"></span></div></div></div>
+</section>
+<div class="metric-grid" aria-label="Ringkasan periode ilustrasi">
+<article class="metric"><span class="metric-label"><i class="legend-dot sun-color"></i>Waktu bercahaya</span><strong id="metric-sun">—</strong><p>Minimal sebagian disk terlihat</p></article>
+<article class="metric"><span class="metric-label"><i class="legend-dot earth-color"></i>Bumi terlihat</span><strong id="metric-earth">—</strong><p>Jalur pandang langsung</p></article>
+<article class="metric"><span class="metric-label">Gelap terpanjang</span><strong id="metric-dark">—</strong><p>Di dalam periode pilihan</p></article>
+<article class="metric"><span class="metric-label"><i class="legend-dot relay-color"></i>Gap kontak tersisa</span><strong id="metric-gap">—</strong><p id="gap-description">Tanpa bantuan relay</p></article>
+</div>
+<section class="panel timeline-panel" aria-labelledby="timeline-title"><div class="panel-heading"><div><p class="eyebrow">SATU PERIODE, TIGA JALUR</p><h2 id="timeline-title">Kapan kondisinya mendukung?</h2></div><span class="quiet-tag" id="period-label">14 HARI</span></div><div id="timeline-lanes"></div><div class="timeline-footer"><span><i class="tiny-block"></i>Warna = kondisi tersedia</span><span>Bagian kosong = tidak tersedia</span></div><p class="section-footnote">Jalur kontak gabungan tersedia saat Bumi terlihat langsung <strong>atau</strong> jalur relay ilustratif tersedia. Cahaya tetap dinilai terpisah.</p></section>
+<section class="panel relay-panel" aria-labelledby="relay-title"><div class="panel-heading"><div><p class="eyebrow">TAMBAHAN IDE TIM</p><h2 id="relay-title">Bagaimana kalau memakai relay?</h2></div><span class="quiet-tag purple-tag">RELAY MODE</span></div><p class="section-intro">Bandingkan durasi tanpa jalur kontak. Relay meneruskan komunikasi; tidak memasok daya ke lander.</p><div class="relay-options" id="relay-options"></div><div class="relay-path" id="relay-path"></div><p class="section-footnote">Semua sambungan pada jalur harus tersedia bersamaan. Orbit dan sambungan pada demo ini adalah ilustrasi, belum dimodelkan secara fisik.</p></section>
+</div>
+</div>
+</section>
+<section id="compare-view" aria-labelledby="compare-title" hidden><div class="page-heading"><div><p class="eyebrow">03 / NILAI PILIHANNYA</p><h1 id="compare-title">Lihat perbedaannya, berdampingan.</h1><p class="heading-sub">Bandingkan lokasi, tanggal, atau bantuan relay. Semua hasil di sini tetap ilustrasi.</p></div><button class="button secondary" type="button" id="back-explore">← Tambah skenario</button></div><div id="comparison-content"></div><div class="compare-note panel"><strong>Apa yang perlu diperhatikan?</strong><p>Cahaya lebih lama belum tentu berarti kontak lebih lama. Relay dapat mengurangi gap kontak, tetapi tidak memperpanjang waktu bercahaya. Gunakan periode yang sama untuk menilai perbandingan lokasi secara setara.</p></div></section>
+</main>
+<footer class="footer"><span><strong>LUNA</strong> / Lunar Landing Site Navigation</span><span>Demo konsep · ide relay</span><a href="/integration.html">Buka pengujian API ↗</a></footer>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<dialog id="help-dialog"><div class="dialog-top"><span class="eyebrow">PANDUAN SINGKAT</span><button type="button" id="help-close" class="icon-button" aria-label="Tutup panduan">✕</button></div><h2>Baca langit, lalu bandingkan.</h2><p>Demo ini menunjukkan alur produk, dengan data yang sengaja dibuat. Tidak ada dataset NASA, SPICE, model orbit, DS, atau ML yang dipanggil oleh halaman ini.</p><ol class="help-steps"><li><strong>Pilih lokasi dan tanggal.</strong> Setiap lokasi contoh punya profil medan yang berbeda.</li><li><strong>Geser waktu.</strong> Matahari atau Bumi bisa berada di bawah garis medan dan terhalang. Sudut positif saja belum menjamin terlihat.</li><li><strong>Pilih relay.</strong> Lihat perubahan gap kontak. Cahaya Matahari tidak ikut bertambah.</li><li><strong>Tambah ke perbandingan.</strong> Ganti satu pilihan, simpan lagi, lalu buka tab Bandingkan.</li></ol><div class="help-definition"><strong>Sudut ≠ ketinggian meter</strong><p>Arah mendatar menunjukkan azimuth 0–360°. Sudut vertikal menunjukkan elevasi terhadap horizontal lokal. Profil medan menjadi penghalang pandangan.</p></div><p class="microcopy">Visibilitas geometris belum membuktikan daya listrik, sambungan radio, ketersediaan stasiun, atau kelayakan misi.</p><button class="button primary" type="button" id="help-done">Mengerti, mulai eksplorasi</button></dialog>
+</body>
+</html>
