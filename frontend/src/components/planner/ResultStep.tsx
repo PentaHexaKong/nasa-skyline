@@ -24,8 +24,8 @@ import { DeeperAnalysis } from '~/components/planner/DeeperAnalysis'
 import { SiteThumb } from '~/components/planner/Illustrations'
 import { LiveCheck } from '~/components/planner/LiveCheck'
 import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
-import { NextSteps } from '~/components/planner/NextSteps'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
+import { RecommendedPlan } from '~/components/planner/RecommendedPlan'
 import { Eyebrow, OpenEnd } from '~/components/Shell'
 import {
   evaluate,
@@ -541,6 +541,7 @@ export function ResultStep({ plan, actions, search }: { plan: Plan; actions: Pla
   return (
     <div className="grid gap-12">
       <Verdict plan={plan} actions={actions} />
+      <RecommendedPlan plan={plan} actions={actions} search={search} />
       <section id="compare" aria-labelledby="compare-title" className="grid scroll-mt-32 gap-4">
         <div className="grid gap-2">
           <Eyebrow pip>Site by site</Eyebrow>
@@ -580,7 +581,6 @@ export function ResultStep({ plan, actions, search }: { plan: Plan; actions: Pla
           </Collapsible.DefaultPanel>
         </Collapsible.Root>
       </div>
-      <NextSteps plan={plan} actions={actions} search={search} />
       <LiveCheck plan={plan} />
       <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <button
