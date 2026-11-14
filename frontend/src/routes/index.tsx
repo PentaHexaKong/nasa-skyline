@@ -1,14 +1,21 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useHydrated } from '@tanstack/react-router'
+import { lazy, Suspense, useRef } from 'react'
 import { MOON_PREVIEW } from '~/components/moonTextures'
 import { Shell } from '~/components/Shell'
 import { Mascot, type MascotPose, StoryLink, useScrollProgress } from '~/components/story'
 import { Wordmark } from '~/components/Wordmark'
+import { loadMoonEphemeris } from '~/lib/data'
+
+const loadHorizonMoon = () => import('~/components/HorizonMoon')
+if (typeof window !== 'undefined') void loadHorizonMoon()
+const HorizonMoon = lazy(loadHorizonMoon)
 
 /**
  * The front door: three ways in, one per audience. Explore for the curious, Understand for classrooms and anyone who
  * wants to experiment, Analyze for mission planners.
  */
 export const Route = createFileRoute('/')({
+  loader: () => loadMoonEphemeris(),
   head: () => ({
     meta: [{ title: 'Skyline · What brings you to the Moon?' }],
     links: [{ rel: 'preload', as: 'image', href: MOON_PREVIEW.color, fetchPriority: 'high' as const }],
@@ -42,24 +49,31 @@ const DOORS: { pose: MascotPose; ask: string; go: string; to: '/explore' | '/und
 
 function Home() {
   const ref = useScrollProgress<HTMLElement>()
+  const eph = Route.useLoaderData()
+  const hydrated = useHydrated()
+  const doors = useRef<HTMLUListElement>(null)
   return (
     <Shell>
       <main ref={ref} className="starfield relative grid min-h-[calc(100svh-3.5rem)] overflow-hidden">
-        <div className="relative mx-auto grid w-full max-w-6xl grid-rows-[1fr_auto_1fr_auto] justify-items-center gap-10 px-4 pt-14 pb-6 sm:px-6">
+        {hydrated && (
+          <Suspense fallback={null}>
+            <HorizonMoon eph={eph} clearOf={doors} />
+          </Suspense>
+        )}
+        {/* The Moon fades into the night at the bottom edge, so the footer line stays legible over it. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black via-black/70 to-transparent"
+        />
+        <div className="relative mx-auto grid w-full max-w-6xl grid-rows-[auto_auto_1fr_auto] justify-items-center gap-8 px-4 pt-[clamp(2rem,7svh,6rem)] pb-6 sm:px-6">
           <div className="grid content-end justify-items-center gap-5">
             <h1 className="relative grid place-items-center">
-              {/* The Moon behind the S: the same NASA colour map as the globe, shaded into a sphere. */}
-              <span
-                aria-hidden
-                className="rise absolute top-1/2 left-[13%] aspect-square w-[28%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cover bg-center opacity-70 shadow-[inset_-18px_-10px_40px_rgb(0_0_0/0.85)]"
-                style={{ backgroundImage: `url(${MOON_PREVIEW.color})`, backgroundSize: '220% 100%' }}
-              />
               <Wordmark className="rise relative h-16 w-auto text-white sm:h-24 [--i:1]" />
               <span className="sr-only">Skyline</span>
             </h1>
             <p className="rise font-display text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] italic [--i:2]">What brings you to the Moon?</p>
           </div>
-          <ul className="grid w-full gap-8 sm:grid-cols-3 sm:gap-6">
+          <ul ref={doors} className="grid w-full gap-8 sm:grid-cols-3 sm:gap-6">
             {DOORS.map((d, i) => (
               <li key={d.to} className="rise grid justify-items-center gap-4 text-center" style={{ ['--i' as string]: 3 + i }}>
                 <Mascot pose={d.pose} className="size-28" />
@@ -71,7 +85,8 @@ function Home() {
               </li>
             ))}
           </ul>
-          <div />
+          {/* Room for the Moon on a page taller than the screen; on one screen the Moon fills whatever is left (HorizonMoon). */}
+          <div className="min-h-20" />
           <div className="eyebrow flex w-full items-baseline justify-between gap-4 text-2xs text-ink-faint">
             <span>One Moon. Your way in.</span>
             <Link to="/method" className="hover:text-ink">
