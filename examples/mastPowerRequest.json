@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "skyline-mast-power-request/1.0.0",
+  "site": "CR1",
+  "startUtc": "2025-01-06T00:00:00Z",
+  "durationS": 86400.0,
+  "cadenceS": 3600.0,
+  "profile": "geometric",
+  "solarDefinition": "anyDisk",
+  "earthDefinition": "center",
+  "horizonOffsetDeg": 0.0,
+  "localResolutionM": 80,
+  "eventToleranceS": 1.0,
+  "constraints": {
+    "minimumSolar": 0.0,
+    "minimumEarth": 0.0,
+    "maximumSolarOutageS": 31536000.0,
+    "maximumEarthOutageS": 31536000.0
+  },
+  "observerHeightM": 0,
+  "mastHeightsM": [
+    0.0,
+    2.0,
+    10.0,
+    30.0
+  ],
+  "verticalAzimuthDeg": 90.0
+}

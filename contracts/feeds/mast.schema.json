@@ -1,0 +1,1642 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "number",
+          "const": 1,
+          "title": "Schema Version"
+        },
+        "contractVersion": {
+          "type": "string",
+          "const": "skyline-mast-feed/1.0.0",
+          "title": "Contractversion"
+        },
+        "dataState": {
+          "type": "string",
+          "const": "computed",
+          "title": "Datastate"
+        },
+        "origin": {
+          "type": "string",
+          "const": "computed",
+          "title": "Origin"
+        },
+        "scenarioId": {
+          "type": "string",
+          "pattern": "^mast-placement-[0-9a-f]{64}$",
+          "title": "Scenarioid"
+        },
+        "site_id": {
+          "type": "string",
+          "title": "Site Id"
+        },
+        "period": {
+          "type": "object",
+          "properties": {
+            "start_utc": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+              "title": "Start Utc"
+            },
+            "end_utc": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+              "title": "End Utc"
+            },
+            "durationS": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "title": "Durations"
+            },
+            "durationScale": {
+              "type": "string",
+              "const": "elapsed SPICE ET seconds",
+              "title": "Durationscale"
+            }
+          },
+          "required": [
+            "start_utc",
+            "end_utc",
+            "durationS",
+            "durationScale"
+          ],
+          "additionalProperties": false,
+          "title": "MastFeedPeriod"
+        },
+        "request": {
+          "type": "object",
+          "properties": {
+            "schemaVersion": {
+              "type": "string",
+              "const": "skyline-mast-placement-request/1.0.0",
+              "title": "Schemaversion"
+            },
+            "site": {
+              "type": "string",
+              "maxLength": 80,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "title": "Site"
+            },
+            "startUtc": {
+              "type": "string",
+              "allOf": [
+                {
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                {
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|\\+00:00)$"
+                }
+              ],
+              "title": "Startutc"
+            },
+            "durationS": {
+              "type": "number",
+              "minimum": 60,
+              "maximum": 31536000,
+              "title": "Durations"
+            },
+            "cadenceS": {
+              "type": "number",
+              "minimum": 30,
+              "maximum": 3600,
+              "title": "Cadences"
+            },
+            "profile": {
+              "type": "string",
+              "enum": [
+                "geometric",
+                "apparent"
+              ],
+              "title": "Profile"
+            },
+            "solarDefinition": {
+              "type": "string",
+              "enum": [
+                "center",
+                "anyDisk",
+                "fullDisk"
+              ],
+              "title": "Solardefinition"
+            },
+            "earthDefinition": {
+              "type": "string",
+              "const": "center",
+              "title": "Earthdefinition"
+            },
+            "horizonOffsetDeg": {
+              "type": "number",
+              "minimum": -5,
+              "maximum": 5,
+              "title": "Horizonoffsetdeg"
+            },
+            "localResolutionM": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "const": 20
+                },
+                {
+                  "type": "number",
+                  "const": 80
+                }
+              ],
+              "title": "Localresolutionm"
+            },
+            "eventToleranceS": {
+              "type": "number",
+              "minimum": 0.01,
+              "maximum": 30,
+              "title": "Eventtolerances"
+            },
+            "constraints": {
+              "type": "object",
+              "properties": {
+                "minimumSolar": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "title": "Minimumsolar"
+                },
+                "minimumEarth": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "title": "Minimumearth"
+                },
+                "maximumSolarOutageS": {
+                  "type": "number",
+                  "minimum": 0,
+                  "title": "Maximumsolaroutages"
+                },
+                "maximumEarthOutageS": {
+                  "type": "number",
+                  "minimum": 0,
+                  "title": "Maximumearthoutages"
+                }
+              },
+              "additionalProperties": false,
+              "title": "Constraints"
+            },
+            "observerHeightM": {
+              "type": "number",
+              "const": 0,
+              "title": "Observerheightm"
+            },
+            "searchRadiusM": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5000,
+              "title": "Searchradiusm"
+            },
+            "gridResolutionM": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "maximum": 10000,
+              "title": "Gridresolutionm"
+            },
+            "mastHeightsM": {
+              "minItems": 1,
+              "maxItems": 8,
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0
+              },
+              "title": "Mastheightsm"
+            },
+            "maximumCableLengthM": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000,
+              "title": "Maximumcablelengthm"
+            },
+            "maximumSlopeDeg": {
+              "anyOf": [
+                {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 90
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Maximumslopedeg"
+            },
+            "verticalAzimuthDeg": {
+              "title": "Verticalazimuthdeg",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "evaluationBudget": {
+              "type": "object",
+              "properties": {
+                "maxEvaluations": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 64,
+                  "title": "Maxevaluations"
+                },
+                "maxWallTimeS": {
+                  "type": "number",
+                  "minimum": 0.01,
+                  "maximum": 300,
+                  "title": "Maxwalltimes"
+                }
+              },
+              "required": [
+                "maxEvaluations",
+                "maxWallTimeS"
+              ],
+              "additionalProperties": false,
+              "title": "PlacementBudget"
+            }
+          },
+          "required": [
+            "startUtc",
+            "searchRadiusM",
+            "gridResolutionM",
+            "mastHeightsM",
+            "maximumCableLengthM",
+            "evaluationBudget"
+          ],
+          "additionalProperties": false,
+          "title": "MastPlacementRequest"
+        },
+        "referenceObserver": {
+          "type": "object",
+          "properties": {
+            "siteId": {
+              "type": "string",
+              "title": "Siteid"
+            },
+            "latitudeDeg": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "title": "Latitudedeg"
+            },
+            "longitudeDegEast": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 360,
+              "title": "Longitudedegeast"
+            },
+            "frame": {
+              "type": "string",
+              "const": "MOON_ME_DE421",
+              "title": "Frame"
+            },
+            "coordinateSource": {
+              "type": "string",
+              "title": "Coordinatesource"
+            },
+            "coordinateUncertaintyM": {
+              "title": "Coordinateuncertaintym",
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "groundElevationM": {
+              "type": "number",
+              "title": "Groundelevationm"
+            },
+            "observerHeightM": {
+              "type": "number",
+              "title": "Observerheightm"
+            },
+            "radialReferenceM": {
+              "type": "number",
+              "title": "Radialreferencem"
+            },
+            "positionM": {
+              "minItems": 3,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "title": "Positionm"
+            },
+            "datum": {
+              "type": "string",
+              "title": "Datum"
+            }
+          },
+          "required": [
+            "siteId",
+            "latitudeDeg",
+            "longitudeDegEast",
+            "frame",
+            "coordinateSource",
+            "coordinateUncertaintyM",
+            "groundElevationM",
+            "observerHeightM",
+            "radialReferenceM",
+            "positionM",
+            "datum"
+          ],
+          "additionalProperties": false,
+          "title": "Observer"
+        },
+        "baselineMetrics": {
+          "type": "object",
+          "properties": {
+            "sunlightDurationS": {
+              "type": "number",
+              "minimum": 0,
+              "title": "Sunlightdurations"
+            },
+            "sunlightAvailabilityFraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "title": "Sunlightavailabilityfraction"
+            },
+            "directEarthDurationS": {
+              "type": "number",
+              "minimum": 0,
+              "title": "Directearthdurations"
+            },
+            "directEarthAvailabilityFraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "title": "Directearthavailabilityfraction"
+            },
+            "meanVisibleSolarDiskFraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "title": "Meanvisiblesolardiskfraction"
+            },
+            "longestDarkness": {
+              "type": "object",
+              "properties": {
+                "durationS": {
+                  "type": "number",
+                  "minimum": 0,
+                  "title": "Durations"
+                },
+                "interval": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startUtc": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                          "title": "Startutc"
+                        },
+                        "endUtc": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                          "title": "Endutc"
+                        },
+                        "startS": {
+                          "type": "number",
+                          "minimum": 0,
+                          "title": "Starts"
+                        },
+                        "endS": {
+                          "type": "number",
+                          "minimum": 0,
+                          "title": "Ends"
+                        },
+                        "startClipped": {
+                          "type": "boolean",
+                          "title": "Startclipped"
+                        },
+                        "endClipped": {
+                          "type": "boolean",
+                          "title": "Endclipped"
+                        }
+                      },
+                      "required": [
+                        "startUtc",
+                        "endUtc",
+                        "startS",
+                        "endS",
+                        "startClipped",
+                        "endClipped"
+                      ],
+                      "additionalProperties": false,
+                      "title": "Interval"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "touchesCoverageBoundary": {
+                  "type": "boolean",
+                  "title": "Touchescoverageboundary"
+                }
+              },
+              "required": [
+                "durationS",
+                "interval",
+                "touchesCoverageBoundary"
+              ],
+              "additionalProperties": false,
+              "title": "LongestInterval"
+            },
+            "longestDirectEarthBlackout": {
+              "type": "object",
+              "properties": {
+                "durationS": {
+                  "type": "number",
+                  "minimum": 0,
+                  "title": "Durations"
+                },
+                "interval": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "startUtc": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                          "title": "Startutc"
+                        },
+                        "endUtc": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                          "title": "Endutc"
+                        },
+                        "startS": {
+                          "type": "number",
+                          "minimum": 0,
+                          "title": "Starts"
+                        },
+                        "endS": {
+                          "type": "number",
+                          "minimum": 0,
+                          "title": "Ends"
+                        },
+                        "startClipped": {
+                          "type": "boolean",
+                          "title": "Startclipped"
+                        },
+                        "endClipped": {
+                          "type": "boolean",
+                          "title": "Endclipped"
+                        }
+                      },
+                      "required": [
+                        "startUtc",
+                        "endUtc",
+                        "startS",
+                        "endS",
+                        "startClipped",
+                        "endClipped"
+                      ],
+                      "additionalProperties": false,
+                      "title": "Interval"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "touchesCoverageBoundary": {
+                  "type": "boolean",
+                  "title": "Touchescoverageboundary"
+                }
+              },
+              "required": [
+                "durationS",
+                "interval",
+                "touchesCoverageBoundary"
+              ],
+              "additionalProperties": false,
+              "title": "LongestInterval"
+            },
+            "denominatorS": {
+              "type": "number",
+              "minimum": 0,
+              "title": "Denominators"
+            },
+            "denominatorSemantics": {
+              "type": "string",
+              "title": "Denominatorsemantics"
+            },
+            "meanDiskFractionMethod": {
+              "type": "string",
+              "title": "Meandiskfractionmethod"
+            }
+          },
+          "required": [
+            "sunlightDurationS",
+            "sunlightAvailabilityFraction",
+            "directEarthDurationS",
+            "directEarthAvailabilityFraction",
+            "meanVisibleSolarDiskFraction",
+            "longestDarkness",
+            "longestDirectEarthBlackout",
+            "denominatorS",
+            "denominatorSemantics",
+            "meanDiskFractionMethod"
+          ],
+          "additionalProperties": false,
+          "title": "MissionMetrics"
+        },
+        "rule": {
+          "type": "string",
+          "title": "Rule"
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "candidateId": {
+                "type": "string",
+                "title": "Candidateid"
+              },
+              "eastM": {
+                "type": "number",
+                "title": "Eastm"
+              },
+              "northM": {
+                "type": "number",
+                "title": "Northm"
+              },
+              "site": {
+                "type": "object",
+                "properties": {
+                  "siteId": {
+                    "type": "string",
+                    "maxLength": 80,
+                    "pattern": "^[A-Za-z0-9_-]+$",
+                    "title": "Siteid"
+                  },
+                  "latitudeDeg": {
+                    "type": "number",
+                    "minimum": -90,
+                    "maximum": 90,
+                    "title": "Latitudedeg"
+                  },
+                  "longitudeDeg": {
+                    "type": "number",
+                    "minimum": -360,
+                    "maximum": 360,
+                    "title": "Longitudedeg"
+                  },
+                  "sourceFrame": {
+                    "type": "string",
+                    "const": "MOON_ME_DE421",
+                    "title": "Sourceframe"
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "title": "Sourceurl"
+                  }
+                },
+                "required": [
+                  "siteId",
+                  "latitudeDeg",
+                  "longitudeDeg"
+                ],
+                "additionalProperties": false,
+                "title": "Site"
+              },
+              "cableDistanceM": {
+                "type": "number",
+                "minimum": 0,
+                "title": "Cabledistancem"
+              },
+              "terrainState": {
+                "type": "string",
+                "enum": [
+                  "computed",
+                  "unavailable"
+                ],
+                "title": "Terrainstate"
+              },
+              "groundElevationM": {
+                "title": "Groundelevationm",
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "estimatedSlopeDeg": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 90
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Estimatedslopedeg"
+              },
+              "slopeQuality": {
+                "type": "string",
+                "title": "Slopequality"
+              },
+              "slopeProbeStepM": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Slopeprobestepm"
+              },
+              "slopeFootprintDiameterM": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Slopefootprintdiameterm"
+              },
+              "demResolutionM": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "title": "Demresolutionm"
+              },
+              "unresolvedMicrotopography": {
+                "type": "boolean",
+                "const": true,
+                "title": "Unresolvedmicrotopography"
+              },
+              "constructionSafetyValidated": {
+                "type": "boolean",
+                "const": false,
+                "title": "Constructionsafetyvalidated"
+              },
+              "gridFinerThanDem": {
+                "type": "boolean",
+                "title": "Gridfinerthandem"
+              },
+              "terrainError": {
+                "title": "Terrainerror",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "outcomes": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "observerHeightM": {
+                      "type": "number",
+                      "minimum": 0,
+                      "title": "Observerheightm"
+                    },
+                    "dataState": {
+                      "type": "string",
+                      "enum": [
+                        "computed",
+                        "unsupported",
+                        "not_computed",
+                        "unavailable",
+                        "failed"
+                      ],
+                      "title": "Datastate"
+                    },
+                    "feasibilityStatus": {
+                      "type": "string",
+                      "enum": [
+                        "feasible",
+                        "infeasible",
+                        "unavailable",
+                        "not_evaluated"
+                      ],
+                      "title": "Feasibilitystatus"
+                    },
+                    "violations": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "title": "Violations"
+                    },
+                    "paretoRank": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "title": "Paretorank"
+                    },
+                    "sourceScenarioId": {
+                      "title": "Sourcescenarioid",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "metrics": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "sunlightDurationS": {
+                              "type": "number",
+                              "minimum": 0,
+                              "title": "Sunlightdurations"
+                            },
+                            "sunlightAvailabilityFraction": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Sunlightavailabilityfraction"
+                            },
+                            "directEarthDurationS": {
+                              "type": "number",
+                              "minimum": 0,
+                              "title": "Directearthdurations"
+                            },
+                            "directEarthAvailabilityFraction": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Directearthavailabilityfraction"
+                            },
+                            "meanVisibleSolarDiskFraction": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Meanvisiblesolardiskfraction"
+                            },
+                            "longestDarkness": {
+                              "type": "object",
+                              "properties": {
+                                "durationS": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "title": "Durations"
+                                },
+                                "interval": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "startUtc": {
+                                          "type": "string",
+                                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                                          "title": "Startutc"
+                                        },
+                                        "endUtc": {
+                                          "type": "string",
+                                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                                          "title": "Endutc"
+                                        },
+                                        "startS": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "title": "Starts"
+                                        },
+                                        "endS": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "title": "Ends"
+                                        },
+                                        "startClipped": {
+                                          "type": "boolean",
+                                          "title": "Startclipped"
+                                        },
+                                        "endClipped": {
+                                          "type": "boolean",
+                                          "title": "Endclipped"
+                                        }
+                                      },
+                                      "required": [
+                                        "startUtc",
+                                        "endUtc",
+                                        "startS",
+                                        "endS",
+                                        "startClipped",
+                                        "endClipped"
+                                      ],
+                                      "additionalProperties": false,
+                                      "title": "Interval"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "touchesCoverageBoundary": {
+                                  "type": "boolean",
+                                  "title": "Touchescoverageboundary"
+                                }
+                              },
+                              "required": [
+                                "durationS",
+                                "interval",
+                                "touchesCoverageBoundary"
+                              ],
+                              "additionalProperties": false,
+                              "title": "LongestInterval"
+                            },
+                            "longestDirectEarthBlackout": {
+                              "type": "object",
+                              "properties": {
+                                "durationS": {
+                                  "type": "number",
+                                  "minimum": 0,
+                                  "title": "Durations"
+                                },
+                                "interval": {
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "startUtc": {
+                                          "type": "string",
+                                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                                          "title": "Startutc"
+                                        },
+                                        "endUtc": {
+                                          "type": "string",
+                                          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+                                          "title": "Endutc"
+                                        },
+                                        "startS": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "title": "Starts"
+                                        },
+                                        "endS": {
+                                          "type": "number",
+                                          "minimum": 0,
+                                          "title": "Ends"
+                                        },
+                                        "startClipped": {
+                                          "type": "boolean",
+                                          "title": "Startclipped"
+                                        },
+                                        "endClipped": {
+                                          "type": "boolean",
+                                          "title": "Endclipped"
+                                        }
+                                      },
+                                      "required": [
+                                        "startUtc",
+                                        "endUtc",
+                                        "startS",
+                                        "endS",
+                                        "startClipped",
+                                        "endClipped"
+                                      ],
+                                      "additionalProperties": false,
+                                      "title": "Interval"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "touchesCoverageBoundary": {
+                                  "type": "boolean",
+                                  "title": "Touchescoverageboundary"
+                                }
+                              },
+                              "required": [
+                                "durationS",
+                                "interval",
+                                "touchesCoverageBoundary"
+                              ],
+                              "additionalProperties": false,
+                              "title": "LongestInterval"
+                            },
+                            "denominatorS": {
+                              "type": "number",
+                              "minimum": 0,
+                              "title": "Denominators"
+                            },
+                            "denominatorSemantics": {
+                              "type": "string",
+                              "title": "Denominatorsemantics"
+                            },
+                            "meanDiskFractionMethod": {
+                              "type": "string",
+                              "title": "Meandiskfractionmethod"
+                            }
+                          },
+                          "required": [
+                            "sunlightDurationS",
+                            "sunlightAvailabilityFraction",
+                            "directEarthDurationS",
+                            "directEarthAvailabilityFraction",
+                            "meanVisibleSolarDiskFraction",
+                            "longestDarkness",
+                            "longestDirectEarthBlackout",
+                            "denominatorS",
+                            "denominatorSemantics",
+                            "meanDiskFractionMethod"
+                          ],
+                          "additionalProperties": false,
+                          "title": "MissionMetrics"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "panels": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "horizontal": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Horizontal"
+                            },
+                            "vertical": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Vertical"
+                            },
+                            "tracking": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1,
+                              "title": "Tracking"
+                            },
+                            "verticalAzimuthDeg": {
+                              "type": "number",
+                              "minimum": 0,
+                              "exclusiveMaximum": 360,
+                              "title": "Verticalazimuthdeg"
+                            },
+                            "model": {
+                              "type": "string",
+                              "const": "solar-center-incidence-times-visible-disk-fraction/1.0.0",
+                              "title": "Model"
+                            },
+                            "idealUnconstrainedTracking": {
+                              "type": "boolean",
+                              "const": true,
+                              "title": "Idealunconstrainedtracking"
+                            }
+                          },
+                          "required": [
+                            "horizontal",
+                            "vertical",
+                            "tracking",
+                            "verticalAzimuthDeg",
+                            "model",
+                            "idealUnconstrainedTracking"
+                          ],
+                          "additionalProperties": false,
+                          "title": "PlacementPanels"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "reason": {
+                      "title": "Reason",
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "observerHeightM",
+                    "dataState",
+                    "feasibilityStatus",
+                    "violations",
+                    "paretoRank",
+                    "sourceScenarioId",
+                    "metrics",
+                    "panels",
+                    "reason"
+                  ],
+                  "additionalProperties": false,
+                  "title": "MastFeedOutcome"
+                },
+                "title": "Outcomes"
+              }
+            },
+            "required": [
+              "candidateId",
+              "eastM",
+              "northM",
+              "site",
+              "cableDistanceM",
+              "terrainState",
+              "groundElevationM",
+              "estimatedSlopeDeg",
+              "slopeQuality",
+              "slopeProbeStepM",
+              "slopeFootprintDiameterM",
+              "demResolutionM",
+              "unresolvedMicrotopography",
+              "constructionSafetyValidated",
+              "gridFinerThanDem",
+              "terrainError",
+              "outcomes"
+            ],
+            "additionalProperties": false,
+            "title": "MastFeedCandidate"
+          },
+          "title": "Candidates"
+        },
+        "optimization": {
+          "type": "object",
+          "properties": {
+            "generatedCandidateCount": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "title": "Generatedcandidatecount"
+            },
+            "plannedEvaluationCount": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "title": "Plannedevaluationcount"
+            },
+            "evaluationsPerformed": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "title": "Evaluationsperformed"
+            },
+            "feasibleOutcomeCount": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "title": "Feasibleoutcomecount"
+            },
+            "unknownOutcomeCount": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "title": "Unknownoutcomecount"
+            },
+            "complete": {
+              "type": "boolean",
+              "title": "Complete"
+            },
+            "terminationReason": {
+              "type": "string",
+              "enum": [
+                "enumerated",
+                "wall_time_budget"
+              ],
+              "title": "Terminationreason"
+            },
+            "wallTimeS": {
+              "type": "number",
+              "minimum": 0,
+              "title": "Walltimes"
+            },
+            "method": {
+              "type": "string",
+              "const": "bounded exhaustive enumeration",
+              "title": "Method"
+            },
+            "objectiveDefinitions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "title": "Objectivedefinitions"
+            },
+            "paretoSet": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "candidateId": {
+                    "type": "string",
+                    "title": "Candidateid"
+                  },
+                  "observerHeightM": {
+                    "type": "number",
+                    "title": "Observerheightm"
+                  }
+                },
+                "required": [
+                  "candidateId",
+                  "observerHeightM"
+                ],
+                "additionalProperties": false,
+                "title": "ParetoMember"
+              },
+              "title": "Paretoset"
+            },
+            "tradeOffs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Tradeoffs"
+            },
+            "rankScope": {
+              "type": "string",
+              "const": "computed feasible generated location-height combinations",
+              "title": "Rankscope"
+            },
+            "globalOptimalityClaimed": {
+              "type": "boolean",
+              "const": false,
+              "title": "Globaloptimalityclaimed"
+            }
+          },
+          "required": [
+            "generatedCandidateCount",
+            "plannedEvaluationCount",
+            "evaluationsPerformed",
+            "feasibleOutcomeCount",
+            "unknownOutcomeCount",
+            "complete",
+            "terminationReason",
+            "wallTimeS",
+            "method",
+            "objectiveDefinitions",
+            "paretoSet",
+            "tradeOffs",
+            "rankScope",
+            "globalOptimalityClaimed"
+          ],
+          "additionalProperties": false,
+          "title": "PlacementSummary"
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "algorithm_version": {
+              "type": "string",
+              "const": "mast-placement/1.0.0",
+              "title": "Algorithm Version"
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Sources"
+            },
+            "assumptions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "title": "Assumptions"
+            },
+            "engineVersion": {
+              "type": "string",
+              "title": "Engineversion"
+            },
+            "environmentAlgorithmVersion": {
+              "type": "string",
+              "title": "Environmentalgorithmversion"
+            },
+            "implementation": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": {},
+              "title": "Implementation"
+            },
+            "kernels": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": {
+                "type": "string"
+              },
+              "title": "Kernels"
+            },
+            "dems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "title": "Filename"
+                  },
+                  "sourceUrl": {
+                    "type": "string",
+                    "title": "Sourceurl"
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$",
+                    "title": "Sha256"
+                  },
+                  "resolutionM": {
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "title": "Resolutionm"
+                  },
+                  "boundsM": {
+                    "minItems": 4,
+                    "maxItems": 4,
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "title": "Boundsm"
+                  },
+                  "frame": {
+                    "type": "string",
+                    "const": "MOON_ME_DE421",
+                    "title": "Frame"
+                  },
+                  "projection": {
+                    "type": "string",
+                    "title": "Projection"
+                  }
+                },
+                "required": [
+                  "filename",
+                  "sourceUrl",
+                  "sha256",
+                  "resolutionM",
+                  "boundsM",
+                  "frame",
+                  "projection"
+                ],
+                "additionalProperties": false,
+                "title": "DemIdentity"
+              },
+              "title": "Dems"
+            },
+            "baselineScenarioId": {
+              "type": "string",
+              "title": "Baselinescenarioid"
+            },
+            "placement": {
+              "type": "object",
+              "properties": {
+                "algorithmVersion": {
+                  "type": "string",
+                  "const": "mast-placement/1.0.0",
+                  "title": "Algorithmversion"
+                },
+                "referenceSite": {
+                  "type": "object",
+                  "properties": {
+                    "siteId": {
+                      "type": "string",
+                      "maxLength": 80,
+                      "pattern": "^[A-Za-z0-9_-]+$",
+                      "title": "Siteid"
+                    },
+                    "latitudeDeg": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90,
+                      "title": "Latitudedeg"
+                    },
+                    "longitudeDeg": {
+                      "type": "number",
+                      "minimum": -360,
+                      "maximum": 360,
+                      "title": "Longitudedeg"
+                    },
+                    "sourceFrame": {
+                      "type": "string",
+                      "const": "MOON_ME_DE421",
+                      "title": "Sourceframe"
+                    },
+                    "sourceUrl": {
+                      "type": "string",
+                      "title": "Sourceurl"
+                    }
+                  },
+                  "required": [
+                    "siteId",
+                    "latitudeDeg",
+                    "longitudeDeg"
+                  ],
+                  "additionalProperties": false,
+                  "title": "Site"
+                },
+                "mapping": {
+                  "type": "string",
+                  "const": "spherical exponential map in MOON_ME_DE421, radial terrain projection",
+                  "title": "Mapping"
+                },
+                "offsetRadiusM": {
+                  "type": "number",
+                  "const": 1737400,
+                  "title": "Offsetradiusm"
+                },
+                "cableModel": {
+                  "type": "string",
+                  "const": "reference-sphere great-circle surface offset; vertical mast run, routing, terrain following and slack omitted",
+                  "title": "Cablemodel"
+                },
+                "slopeModel": {
+                  "type": "string",
+                  "const": "central radial-height differences at two projected pixels per half-baseline",
+                  "title": "Slopemodel"
+                },
+                "independentlyValidated": {
+                  "type": "boolean",
+                  "const": false,
+                  "title": "Independentlyvalidated"
+                },
+                "constructionSafetyValidated": {
+                  "type": "boolean",
+                  "const": false,
+                  "title": "Constructionsafetyvalidated"
+                },
+                "limitations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "Limitations"
+                }
+              },
+              "required": [
+                "algorithmVersion",
+                "referenceSite",
+                "mapping",
+                "offsetRadiusM",
+                "cableModel",
+                "slopeModel",
+                "independentlyValidated",
+                "constructionSafetyValidated",
+                "limitations"
+              ],
+              "additionalProperties": false,
+              "title": "PlacementProvenance"
+            },
+            "validationStatus": {
+              "type": "string",
+              "const": "computed",
+              "title": "Validationstatus"
+            },
+            "independentlyValidated": {
+              "type": "boolean",
+              "const": false,
+              "title": "Independentlyvalidated"
+            }
+          },
+          "required": [
+            "algorithm_version",
+            "sources",
+            "assumptions",
+            "engineVersion",
+            "environmentAlgorithmVersion",
+            "implementation",
+            "kernels",
+            "dems",
+            "baselineScenarioId",
+            "placement",
+            "validationStatus",
+            "independentlyValidated"
+          ],
+          "additionalProperties": false,
+          "title": "MastFeedProvenance"
+        }
+      },
+      "required": [
+        "schema_version",
+        "contractVersion",
+        "dataState",
+        "origin",
+        "scenarioId",
+        "site_id",
+        "period",
+        "request",
+        "referenceObserver",
+        "baselineMetrics",
+        "rule",
+        "candidates",
+        "optimization",
+        "provenance"
+      ],
+      "additionalProperties": false,
+      "title": "MastFeedV1"
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "number",
+          "const": 1
+        },
+        "origin": {
+          "type": "string",
+          "enum": [
+            "computed",
+            "fixture"
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "algorithm_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sources": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "assumptions": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "required": [
+            "algorithm_version",
+            "sources",
+            "assumptions"
+          ]
+        },
+        "site_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "period": {
+          "type": "object",
+          "properties": {
+            "start_utc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "end_utc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            }
+          },
+          "required": [
+            "start_utc",
+            "end_utc"
+          ]
+        },
+        "rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "candidates": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "east_m": {
+                "type": "number"
+              },
+              "north_m": {
+                "type": "number"
+              },
+              "ground_m": {
+                "type": "number"
+              },
+              "slope_deg": {
+                "anyOf": [
+                  {
+                    "type": "number",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "outcomes": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "mast_m": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "sun_share": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "longest_no_sun_h": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "longest_no_sun_truncated": {
+                      "type": "boolean"
+                    },
+                    "earth_center_share": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "longest_no_earth_h": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "longest_no_earth_truncated": {
+                      "type": "boolean"
+                    },
+                    "potential_vertical": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "potential_horizontal": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "potential_tracking": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "mast_m",
+                    "sun_share",
+                    "longest_no_sun_h",
+                    "longest_no_sun_truncated",
+                    "earth_center_share",
+                    "longest_no_earth_h",
+                    "longest_no_earth_truncated",
+                    "potential_vertical",
+                    "potential_horizontal"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "east_m",
+              "north_m",
+              "ground_m",
+              "slope_deg",
+              "outcomes"
+            ]
+          }
+        },
+        "contractVersion": {
+          "not": {}
+        }
+      },
+      "required": [
+        "schema_version",
+        "origin",
+        "provenance",
+        "site_id",
+        "period",
+        "rule",
+        "candidates"
+      ]
+    }
+  ]
+}

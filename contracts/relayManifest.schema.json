@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "skyline-relay-manifest/1.0.0"
+    },
+    "siteId": {
+      "type": "string",
+      "enum": [
+        "CR1",
+        "GR1",
+        "SR1"
+      ]
+    },
+    "scenarioSelectionRequired": {
+      "type": "boolean",
+      "const": true
+    },
+    "scenarioPathTemplate": {
+      "type": "string",
+      "const": "scenarios/{scenarioId}.json"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "siteId",
+    "scenarioSelectionRequired",
+    "scenarioPathTemplate"
+  ]
+}

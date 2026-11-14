@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Proposed CLPS request contract (not enforced by current Go handler)",
+  "description": "Fixtures exercise transport only. DS must validate frame, scientific coverage and cross-field constraints.",
+  "type": "object",
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "site",
+        "time",
+        "earth_elevation_margin_deg",
+        "relay_scenario_id"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "clps-analysis-v1"
+        },
+        "site": {
+          "type": "object",
+          "required": [
+            "id",
+            "latitude_deg",
+            "longitude_deg_east",
+            "observer_height_m",
+            "body_fixed_frame"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "latitude_deg": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude_deg_east": {
+              "type": "number",
+              "minimum": 0,
+              "exclusiveMaximum": 360
+            },
+            "observer_height_m": {
+              "type": "number",
+              "minimum": 0
+            },
+            "body_fixed_frame": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "time": {
+          "type": "object",
+          "required": [
+            "start_utc",
+            "end_utc",
+            "step_seconds"
+          ],
+          "properties": {
+            "start_utc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "Z$"
+            },
+            "end_utc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "Z$"
+            },
+            "step_seconds": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "earth_elevation_margin_deg": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 90
+        },
+        "relay_scenario_id": {
+          "enum": [
+            "direct_only",
+            "one_relay",
+            "two_relays",
+            "mother_children",
+            "rim_node_relay"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "run_ml": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "additionalProperties": false
+}

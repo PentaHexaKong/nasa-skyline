@@ -1,0 +1,62 @@
+{
+  "schema_version": "clps-result-v1",
+  "data_state": "fixture",
+  "analysis_id": "synthetic-demo-not-computed",
+  "site": {
+    "id": "synthetic-demo-site",
+    "latitude_deg": -89,
+    "longitude_deg_east": 0,
+    "observer_height_m": 2,
+    "body_fixed_frame": "TEAM_MUST_SPECIFY_FRAME"
+  },
+  "time": {
+    "start_utc": "2026-11-14T00:00:00Z",
+    "end_utc": "2026-11-15T00:00:00Z",
+    "step_seconds": 600
+  },
+  "conventions": {
+    "azimuth": "clockwise_from_local_north",
+    "angle_unit": "deg",
+    "time_scale": "UTC",
+    "duration_unit": "s",
+    "interval": "start_inclusive_end_exclusive",
+    "observer_height_reference": "TEAM_MUST_SPECIFY_REFERENCE",
+    "sun_visibility_rule": "TEAM_MUST_SPECIFY_RULE",
+    "earth_visibility_rule": "TEAM_MUST_SPECIFY_RULE"
+  },
+  "skyline": [],
+  "samples": [],
+  "summary": {
+    "mean_visible_solar_disk_fraction": null,
+    "sunlit_time_fraction": null,
+    "longest_dark_interval_seconds": null,
+    "direct_earth_visible_fraction": null,
+    "longest_direct_gap_seconds": null,
+    "relay_assisted_visible_fraction": null,
+    "longest_remaining_gap_seconds": null
+  },
+  "events": {
+    "sunset": {
+      "status": "not_computed",
+      "time_utc": null,
+      "seconds_from_start": null
+    },
+    "earthset": {
+      "status": "not_computed",
+      "time_utc": null,
+      "seconds_from_start": null
+    }
+  },
+  "relay": {
+    "scenario_id": "direct_only",
+    "configuration_id": null
+  },
+  "provenance": {
+    "algorithm_version": null,
+    "datasets": []
+  },
+  "warnings": [
+    "Fixture for contract discussion; no terrain or ephemeris computation has run.",
+    "The coordinate is synthetic and is not a selected landing site."
+  ]
+}
