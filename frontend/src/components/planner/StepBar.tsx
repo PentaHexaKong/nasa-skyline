@@ -56,11 +56,11 @@ export function StepBar({ step, plan, actions }: { step: StepId; plan: Plan; act
             ))}
           </ol>
         </nav>
-        {step !== 'review' && (
+        {
           <Button variant="secondary" icon={DownloadSimpleIcon} onClick={actions.downloadBrief} className="ml-auto hidden md:inline-flex">
             Download brief
           </Button>
-        )}
+        }
       </div>
       {step !== 'setup' && (
         <div className="hidden border-t border-line sm:block">

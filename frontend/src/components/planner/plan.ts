@@ -4,14 +4,18 @@ import type { MissionWindow, Requirements, SitePlan } from '~/lib/mission'
 import { PROFILE_IDS, type Profile } from '~/lib/profiles'
 import { forgiving } from '~/lib/useSiteView'
 
-/** The flow, in order. A step's `next` is the label of the button that moves on from it. */
+/**
+ * The flow, in order. A step's `next` is the label of the button that moves on from it. Result carries what Review used
+ * to (what to do next, the brief, the follow-ups), so the answer and the way forward sit on one page.
+ */
 export const STEPS = [
   { id: 'setup', label: 'Set up', next: 'See the result' },
   { id: 'result', label: 'Result', next: 'See dates' },
-  { id: 'dates', label: 'Dates', next: 'Review and download' },
-  { id: 'review', label: 'Review', next: null },
+  { id: 'dates', label: 'Dates', next: null },
 ] as const
 export type StepId = (typeof STEPS)[number]['id']
+/** `review` is kept so older links still open; it now shows Result. */
+export const stepOf = (s: PlanSearch['step']): StepId | undefined => (s === 'review' ? 'result' : s)
 
 export const planSearch = z.object({
   profile: forgiving(z.enum(PROFILE_IDS)),

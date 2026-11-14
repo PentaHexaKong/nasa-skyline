@@ -59,9 +59,9 @@ export function resolvePlan(all: Summary[], p: PlanSearch): Plan {
   }
 }
 
-/** Keep the validated URL settings intact on round trips, including whether the profile was edited. */
+/** Back to Result from a scenario: keep the validated URL settings intact, including whether the profile was edited. */
 export const reviewSearch = (search: PlanSearch, focus?: string): PlanSearch => ({
   ...search,
-  step: 'review',
+  step: 'result',
   focus: focus ?? search.focus,
 })

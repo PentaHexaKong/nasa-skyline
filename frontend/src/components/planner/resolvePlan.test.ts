@@ -1,6 +1,6 @@
 import { beforeAll, expect, test } from 'vitest'
 import { loadSummary, MOON_SITES, type Summary } from '~/lib/data'
-import { planSearch } from './plan'
+import { planSearch, stepOf } from './plan'
 import { resolvePlan, reviewSearch } from './resolvePlan'
 
 let all: Summary[]
@@ -11,7 +11,7 @@ beforeAll(async () => {
 test('review to scenario to review keeps every mission setting and baseline unchanged', () => {
   const search = planSearch.parse({
     profile: 'lunar-day',
-    step: 'review',
+    step: 'result',
     sites: 'shackleton-rim,connecting-ridge',
     focus: 'shackleton-rim',
     day: '2026-12-05',
@@ -49,4 +49,10 @@ test('stays outside the computed coverage remain uncomputed on scenario pages', 
   const end = all[0]?.days.at(-1)?.date
   const plan = resolvePlan(all, planSearch.parse({ day: end, stay: 60 }))
   expect(plan.sites.every((s) => s.stay === null && s.checks === null)).toBe(true)
+})
+
+test('older review links open Result, where Review now lives', () => {
+  expect(stepOf(planSearch.parse({ step: 'review' }).step)).toBe('result')
+  expect(stepOf('dates')).toBe('dates')
+  expect(stepOf(undefined)).toBeUndefined()
 })
