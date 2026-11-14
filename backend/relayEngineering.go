@@ -98,6 +98,9 @@ type comparisonRelay struct {
 		Direct              json.RawMessage `json:"direct"`
 		Assisted            json.RawMessage `json:"assisted"`
 		ImprovementFraction float64         `json:"improvementFraction"`
+		PositionFrame       string          `json:"positionFrame"`
+		RelayPositionKm     [][][]float64   `json:"relayPositionKm"`
+		EarthPositionKm     [][]float64     `json:"earthPositionKm"`
 	} `json:"result"`
 	Provenance struct {
 		EpochET       float64           `json:"epochEt"`
@@ -188,6 +191,37 @@ func validateRelayComparison(environment comparisonEnvironment, relay comparison
 	}
 	if environment.Result.TimesS[len(times)] != float64(len(times)*cadenceS) {
 		return fmt.Errorf("endpoint mismatch")
+	}
+	return validateRelayPositions(relay, len(times))
+}
+
+// Positions are optional so adapters that predate them still compare; once present they must match the timeline.
+func validateRelayPositions(relay comparisonRelay, samples int) error {
+	result := relay.Result
+	if result.RelayPositionKm == nil && result.EarthPositionKm == nil {
+		return nil
+	}
+	if result.PositionFrame != "" && result.PositionFrame != relay.Provenance.Frame {
+		return fmt.Errorf("incompatible position frame")
+	}
+	if len(result.EarthPositionKm) != samples || len(result.RelayPositionKm) != len(result.SiteRelayAvailable) || len(result.RelayPositionKm) == 0 {
+		return fmt.Errorf("incompatible position shapes")
+	}
+	tracks := append([][][]float64{result.EarthPositionKm}, result.RelayPositionKm...)
+	for _, track := range tracks {
+		if len(track) != samples {
+			return fmt.Errorf("incompatible position shapes")
+		}
+		for _, point := range track {
+			if len(point) != 3 {
+				return fmt.Errorf("position is not a 3-vector")
+			}
+			for _, value := range point {
+				if math.IsNaN(value) || math.IsInf(value, 0) {
+					return fmt.Errorf("nonfinite position")
+				}
+			}
+		}
 	}
 	return nil
 }
