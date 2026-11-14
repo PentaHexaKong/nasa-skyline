@@ -1,15 +1,15 @@
 import { Slider } from '@base-ui/react/slider'
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Select } from '@cloudflare/kumo/components/select'
-import { ArrowRightIcon, DownloadSimpleIcon, PauseIcon, PlayIcon, PlusIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, DownloadSimpleIcon, PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import { Link, useHydrated } from '@tanstack/react-router'
-import { lazy, type ReactNode, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, type ReactNode, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { OrbitView } from '~/components/lab/OrbitView'
+import { ScenarioArt } from '~/components/lab/ScenarioArt'
 import { moment } from '~/components/Moment'
 import { Panorama } from '~/components/Panorama'
 import { Bubble, Mascot } from '~/components/story'
-import { TerrainImage } from '~/components/TerrainImage'
-import { loadMoonEphemeris, type Summary } from '~/lib/data'
+import { loadMoonEphemeris, loadTracks, type Summary } from '~/lib/data'
 import {
   dayToMoment,
   differences,
@@ -24,6 +24,9 @@ import {
   LUNAR_DAYS,
   type Observation,
   observe,
+  type PredictionItem,
+  predictionItems,
+  predictionTruth,
   sunWords,
 } from '~/lib/investigation'
 import { shortName } from '~/lib/mission'
@@ -35,13 +38,25 @@ const SiteIsland = lazy(() => import('~/components/SiteIsland'))
 
 /**
  * The lab: one question at a time, in four steps. Choose a question, write a prediction, move time (or the place) in
- * the 3D model of the real terrain, capture two observations, explain what changed. Steps stay in the modal;
+ * the 3D model of the real terrain, look at two moments, explain why. Steps stay in the modal;
  * the exported scenario link reopens its question, place, moment and step. Notes stay in this browser tab.
  */
 export type LabSearch = { step?: LabStep; q?: Investigation['id']; site?: string; day?: number }
 
-type Notes = { prediction: string; tested: boolean; observations: Observation[]; explanation: string }
-const EMPTY: Notes = { prediction: '', tested: false, observations: [], explanation: '' }
+type Guess = 'yes' | 'no'
+/** `items` are the exact questions the learner answered, kept so Explain can set each guess beside the computed answer. */
+type Notes = {
+  prediction: string
+  guesses: Record<string, Guess>
+  items: PredictionItem[]
+  tested: boolean
+  observations: Observation[]
+  explanation: string
+}
+const EMPTY: Notes = { prediction: '', guesses: {}, items: [], tested: false, observations: [], explanation: '' }
+
+/** How fast Play runs: one Earth day of the slider per second, in steps of one minute. */
+const DAYS_PER_S = 1
 
 /** The learner's words for one question, kept in this tab only (sessionStorage), never sent anywhere. */
 function useNotes(q: string | undefined) {
@@ -187,25 +202,22 @@ function StepBar({ step, onStep }: { step: LabStep; onStep: (s: LabStep) => void
 function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick: (id: Investigation['id']) => void; onOrbit: () => void }) {
   return (
     <section aria-labelledby="choose-title" className="grid gap-8">
-      <div className="grid items-end gap-6 lg:grid-cols-[1fr_auto_22rem]">
+      <div className="grid items-center gap-6 lg:grid-cols-[1fr_minmax(0,27rem)]">
         <h2 id="choose-title" className="text-[clamp(2rem,1.4rem+2.6vw,3.5rem)] leading-[1.02] font-medium">
           What would you
           <br />
           <span className="text-flare">like to discover?</span>
         </h2>
-        <div className="flex items-end gap-2">
-          <Mascot pose="scientist-question" className="size-28" />
+        <div className="flex items-center gap-5">
+          <Mascot pose="scientist-question" className="size-28 shrink-0" />
+          <p className="text-ink-muted text-pretty">
+            A ridge can hide the Sun. Another viewpoint can reveal Earth. Pick a question, change one thing, and see what happens.
+          </p>
         </div>
-        <p className="text-ink-muted text-pretty">
-          A ridge can hide the Sun. Another viewpoint can reveal Earth. Pick a question, change one thing, and see what happens.
-        </p>
       </div>
-      <p className="flex flex-wrap items-baseline justify-between gap-3 border-y border-line py-3 text-sm">
-        <span>
-          <span className="eyebrow mr-3 text-flare">What you will learn</span>
-          How <strong className="font-medium">place, terrain and time</strong> change a view of the Sun and Earth.
-        </span>
-        <span className="eyebrow text-ink-faint">Real LOLA terrain · SPICE geometry · computed by Skyline</span>
+      <p className="border-y border-line py-3 text-sm">
+        <span className="eyebrow mr-3 text-flare">What you will learn</span>
+        How <strong className="font-medium">place, terrain and time</strong> change a view of the Sun and Earth.
       </p>
       <ul className="grid gap-4 md:grid-cols-3">
         {INVESTIGATIONS.map((i) => (
@@ -214,20 +226,22 @@ function Choose({ current, onPick, onOrbit }: { current?: Investigation; onPick:
               type="button"
               onClick={() => onPick(i.id)}
               aria-pressed={current?.id === i.id}
-              className={`group grid h-full min-h-52 w-full cursor-pointer content-between overflow-hidden rounded-lg border text-left transition-colors ${
+              className={`group grid h-full w-full cursor-pointer grid-rows-[auto_1fr] overflow-hidden rounded-lg border text-left transition-colors ${
                 current?.id === i.id ? 'border-flare bg-flare/10' : 'border-line bg-surface/50 hover:border-flare/60 hover:bg-flare/5'
               }`}
             >
-              <TerrainImage siteId={i.site} className="h-40 w-full" />
-              <span className="flex items-start justify-between gap-3 px-5">
-                <span className="eyebrow text-ink-faint">{i.kicker}</span>
-                <ArrowRightIcon
-                  aria-hidden
-                  className="size-4 -rotate-45 text-ink-faint transition-transform group-hover:-translate-y-0.5"
-                />
+              <ScenarioArt id={i.id} className="h-40 w-full" />
+              <span className="grid content-start gap-2 p-5">
+                <span className="flex items-start justify-between gap-3">
+                  <span className="eyebrow text-ink-faint">{i.kicker}</span>
+                  <ArrowRightIcon
+                    aria-hidden
+                    className="size-4 shrink-0 -rotate-45 text-ink-faint transition-transform group-hover:-translate-y-0.5"
+                  />
+                </span>
+                <span className="text-xl leading-tight font-medium">{i.question}</span>
+                <span className="text-sm text-ink-muted">{i.change}</span>
               </span>
-              <span className="px-5 text-xl leading-tight font-medium">{i.question}</span>
-              <span className="px-5 pb-5 text-sm text-ink-muted">{i.change}</span>
             </button>
           </li>
         ))}
@@ -280,6 +294,7 @@ function Try({
   const [playing, setPlaying] = useState(false)
   const [tab, setTab] = useState<'light' | 'orbit'>(initialOrbit ? 'orbit' : 'light')
   const [look, setLook] = useState<'sun' | 'earth'>('sun')
+  const [focus, setFocus] = useState<{ target: 'sun' | 'earth'; nonce: number }>()
   const [diagram, setDiagram] = useState(false)
   const { date, minute } = dayToMoment(site.params.start, day)
   const track = tracks?.[date]
@@ -287,12 +302,46 @@ function Try({
   const comms = earthTarget(site, track, date, minute)
   const obs = observe(site, track, day)
 
+  // Play: one slider day per second, advanced a frame at a time and read out to the minute.
+  const dayNow = useRef(day)
+  dayNow.current = day
+  const goNow = useRef(go)
+  goNow.current = go
   useEffect(() => {
     if (!playing) return
-    const id = window.setInterval(() => go({ day: Math.min(LUNAR_DAYS, Math.round((day + 1 / 24) * 24) / 24) }), 120)
-    if (day >= LUNAR_DAYS) setPlaying(false)
-    return () => window.clearInterval(id)
-  }, [playing, day, go])
+    let frame = 0
+    let last = performance.now()
+    let at = dayNow.current >= LUNAR_DAYS ? 0 : dayNow.current
+    const tick = (now: number) => {
+      at = Math.min(LUNAR_DAYS, at + ((now - last) / 1000) * DAYS_PER_S)
+      last = now
+      goNow.current({ day: Math.round(at * 1440) / 1440 })
+      if (at >= LUNAR_DAYS) return setPlaying(false)
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [playing])
+
+  // The exact moments the prediction asks about. The mountain question opens on the first moment the ridge hides the Sun.
+  const items = useMemo(() => predictionItems(q, opening), [q, opening])
+  const ready = q.id !== 'mountain' || tracks !== undefined
+  const answered = items.every((item) => notes.guesses[item.id])
+
+  // No button to press: the moments the learner stops on are remembered, and the last two are compared in the next step.
+  const seen = useRef(notes.observations)
+  seen.current = notes.observations
+  const remember = useRef(setNotes)
+  remember.current = setNotes
+  useEffect(() => {
+    if (!model || !track || playing) return
+    const id = window.setTimeout(() => {
+      const last = seen.current.at(-1)
+      if (last && last.site === obs.site && last.day === obs.day) return
+      remember.current({ observations: [...seen.current, obs].slice(-6) })
+    }, 900)
+    return () => window.clearTimeout(id)
+  }, [model, track, playing, obs.site, obs.day])
 
   if (!model)
     return (
@@ -311,30 +360,61 @@ function Try({
         </p>
         <div className="grid gap-6 rounded-md border border-line bg-surface/50 p-6 lg:grid-cols-[1fr_16rem]">
           <form
-            className="grid content-start gap-4"
+            className="grid content-start gap-5"
             onSubmit={(e) => {
               e.preventDefault()
-              setNotes({ tested: true })
-              go({ step: 'observe' })
+              setNotes({ tested: true, items })
+              go({ step: 'observe', day: items[0]?.day })
             }}
           >
             <p className="eyebrow text-ink-muted">Before you try / your prediction</p>
-            <label htmlFor="prediction" id="predict-title" className="text-lg font-medium">
-              Before you try: what do you predict?
-            </label>
-            <p className="text-sm text-ink-muted">{q.task}</p>
-            <textarea
-              id="prediction"
-              rows={4}
-              value={notes.prediction}
-              onChange={(e) => setNotes({ prediction: e.target.value })}
-              placeholder="I predict… because…"
-              className="w-full rounded-md border border-line-strong bg-black/40 p-3 text-base outline-none focus:border-flare"
-            />
-            <div>
-              <button type="submit" className="rounded-md bg-flare px-5 py-3 font-medium text-white hover:brightness-110">
+            <div className="grid gap-1">
+              <h3 id="predict-title" className="text-lg font-medium">
+                Guess first: what would an observer see?
+              </h3>
+              <p className="text-sm text-ink-muted">{q.task}</p>
+            </div>
+            {ready ? (
+              <div className="grid gap-4">
+                {items.map((item, n) => (
+                  <GuessRow
+                    key={item.id}
+                    n={n + 1}
+                    item={item}
+                    summaries={summaries}
+                    value={notes.guesses[item.id]}
+                    onChange={(v) => setNotes({ guesses: { ...notes.guesses, [item.id]: v } })}
+                  />
+                ))}
+                <label className="grid gap-2">
+                  <span className="font-medium">Why do you think so?</span>
+                  <span className="text-sm text-ink-muted">
+                    One or two sentences. Think about how high the Sun and Earth stand, and how high the ridge is in that direction.
+                  </span>
+                  <textarea
+                    id="prediction"
+                    rows={3}
+                    value={notes.prediction}
+                    onChange={(e) => setNotes({ prediction: e.target.value })}
+                    placeholder="I think… because…"
+                    className="w-full rounded-md border border-line-strong bg-black/40 p-3 text-base outline-none focus:border-flare"
+                  />
+                </label>
+              </div>
+            ) : (
+              <p role="status" className="text-ink-muted">
+                Finding the moment to ask about…
+              </p>
+            )}
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="submit"
+                disabled={!ready || !answered}
+                className="cursor-pointer rounded-md bg-flare px-5 py-3 font-medium text-white hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+              >
                 Test my prediction ↗
               </button>
+              {ready && !answered && <span className="text-sm text-ink-muted">Answer every question to continue.</span>}
             </div>
           </form>
           <div className="grid content-end justify-items-center gap-2">
@@ -344,10 +424,6 @@ function Try({
         </div>
       </section>
     )
-
-  const capture = () => {
-    if (track) setNotes({ observations: [...notes.observations, obs].slice(-6) })
-  }
 
   return (
     <section aria-labelledby="try-title" className="grid gap-6">
@@ -386,6 +462,7 @@ function Try({
                 skyline={site.skyline.elevation_deg}
                 azStep={site.skyline.az_step_deg}
                 skylineKm={site.params.skyline_max_km}
+                focus={focus}
                 label={`3D model of the terrain around ${site.site.name}, ${longDate(date)} ${minuteLabel(minute)} UTC. ${sunWords(obs)}.`}
               />
             </Suspense>
@@ -416,7 +493,6 @@ function Try({
             ))}
           </div>
           <div className="grid gap-1">
-            <p className="eyebrow text-flare">Try it. See it. Understand it.</p>
             <h3 className="text-2xl leading-tight font-medium">{q.question}</h3>
             <p className="text-sm text-ink-muted">{q.change} Watch from the observer’s position. Read the result right here.</p>
           </div>
@@ -438,12 +514,12 @@ function Try({
                   <button
                     key={w}
                     type="button"
-                    aria-pressed={look === w && diagram}
+                    aria-pressed={focus?.target === w}
                     onClick={() => {
                       setLook(w)
-                      setDiagram(true)
+                      setFocus({ target: w, nonce: Date.now() })
                     }}
-                    className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${look === w && diagram ? 'border-flare text-flare' : 'border-line hover:bg-surface-hover'}`}
+                    className={`cursor-pointer rounded-md border px-3 py-2 text-sm ${focus?.target === w ? 'border-flare text-flare' : 'border-line hover:bg-surface-hover'}`}
                   >
                     Look at {w === 'sun' ? 'the Sun' : 'Earth'}
                   </button>
@@ -457,7 +533,10 @@ function Try({
             day={day}
             playing={playing}
             onPlay={() => setPlaying((p) => !p)}
-            onDay={(d) => go({ day: d })}
+            onDay={(d) => {
+              setPlaying(false)
+              go({ day: d })
+            }}
             label={`${longDate(date)}, ${minuteLabel(minute)} UTC`}
           />
           <Reading
@@ -480,15 +559,6 @@ function Try({
                 ? `Earth is ${obs.earth.el.toFixed(1)}° up and clears the skyline: a direct line of sight, not a guaranteed radio link.`
                 : `Earth is ${obs.earth.el.toFixed(1)}° up; the skyline in its direction is ${(obs.earth.el - obs.earth.clearance).toFixed(1)}°. No direct line of sight.`}
           </Reading>
-          <button
-            type="button"
-            onClick={capture}
-            disabled={!track}
-            className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-line-strong px-3 py-2.5 text-sm hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <PlusIcon aria-hidden className="size-4" /> Capture observation
-            <span className="readout text-ink-faint">({notes.observations.length})</span>
-          </button>
           <button
             type="button"
             onClick={() =>
@@ -609,7 +679,7 @@ function DayControl({
         value={day}
         min={0}
         max={LUNAR_DAYS}
-        step={1 / 24}
+        step={1 / 1440}
         onValueChange={(v) => onDay(Array.isArray(v) ? (v[0] ?? 0) : (v as number))}
         className="grid gap-1"
       >
@@ -642,20 +712,73 @@ function ObservationCard({ o, n }: { o: Observation; n: number }) {
       <p className="readout text-xs text-ink-muted">
         Day {o.day.toFixed(1)} · {longDate(o.date)} {minuteLabel(o.minute)} UTC
       </p>
-      <p className={o.sun.inView ? 'text-sun' : 'text-ink-muted'}>
-        {sunWords(o)}
-        {o.sun.el != null && (
-          <span className="readout text-xs text-ink-faint">
-            {' '}
-            · Sun {o.sun.el.toFixed(1)}°, ridge {o.sun.horizon?.toFixed(1)}°
-          </span>
-        )}
-      </p>
-      <p className={o.earth?.inView ? 'text-comms' : 'text-ink-muted'}>
-        {earthWords(o)}
-        {o.earth && <span className="readout text-xs text-ink-faint"> · Earth {o.earth.el.toFixed(1)}°</span>}
-      </p>
+      <ul className="grid list-disc gap-1.5 pl-5 marker:text-ink-faint">
+        <li className={o.sun.inView ? 'text-sun' : 'text-ink-muted'}>
+          {sunWords(o)}
+          {o.sun.el != null && (
+            <span className="readout text-xs text-ink-faint">
+              {' '}
+              · Sun {o.sun.el.toFixed(1)}°, ridge {o.sun.horizon?.toFixed(1)}°
+            </span>
+          )}
+        </li>
+        <li className={o.earth?.inView ? 'text-comms' : 'text-ink-muted'}>
+          {earthWords(o)}
+          {o.earth && <span className="readout text-xs text-ink-faint"> · Earth {o.earth.el.toFixed(1)}°</span>}
+        </li>
+      </ul>
     </div>
+  )
+}
+
+/** The place, the moment and the plain question for one thing to guess. */
+function describe(item: PredictionItem, summaries: Summary[]) {
+  const data = summaries.find((s) => s.site.id === item.site)
+  const place = data ? shortName(data) : item.site
+  const { date, minute } = dayToMoment(data?.params.start ?? '2026-01-01', item.day)
+  return {
+    place,
+    when: `Day ${item.day.toFixed(1)} · ${longDate(date)} ${minuteLabel(minute)} UTC`,
+    question: item.about === 'sun' ? `Will the Sun be in view at ${place}?` : `Will Earth be in view at ${place}?`,
+  }
+}
+
+const guessWords = (g: Guess | undefined) => (g === 'yes' ? 'Yes, in view' : g === 'no' ? 'No, not in view' : 'No answer')
+
+/** One yes/no guess, with the exact place and moment spelled out so there is nothing to interpret. */
+function GuessRow({
+  n,
+  item,
+  summaries,
+  value,
+  onChange,
+}: {
+  n: number
+  item: PredictionItem
+  summaries: Summary[]
+  value: Guess | undefined
+  onChange: (v: Guess) => void
+}) {
+  const d = describe(item, summaries)
+  return (
+    <fieldset className="grid gap-3 rounded-md border border-line bg-[#0e141c] p-4">
+      <legend className="sr-only">{d.question}</legend>
+      <p className="readout text-xs text-ink-muted">{d.when}</p>
+      <p className="text-lg leading-snug font-medium">
+        {n}. {d.question}
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {(['yes', 'no'] as const).map((v) => (
+          <label
+            key={v}
+            className="cursor-pointer rounded-md border border-line px-3 py-2.5 text-center text-sm transition-colors hover:bg-surface-hover has-[:checked]:border-flare has-[:checked]:bg-flare/10 has-[:checked]:text-flare has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-flare"
+          >
+            <input type="radio" className="sr-only" name={item.id} value={v} checked={value === v} onChange={() => onChange(v)} />
+            {guessWords(v)}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   )
 }
 
@@ -700,12 +823,17 @@ function Observe({
           </div>
         </>
       ) : (
-        <div className="flex flex-wrap items-end gap-4 rounded-md border border-line bg-surface/50 p-6">
-          <Mascot pose="scientist-sun" className="size-28" />
-          <p className="max-w-[46ch] text-ink-muted">
-            Your observations will appear here. Capture a baseline, change one variable, then capture again. You have{' '}
-            {notes.observations.length} so far.
-          </p>
+        <div className="grid items-center gap-5 rounded-md border border-line bg-surface/50 p-6 sm:grid-cols-[auto_1fr]">
+          <Mascot pose="scientist-sun" className="size-28 shrink-0" />
+          <div className="grid gap-2">
+            <p className="text-lg font-medium">No observations yet.</p>
+            <ol className="grid max-w-[52ch] list-decimal gap-1 pl-5 text-ink-muted">
+              <li>Look at the model above. The moment you stop on is remembered as your baseline.</li>
+              <li>Change one thing: the time, or the place.</li>
+              <li>Stop again, and the two moments are compared here.</li>
+            </ol>
+            <p className="readout text-xs text-ink-faint">{notes.observations.length} of 2 moments remembered</p>
+          </div>
         </div>
       )}
       <div className="flex flex-wrap gap-3">
@@ -764,6 +892,34 @@ function Explain({
 }) {
   const [copied, setCopied] = useState(false)
   const [copyFailed, setCopyFailed] = useState(false)
+  // What the computed data says at each moment the learner was asked about.
+  const [truth, setTruth] = useState<Record<string, boolean | null>>({})
+  useEffect(() => {
+    let live = true
+    const ids = [...new Set(notes.items.map((item) => item.site))]
+    Promise.all(ids.map(async (id) => [id, await loadTracks(id)] as const)).then((loaded) => {
+      if (!live) return
+      const bySite = Object.fromEntries(loaded)
+      setTruth(
+        Object.fromEntries(
+          notes.items.map((item) => {
+            const data = summaries.find((s) => s.site.id === item.site)
+            if (!data) return [item.id, null]
+            return [item.id, predictionTruth(item, data, bySite[item.site]?.[dayToMoment(data.params.start, item.day).date])]
+          }),
+        ),
+      )
+    })
+    return () => {
+      live = false
+    }
+  }, [notes.items, summaries])
+  const guessLines = notes.items.map((item) => {
+    const d = describe(item, summaries)
+    const actual = truth[item.id]
+    const result = actual == null ? 'not computed' : actual ? 'in view' : 'not in view'
+    return `${d.when} · ${d.question} You guessed: ${guessWords(notes.guesses[item.id])}. The data says: ${result}.`
+  })
   const used = summaries.filter((site) => notes.observations.some((observation) => observation.site === site.site.id))
   return (
     <section aria-labelledby="explain-title" className="grid gap-6">
@@ -771,14 +927,50 @@ function Explain({
       <h2 id="explain-title" className="text-[clamp(2rem,1.4rem+2.6vw,3.25rem)] leading-tight font-medium">
         {q.question}
       </h2>
-      <div className="flex items-center gap-4">
+      <div className="grid items-center gap-4 sm:grid-cols-[auto_1fr] sm:justify-start">
         <Mascot pose="explorer-happy" className="size-20 shrink-0" />
-        <Bubble>Keep your prediction and what you saw side by side.</Bubble>
+        <Bubble className="justify-self-start">Set your guesses beside what you saw, then say why.</Bubble>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="grid content-start gap-4 rounded-lg border border-line bg-[#0e141c] p-5">
-          <p className="eyebrow text-ink-muted">Before you try / your prediction</p>
-          <p className="whitespace-pre-wrap">{notes.prediction.trim() || 'No prediction written.'}</p>
+          <p className="eyebrow text-ink-muted">Your prediction</p>
+          {notes.items.length ? (
+            <ol className="grid gap-5">
+              {notes.items.map((item, n) => {
+                const d = describe(item, summaries)
+                const actual = truth[item.id]
+                const guess = notes.guesses[item.id]
+                const match = actual == null || !guess ? null : (guess === 'yes') === actual
+                return (
+                  <li key={item.id} className="grid gap-2">
+                    <p className="readout text-xs text-ink-muted">{d.when}</p>
+                    <p className="font-medium">
+                      {n + 1}. {d.question}
+                    </p>
+                    <ul className="grid list-disc gap-1 pl-5 text-sm marker:text-ink-faint">
+                      <li>You guessed: {guessWords(guess)}</li>
+                      <li>
+                        The data says: {actual == null ? 'not computed' : actual ? 'In view' : 'Not in view'}
+                        {match != null && (
+                          <span className={match ? 'text-comms' : 'text-flare'}>
+                            {match ? ' · you were right' : ' · different from your guess'}
+                          </span>
+                        )}
+                      </li>
+                    </ul>
+                  </li>
+                )
+              })}
+            </ol>
+          ) : (
+            <p className="text-ink-muted">No prediction written.</p>
+          )}
+          {notes.prediction.trim() && (
+            <div className="grid gap-1 border-t border-line pt-3">
+              <p className="eyebrow text-ink-faint">Your reason</p>
+              <p className="whitespace-pre-wrap">{notes.prediction.trim()}</p>
+            </div>
+          )}
         </div>
         <div className="grid content-start gap-4 rounded-lg border border-line bg-[#0e141c] p-5">
           <p className="eyebrow text-ink-muted">What you saw</p>
@@ -788,24 +980,32 @@ function Explain({
               .map((observation, i) => <ObservationCard key={`${observation.site}-${observation.day}-${i}`} o={observation} n={i + 1} />)
           ) : (
             <div className="grid gap-3">
-              <p className="text-ink-muted">No observations captured yet.</p>
+              <p className="text-ink-muted">No moments looked at yet.</p>
               <button type="button" onClick={() => go({ step: 'observe' })} className="w-max cursor-pointer underline underline-offset-4">
-                Open the model and capture two moments →
+                Open the model and look at two moments →
               </button>
             </div>
           )}
         </div>
       </div>
       <div className="grid gap-4 rounded-lg border border-line bg-[#0e141c] p-5">
-        <label htmlFor="explanation" className="eyebrow text-ink-muted">
-          What changed — and what is your evidence?
-        </label>
+        <div className="grid gap-2">
+          <label htmlFor="explanation" className="text-xl font-medium">
+            Why did it happen?
+          </label>
+          <p className="text-sm text-ink-muted">Look at your guesses and what you saw. Answer in your own words:</p>
+          <ul className="grid list-disc gap-1 pl-5 text-sm text-ink-muted marker:text-ink-faint">
+            <li>How high was the Sun (or Earth) above the flat horizon?</li>
+            <li>How high was the ridge in that direction? Which one was higher?</li>
+            <li>What changed between your two observations, and why did that change the view?</li>
+          </ul>
+        </div>
         <textarea
           id="explanation"
-          rows={7}
+          rows={6}
           value={notes.explanation}
           onChange={(event) => setNotes({ explanation: event.target.value })}
-          placeholder="Write what changed, what stayed the same, and your evidence."
+          placeholder="It happened because…"
           className="w-full rounded-md border border-line-strong bg-[#161d26] p-3 outline-none focus:border-flare"
         />
         <div className="flex flex-wrap items-center gap-4">
@@ -816,6 +1016,7 @@ function Explain({
                 investigationRecord({
                   investigation: q,
                   prediction: notes.prediction,
+                  guesses: guessLines,
                   observations: notes.observations,
                   explanation: notes.explanation,
                   sources: used.map((site) => ({

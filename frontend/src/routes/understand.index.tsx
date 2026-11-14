@@ -192,7 +192,7 @@ function LessonChapter({
       {stand.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {stand.map((t) => (
-            <StandHereLink key={t.href} href={t.href} label={t.label} />
+            <StandHereLink key={t.href} href={t.href} label={t.label} anchor={l.id} />
           ))}
         </div>
       )}
