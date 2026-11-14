@@ -1,0 +1,147 @@
+import { Badge } from '@cloudflare/kumo/components/badge'
+import { WarningCircleIcon } from '@phosphor-icons/react'
+import type { Plan } from '~/components/planner/plan'
+import { type RelayLadder as Ladder, RELAY_MAX_S, type RelayStep, suggestedRelays, useRelayLadder } from '~/lib/relayLive'
+import { shortDate } from '~/lib/time'
+
+const COUNT = ['No relays', 'One relay', 'Two relays', 'Three relays', 'Four relays']
+const pct = (x: number) => `${(x * 100).toFixed(1)} %`
+const silence = (s: number) => (s === 0 ? 'None' : s < 48 * 3600 ? `${Math.round(s / 3600)} h` : `${(s / 86400).toFixed(1)} days`)
+
+function headline(steps: RelayStep[], n: number) {
+  const base = steps[0]
+  const best = steps[n]
+  if (!base || !best) return 'Relay coverage for your stay'
+  if (n === 0)
+    return base.share > 0.995
+      ? 'Earth stays in view for the whole stay, so a relay adds nothing here'
+      : 'A relay on this orbit adds no contact for this stay'
+  return `${COUNT[n]} ${n === 1 ? 'lifts' : 'lift'} contact with Earth from ${pct(base.share)} to ${pct(best.share)} of the stay`
+}
+
+function Rows({ ladder, minEarth }: { ladder: Ladder; minEarth: number }) {
+  const n = suggestedRelays(ladder.steps)
+  return (
+    <table className="w-full border-collapse text-sm">
+      <caption className="sr-only">Contact with Earth for each number of relays, with what each added relay buys</caption>
+      <thead>
+        <tr className="text-left text-xs text-ink-muted">
+          <th scope="col" className="pb-2 font-normal">
+            Relays
+          </th>
+          <th scope="col" className="w-full pb-2 pl-3 font-normal max-sm:hidden sm:pl-4">
+            Contact over the stay
+          </th>
+          <th scope="col" className="pb-2 pl-3 sm:pl-4 text-right font-normal">
+            Contact
+          </th>
+          <th scope="col" className="pb-2 pl-3 sm:pl-4 text-right font-normal whitespace-nowrap">
+            Added
+          </th>
+          <th scope="col" className="pb-2 pl-3 sm:pl-4 text-right font-normal">
+            Longest silence
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {ladder.steps.map((step) => {
+          const pick = step.relays === n
+          return (
+            <tr key={step.relays} className={`border-t border-line ${pick ? 'bg-white/[0.04]' : ''}`}>
+              <th scope="row" className="py-2.5 pr-2 text-left font-normal whitespace-nowrap">
+                <span className={pick ? 'font-medium' : ''}>{step.relays === 0 ? 'Direct only' : `+${step.relays}`}</span>
+                {pick && <span className="text-xs text-ink-muted max-sm:block sm:ml-2">Suggested</span>}
+              </th>
+              <td className="py-2.5 pl-3 sm:pl-4 max-sm:hidden">
+                <div className="relative h-2 rounded-full bg-surface ring-1 ring-line ring-inset" aria-hidden>
+                  <div className="h-full rounded-full bg-comms" style={{ width: `${step.share * 100}%` }} />
+                  <div className="absolute -inset-y-1 border-l-2 border-ink" style={{ left: `${minEarth}%` }} />
+                </div>
+              </td>
+              <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap">{pct(step.share)}</td>
+              <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap text-ink-muted">
+                {step.relays === 0 ? '' : step.gain < 0.0005 ? 'Nothing' : `+${(step.gain * 100).toFixed(1)} pts`}
+              </td>
+              <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap">{silence(step.longestSilenceS)}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+/** Relay coverage for the plan's own stay, computed live: direct contact, then one to four relays on the Candidate 2 orbit. */
+export function RelayLadder({ plan }: { plan: Plan }) {
+  const siteId = plan.focus ?? ''
+  const stayS = Math.round((plan.window.end - plan.window.start) / 1000)
+  const load = useRelayLadder(siteId, plan.window.start, stayS)
+
+  if (load.status === 'unavailable')
+    return (
+      <section aria-labelledby="relay-result" className="flex gap-3 rounded-xl border border-sun/40 bg-sun-fill/20 px-4 py-3.5">
+        <span className="flex h-lh items-center">
+          <WarningCircleIcon aria-hidden className="size-5 shrink-0 text-sun" />
+        </span>
+        <div className="grid gap-1">
+          <h2 id="relay-result" className="font-medium">
+            Relay coverage is unavailable right now
+          </h2>
+          <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">{load.message}</p>
+        </div>
+      </section>
+    )
+
+  const ladder = load.status === 'ready' ? load.ladder : null
+  const verified = ladder?.tier === 'verified-replay'
+  const n = ladder ? suggestedRelays(ladder.steps) : 0
+  const days = Math.min(stayS, RELAY_MAX_S) / 86400
+
+  return (
+    <section aria-labelledby="relay-result" aria-busy={!ladder} className="grid gap-5 rounded-xl border border-line px-5 py-4 lg:py-5">
+      <div className="grid gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">{!ladder ? 'Computing' : verified ? 'Verified replay' : 'Computed · not validated'}</Badge>
+        </div>
+        <h2 id="relay-result" className="max-w-[48ch] text-xl leading-snug font-medium text-balance">
+          {ladder ? headline(ladder.steps, n) : 'Working out what relays add to your stay…'}
+        </h2>
+        <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
+          {!ladder
+            ? `The relay service follows each relay over ${days < 1 ? 'your stay' : `${Math.round(days)} days`}, then checks every moment against the site's skyline. Long stays take up to a minute.`
+            : n > 0 && ladder.steps[n + 1]
+              ? `After ${n === 1 ? 'the first relay' : `${COUNT[n]?.toLowerCase()}`}, each one more adds under half a point of contact.`
+              : `Your stay from ${shortDate(plan.date)}${ladder.truncated ? `, first ${Math.round(days)} days of ${plan.stay}` : ''}, checked every ${ladder.cadenceS / 60} min.`}
+        </p>
+      </div>
+
+      {ladder ? (
+        <Rows ladder={ladder} minEarth={plan.requirements.minEarth} />
+      ) : (
+        <div aria-hidden className="grid gap-3">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-5 rounded bg-white/[0.05] motion-safe:animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {ladder && (
+        <div className="grid max-w-[72ch] gap-2 border-t border-line pt-4 text-sm text-ink-muted text-pretty">
+          <p>
+            <span className="max-sm:hidden">
+              The tick on each bar is your limit, Earth in view at least {plan.requirements.minEarth} % of the stay.{' '}
+            </span>
+            Contact means a straight line of sight, site to relay to Earth, sampled every {ladder.cadenceS / 60} min
+            {ladder.truncated ? `, over the first ${Math.round(days)} days of your ${plan.stay}-day stay` : ''}. It is not a radio link,
+            capacity or guaranteed contact.
+          </p>
+          <p>
+            {verified
+              ? 'These relays fly the saved Candidate 2 orbit for January 2025, replayed from its verified file.'
+              : 'These relays fly the verified Candidate 2 orbit, run forward to your dates with the Moon’s gravity alone. Earth’s pull on the orbit is left out, so accuracy away from January 2025 is not validated. Relays three and four are extra spacecraft on the same orbit.'}
+          </p>
+        </div>
+      )}
+    </section>
+  )
+}

@@ -12,9 +12,9 @@ import { MastPanel } from '~/components/PowerPanels'
 import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanSearch } from '~/components/planner/plan'
 import { planSearch } from '~/components/planner/plan'
+import { RelayLadder } from '~/components/planner/RelayLadder'
 import { resolvePlan, reviewSearch } from '~/components/planner/resolvePlan'
 import { missionSummary } from '~/components/planner/StepBar'
-import { RelayCoverage } from '~/components/RelayPanels'
 import { Footer, Shell } from '~/components/Shell'
 import { Mascot } from '~/components/story'
 import { loadSummary, MOON_SITES } from '~/lib/data'
@@ -118,9 +118,8 @@ function Baseline({ plan }: { plan: Plan }) {
 
 function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
   const siteId = plan.focus ?? ''
-  const mast = useFeed('mast', siteId)
-  const relay = useFeed('relay', siteId)
-  const feed = piece === 'mast' ? mast : relay
+  const feed = useFeed('mast', siteId)
+  if (piece === 'relay') return <RelayLadder plan={plan} />
   if (piece !== 'rover' && feed.state === 'loading') return <p aria-busy="true">Checking scenario results…</p>
   if (piece !== 'rover' && feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)) {
     return (
@@ -128,7 +127,7 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
         <p className="text-ink-muted">
           Pipeline output for your site and period. Read its visibility rules and assumptions before comparing with your starting point.
         </p>
-        {piece === 'mast' ? <MastPanel siteId={siteId} /> : <RelayCoverage siteId={siteId} />}
+        <MastPanel siteId={siteId} />
       </section>
     )
   }
