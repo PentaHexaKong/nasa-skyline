@@ -1,8 +1,7 @@
-import { Badge } from '@cloudflare/kumo/components/badge'
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Link as KLink } from '@cloudflare/kumo/components/link'
 import { Select } from '@cloudflare/kumo/components/select'
-import { ArrowRightIcon, BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
+import { BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
 import { type KeyboardEvent, lazy, Suspense } from 'react'
 import { RelayLadder } from '~/components/addons/RelayLadder'
 import { RoverPanel } from '~/components/addons/RoverPanel'
@@ -17,7 +16,6 @@ import { REQUIREMENTS, shortName, TOUCHDOWN_LABEL } from '~/lib/mission'
 import { matchesScenario, SCENARIO_PIECES, SCENARIOS, type ScenarioPiece, scenarioGuidance } from '~/lib/scenarios'
 
 const MastExample = lazy(() => import('~/components/addons/MastExample'))
-const Preview = import.meta.env.DEV ? lazy(() => import('~/prototypes/ScenarioPreview')) : null
 
 const pct = (x: number) => `${(x * 100).toFixed(0)} %`
 const tabId = (piece: ScenarioPiece) => `addon-tab-${piece}`
@@ -135,7 +133,6 @@ export function AddonsStep({ plan, actions, search }: { plan: Plan; actions: Pla
   if (!site) return null
   const suggested = scenarioGuidance(site).priority
   const piece: ScenarioPiece = search.piece ?? suggested[0] ?? 'relay'
-  const preview = search.preview === '1' && Preview !== null
   const choose = (next: ScenarioPiece) => actions.go({ piece: next })
 
   const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
@@ -220,43 +217,6 @@ export function AddonsStep({ plan, actions, search }: { plan: Plan; actions: Pla
               </div>
             </Collapsible.DefaultPanel>
           </Collapsible.Root>
-          {Preview && (
-            <section aria-labelledby="scenario-preview" className="grid gap-4 border-t border-line pt-6">
-              <div className="flex flex-wrap items-center gap-3">
-                <h2 id="scenario-preview" className="text-lg font-medium">
-                  Preview the simulation
-                </h2>
-                <Badge variant="outline">Sample data</Badge>
-              </div>
-              <p className="max-w-[72ch] text-ink-muted text-pretty">
-                This preview uses the Connecting Ridge example, with fixture numbers and its own period and settings. It does not use your
-                selected mission inputs or show an improvement for your plan.
-              </p>
-              <KLink
-                render={<button type="button" onClick={() => actions.go({ preview: preview ? undefined : '1' })} />}
-                className="cursor-pointer justify-self-start"
-              >
-                {preview ? 'Close sample preview' : 'Open sample preview'} <ArrowRightIcon aria-hidden className="inline" />
-              </KLink>
-              {preview && (
-                <Suspense fallback={<p aria-busy="true">Loading sample preview…</p>}>
-                  <Preview key={piece} piece={piece} />
-                </Suspense>
-              )}
-            </section>
-          )}
-          {piece === 'relay' && (
-            <section className="grid gap-2 border-t border-line pt-5">
-              <h2 className="text-lg font-medium">What would this mean for a rover?</h2>
-              <p className="max-w-[68ch] text-ink-muted">
-                Continue to rover reach with the same mission inputs. The effect of a relay choice on reach still needs a computed rover
-                result.
-              </p>
-              <KLink render={<button type="button" onClick={() => choose('rover')} />} className="cursor-pointer justify-self-start">
-                Explore rover reach <ArrowRightIcon aria-hidden className="inline" />
-              </KLink>
-            </section>
-          )}
         </div>
         <div className="flex flex-wrap gap-x-6 gap-y-3 border-t border-line pt-4">
           <KLink render={<button type="button" onClick={() => actions.setStep('result')} />} className="cursor-pointer">

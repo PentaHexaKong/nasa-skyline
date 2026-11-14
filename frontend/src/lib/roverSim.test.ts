@@ -125,26 +125,30 @@ const ridgeInput = (startUtc: string, stayS: number, stride?: number): RoverSimI
   }
 }
 
-test('a 28-day stay over the whole tile runs in a few seconds', () => {
-  const model = buildModel(ridge)
-  let t0 = performance.now()
-  horizons(ridge, model)
-  const horizonMs = performance.now() - t0
-  t0 = performance.now()
-  const r = simulateRover(ridgeInput('2026-11-27T12:00:00Z', 28 * 86400))
-  const totalMs = performance.now() - t0
-  t0 = performance.now()
-  const coarse = simulateRover(ridgeInput('2026-11-27T12:00:00Z', 28 * 86400, 8))
-  const coarseMs = performance.now() - t0
-  console.info(
-    `rover sim: ${r.g ** 2} cells, ${AZ_BINS} bins, ${r.hours} h; horizons ${horizonMs.toFixed(0)} ms, full run ${totalMs.toFixed(0)} ms;` +
-      ` stride 8: ${coarse.g ** 2} cells ${coarseMs.toFixed(0)} ms; reached ${r.summary.cellsReached} cells,` +
-      ` ${r.summary.areaKm2.toFixed(1)} km², farthest ${r.summary.farthestKm.toFixed(2)} km, driving ${r.summary.drivingH.toFixed(1)} h, waiting ${r.summary.waitingH.toFixed(1)} h`,
-  )
-  expect(r.g ** 2).toBeGreaterThan(16_000)
-  expect(totalMs).toBeLessThan(10_000)
-  expect(r.summary.cellsReached).toBeGreaterThan(1)
-}, HEAVY)
+test(
+  'a 28-day stay over the whole tile runs in a few seconds',
+  () => {
+    const model = buildModel(ridge)
+    let t0 = performance.now()
+    horizons(ridge, model)
+    const horizonMs = performance.now() - t0
+    t0 = performance.now()
+    const r = simulateRover(ridgeInput('2026-11-27T12:00:00Z', 28 * 86400))
+    const totalMs = performance.now() - t0
+    t0 = performance.now()
+    const coarse = simulateRover(ridgeInput('2026-11-27T12:00:00Z', 28 * 86400, 8))
+    const coarseMs = performance.now() - t0
+    console.info(
+      `rover sim: ${r.g ** 2} cells, ${AZ_BINS} bins, ${r.hours} h; horizons ${horizonMs.toFixed(0)} ms, full run ${totalMs.toFixed(0)} ms;` +
+        ` stride 8: ${coarse.g ** 2} cells ${coarseMs.toFixed(0)} ms; reached ${r.summary.cellsReached} cells,` +
+        ` ${r.summary.areaKm2.toFixed(1)} km², farthest ${r.summary.farthestKm.toFixed(2)} km, driving ${r.summary.drivingH.toFixed(1)} h, waiting ${r.summary.waitingH.toFixed(1)} h`,
+    )
+    expect(r.g ** 2).toBeGreaterThan(16_000)
+    expect(totalMs).toBeLessThan(10_000)
+    expect(r.summary.cellsReached).toBeGreaterThan(1)
+  },
+  HEAVY,
+)
 
 type Kind = 'landing' | 'reached' | 'not-reached' | 'too-steep'
 
@@ -185,27 +189,35 @@ function compare(fixture: typeof served, stride: number) {
  * 2026-11-20 12:00: neither admits the landing, and the sim reaches nothing in the 2 hours.
  */
 describe('against the rover service, 2 h direct to Earth at Connecting Ridge', () => {
-  test('2026-11-27 12:00: the landing is admitted and most squares agree', () => {
-    const rows = compare(served, 2)
-    expect(rows[4]).toMatchObject({ service: 'landing', sim: 'landing', admitted: true, serviceAdmitted: true })
-    expect(rows.filter((x) => x.service === x.sim).length).toBeGreaterThanOrEqual(7)
-    expect(rows.map((x) => x.sim)).toEqual([
-      'reached',
-      'reached',
-      'reached',
-      'reached',
-      'landing',
-      'reached',
-      'reached',
-      'not-reached',
-      'reached',
-    ])
-  }, HEAVY)
-  test('2026-11-20 12:00: the landing is not admitted in either', () => {
-    const rows = compare(stuck as unknown as typeof served, 2)
-    expect(rows[4]).toMatchObject({ sim: 'landing', admitted: false, serviceAdmitted: false })
-    expect(rows.filter((x) => x.sim === 'reached')).toHaveLength(0)
-  }, HEAVY)
+  test(
+    '2026-11-27 12:00: the landing is admitted and most squares agree',
+    () => {
+      const rows = compare(served, 2)
+      expect(rows[4]).toMatchObject({ service: 'landing', sim: 'landing', admitted: true, serviceAdmitted: true })
+      expect(rows.filter((x) => x.service === x.sim).length).toBeGreaterThanOrEqual(7)
+      expect(rows.map((x) => x.sim)).toEqual([
+        'reached',
+        'reached',
+        'reached',
+        'reached',
+        'landing',
+        'reached',
+        'reached',
+        'not-reached',
+        'reached',
+      ])
+    },
+    HEAVY,
+  )
+  test(
+    '2026-11-20 12:00: the landing is not admitted in either',
+    () => {
+      const rows = compare(stuck as unknown as typeof served, 2)
+      expect(rows[4]).toMatchObject({ sim: 'landing', admitted: false, serviceAdmitted: false })
+      expect(rows.filter((x) => x.sim === 'reached')).toHaveLength(0)
+    },
+    HEAVY,
+  )
 })
 
 test("area by day adds each day's new cells to the ones before", () => {

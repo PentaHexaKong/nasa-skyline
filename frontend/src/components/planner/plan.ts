@@ -34,8 +34,6 @@ export const planSearch = z.object({
   focus: forgiving(z.string()),
   /** The Add-ons tool on show. */
   piece: forgiving(z.enum(SCENARIO_PIECES)),
-  /** Dev only: opens Add-ons' sample simulation. Links may carry it as a number, so it is coerced. */
-  preview: forgiving(z.coerce.string().pipe(z.literal('1'))),
 })
 export type PlanSearch = z.infer<typeof planSearch>
 
