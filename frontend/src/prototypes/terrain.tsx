@@ -53,14 +53,6 @@ const height = ({ meta, heights }: Terrain, col: number, row: number) => {
   return heights[r * meta.n + c] ?? 0
 }
 
-/** Ground slope in degrees over a baseline of `step` cells each way. */
-export function slopeDeg(t: Terrain, col: number, row: number, step = 1) {
-  const run = 2 * step * t.meta.cell_m
-  const dx = (height(t, col + step, row) - height(t, col - step, row)) / run
-  const dy = (height(t, col, row - step) - height(t, col, row + step)) / run
-  return (Math.atan(Math.hypot(dx, dy)) * 180) / Math.PI
-}
-
 /** A square window on the terrain: centre in metres east and north of the site, and half its width. */
 export type View = { east: number; north: number; half: number }
 export type Tint = (col: number, row: number, px: number, py: number) => readonly [number, number, number, number] | undefined

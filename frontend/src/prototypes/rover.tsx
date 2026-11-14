@@ -3,8 +3,8 @@ import { ButtonGroup } from '@cloudflare/kumo/components/button-group'
 import { PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import { scaleLinear } from 'd3-scale'
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react'
-import type { Terrain } from '~/lib/data'
-import { Fig, type Rgb, rgbOf, ScaleBar, slopeDeg, TerrainMap, type Tint, useDark, useTerrain, type View } from './terrain'
+import { buildModel, cellOf, drive, type Field, type Model, STRIDE } from '~/lib/roverSim'
+import { Fig, type Rgb, rgbOf, ScaleBar, TerrainMap, type Tint, useDark, useTerrain, type View } from './terrain'
 
 /**
  * FIXTURE. The terrain and its slopes are real LOLA data; everything else here is invented for the
@@ -17,73 +17,24 @@ export const SCENARIOS = [
   { id: 'network', label: '+ Network', short: '+ Network', hours: 291, floor: -900 },
 ] as const
 const MONTH_D = 29.5
-const STRIDE = 4
 
-export type Model = { g: number; cell: number; half: number; height: Float32Array; slope: Float32Array; ok: Uint8Array[] }
+export { cellOf, type Field }
 
-export function buildModel(t: Terrain): Model {
-  const g = (t.meta.n - 1) / STRIDE + 1
-  const height = new Float32Array(g * g)
-  const slope = new Float32Array(g * g)
-  for (let r = 0; r < g; r++)
-    for (let c = 0; c < g; c++) {
-      height[r * g + c] = t.heights[r * STRIDE * t.meta.n + c * STRIDE] ?? 0
-      slope[r * g + c] = slopeDeg(t, c * STRIDE, r * STRIDE, STRIDE)
-    }
-  const site = height[((g - 1) / 2) * g + (g - 1) / 2] ?? 0
-  const ok = SCENARIOS.map((s) => Uint8Array.from(height, (h) => (h - site >= s.floor ? 1 : 0)))
-  return { g, cell: t.meta.cell_m * STRIDE, half: t.meta.radius_km * 1000, height, slope, ok }
-}
+type BandModel = Model & { ok: Uint8Array[] }
 
-export type Field = { dist: Float32Array; prev: Int32Array }
-
-/** Shortest driving distance in km from the site to every cell, over cells under the slope limit and inside the scenario's band. */
-export function drive(m: Model, maxSlope: number, ok: Uint8Array): Field {
-  const { g } = m
-  const dist = new Float32Array(g * g).fill(Number.POSITIVE_INFINITY)
-  const prev = new Int32Array(g * g).fill(-1)
-  const start = ((g - 1) / 2) * g + (g - 1) / 2
-  dist[start] = 0
-  // ponytail: a sorted-insert queue; a binary heap if the grid grows past a few hundred cells a side.
-  const heap: [number, number][] = [[0, start]]
-  while (heap.length) {
-    const [d, i] = heap.pop() as [number, number]
-    if (d > (dist[i] as number)) continue
-    const r = Math.floor(i / g)
-    const c = i % g
-    for (let dr = -1; dr <= 1; dr++)
-      for (let dc = -1; dc <= 1; dc++) {
-        const rr = r + dr
-        const cc = c + dc
-        if ((!dr && !dc) || rr < 0 || cc < 0 || rr >= g || cc >= g) continue
-        const j = rr * g + cc
-        if (!ok[j] || (m.slope[j] as number) > maxSlope) continue
-        const nd = d + Math.hypot(Math.hypot(dr, dc) * m.cell, (m.height[j] as number) - (m.height[i] as number)) / 1000
-        if (nd < (dist[j] as number)) {
-          dist[j] = nd
-          prev[j] = i
-          let lo = 0
-          let hi = heap.length
-          while (lo < hi) {
-            const mid = (lo + hi) >> 1
-            if ((heap[mid] as [number, number])[0] > nd) lo = mid + 1
-            else hi = mid
-          }
-          heap.splice(lo, 0, [nd, j])
-        }
-      }
-  }
-  return { dist, prev }
+/** The sim grid plus, per scenario, the invented "lit and in contact" height band. */
+function withBands(m: Model): BandModel {
+  const site = m.height[((m.g - 1) / 2) * m.g + (m.g - 1) / 2] ?? 0
+  return { ...m, ok: SCENARIOS.map((s) => Uint8Array.from(m.height, (h) => (h - site >= s.floor ? 1 : 0))) }
 }
 
 export function useRover(maxSlope: number) {
   const terrain = useTerrain()
-  const model = useMemo(() => terrain && buildModel(terrain), [terrain])
+  const model = useMemo(() => terrain && withBands(buildModel(terrain)), [terrain])
   const fields = useMemo(() => model && SCENARIOS.map((_, i) => drive(model, maxSlope, model.ok[i] as Uint8Array)), [model, maxSlope])
   return { terrain, model, fields }
 }
 
-export const cellOf = (m: Model, col: number, row: number) => Math.round(row / STRIDE) * m.g + Math.round(col / STRIDE)
 /** Driving distance at a terrain cell, interpolated between model cells so edges and contours come out smooth. */
 function distAt(m: Model, dist: Float32Array, col: number, row: number) {
   const fc = Math.min(m.g - 1.001, Math.max(0, col / STRIDE))
