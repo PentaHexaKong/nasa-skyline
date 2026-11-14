@@ -5,12 +5,12 @@ import { Select } from '@cloudflare/kumo/components/select'
 import { ArrowRightIcon, BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
 import { type KeyboardEvent, lazy, Suspense } from 'react'
 import { RelayLadder } from '~/components/addons/RelayLadder'
+import { RoverPanel } from '~/components/addons/RoverPanel'
 import { SiteProvenance } from '~/components/Evidence'
 import { Lanes } from '~/components/Lanes'
 import { MastPanel } from '~/components/PowerPanels'
 import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
-import { RoverReach } from '~/components/planner/RoverReach'
 import { Eyebrow } from '~/components/Shell'
 import { useFeed } from '~/lib/feeds'
 import { REQUIREMENTS, shortName, TOUCHDOWN_LABEL } from '~/lib/mission'
@@ -104,7 +104,7 @@ function Baseline({ plan }: { plan: Plan }) {
 function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
   const siteId = plan.focus ?? ''
   const feed = useFeed('mast', siteId)
-  if (piece === 'rover') return <RoverReach plan={plan} />
+  if (piece === 'rover') return <RoverPanel plan={plan} />
   if (piece === 'relay') return <RelayLadder plan={plan} />
   const computed = feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)
   return (

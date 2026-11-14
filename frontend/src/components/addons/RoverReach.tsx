@@ -1,7 +1,7 @@
 import { Badge } from '@cloudflare/kumo/components/badge'
 import { WarningCircleIcon } from '@phosphor-icons/react'
+import { RoverMap } from '~/components/addons/RoverMap'
 import type { Plan } from '~/components/planner/plan'
-import { RoverMap } from '~/components/planner/RoverMap'
 import { type ReachCell, ROVER_TERMS, useRoverReach } from '~/lib/roverLive'
 import { minuteLabel, shortDate } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'

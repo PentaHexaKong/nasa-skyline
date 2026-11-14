@@ -1,4 +1,4 @@
-import type { Terrain } from './data'
+import type { Terrain, Track } from './data'
 import { stepToward } from './landscape'
 import type { Span } from './mission'
 
@@ -191,6 +191,32 @@ export function skyAt(samples: SkySample[], tMs: number): { azDeg: number; elDeg
   const w = (tMs - a.tMs) / (b.tMs - a.tMs || 1)
   const dAz = ((((b.azDeg - a.azDeg) % 360) + 540) % 360) - 180
   return { azDeg: a.azDeg + dAz * w, elDeg: a.elDeg + (b.elDeg - a.elDeg) * w }
+}
+
+/** A site's Sun and Earth samples from the day before `startMs` through `days` days, from its daily tracks. */
+export function skySamples(tracks: Record<string, Track>, startMs: number, days: number) {
+  const sun: SkySample[] = []
+  const earth: SkySample[] = []
+  for (let d = -1; d <= days; d++) {
+    const day = new Date(Math.floor(startMs / 86_400_000 + d) * 86_400_000).toISOString().slice(0, 10)
+    const tr = tracks[day]
+    if (!tr) continue
+    const base = Date.parse(`${day}T00:00:00Z`)
+    tr.t_min.forEach((t, i) => sun.push({ tMs: base + t * 60_000, azDeg: tr.az_deg[i] as number, elDeg: tr.el_deg[i] as number }))
+    tr.earth?.t_min.forEach((t, i) =>
+      earth.push({ tMs: base + t * 60_000, azDeg: tr.earth?.az_deg[i] as number, elDeg: tr.earth?.el_deg[i] as number }),
+    )
+  }
+  return { sun, earth }
+}
+
+/** Area first reached by the end of each day of the stay, in km², from day 0 to the last day. */
+export function areaByDay(r: Pick<RoverSimResult, 'arrivalS' | 'cellM'>, days: number) {
+  const cellKm2 = (r.cellM * r.cellM) / 1e6
+  const counts = new Array<number>(days + 1).fill(0)
+  for (const t of r.arrivalS) if (Number.isFinite(t)) counts[Math.min(days, Math.ceil(t / 86400))]! += 1
+  let total = 0
+  return counts.map((n) => (total += n) * cellKm2)
 }
 
 export type RoverSimInput = {

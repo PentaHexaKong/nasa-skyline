@@ -6,7 +6,7 @@ import served from '../../fixtures/rover/cr1-2026-11-27T12.json'
 import tracksJson from '../data/generated/connecting-ridge.tracks.json'
 import { type Terrain, TerrainSchema, type Track } from './data'
 import { ROVER_TERMS } from './roverLive'
-import { AZ_BINS, buildModel, cellOf, horizons, type RoverSimInput, type SkySample, simulateRover } from './roverSim'
+import { AZ_BINS, areaByDay, buildModel, cellOf, horizons, type RoverSimInput, type SkySample, simulateRover, skySamples } from './roverSim'
 
 const HOUR = 3600
 
@@ -97,22 +97,7 @@ const ridge: Terrain = { meta: TerrainSchema.parse(metaJson), heights: new Int16
 const tracks = tracksJson as Record<string, Track>
 const SITE = { lat: -89.4679, lon: 222.589 }
 
-/** The site's Sun and Earth samples from the day before `startMs` through `days` days. */
-function sky(startMs: number, days: number) {
-  const sun: SkySample[] = []
-  const earth: SkySample[] = []
-  for (let d = -1; d <= days; d++) {
-    const day = new Date(Math.floor(startMs / 86_400_000 + d) * 86_400_000).toISOString().slice(0, 10)
-    const tr = tracks[day]
-    if (!tr) continue
-    const base = Date.parse(`${day}T00:00:00Z`)
-    tr.t_min.forEach((t, i) => sun.push({ tMs: base + t * 60_000, azDeg: tr.az_deg[i] as number, elDeg: tr.el_deg[i] as number }))
-    tr.earth?.t_min.forEach((t, i) =>
-      earth.push({ tMs: base + t * 60_000, azDeg: tr.earth?.az_deg[i] as number, elDeg: tr.earth?.el_deg[i] as number }),
-    )
-  }
-  return { sun, earth }
-}
+const sky = (startMs: number, days: number) => skySamples(tracks, startMs, days)
 
 /** A point on the Moon to full-resolution terrain column and row: the tile places cells by great-circle distance and bearing from the site. */
 function colRow(lat: number, lon: number) {
@@ -219,4 +204,9 @@ describe('against the rover service, 2 h direct to Earth at Connecting Ridge', (
     expect(rows[4]).toMatchObject({ sim: 'landing', admitted: false, serviceAdmitted: false })
     expect(rows.filter((x) => x.sim === 'reached')).toHaveLength(0)
   })
+})
+
+test("area by day adds each day's new cells to the ones before", () => {
+  const arrivalS = Float32Array.from([0, 3600, 86400, 90000, 2 * 86400 + 1, Number.POSITIVE_INFINITY])
+  expect(areaByDay({ arrivalS, cellM: 1000 }, 3)).toEqual([1, 3, 4, 5])
 })

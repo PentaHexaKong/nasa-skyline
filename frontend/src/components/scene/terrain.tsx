@@ -3,15 +3,16 @@ import { loadTerrain, type Terrain } from '~/lib/data'
 
 export const SITE = 'connecting-ridge'
 
-export function useTerrain() {
+export function useTerrain(site: string = SITE) {
   const [terrain, setTerrain] = useState<Terrain | null>(null)
   useEffect(() => {
     let live = true
-    loadTerrain(SITE).then((t) => live && setTerrain(t))
+    setTerrain(null)
+    loadTerrain(site).then((t) => live && setTerrain(t))
     return () => {
       live = false
     }
-  }, [])
+  }, [site])
   return terrain
 }
 
