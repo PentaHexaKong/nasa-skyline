@@ -1,7 +1,7 @@
 import { Badge } from '@cloudflare/kumo/components/badge'
 import { WarningCircleIcon } from '@phosphor-icons/react'
+import { RoverMap } from '~/components/addons/RoverMap'
 import type { Plan } from '~/components/planner/plan'
-import { RoverMap } from '~/components/planner/RoverMap'
 import { type ReachCell, ROVER_TERMS, useRoverReach } from '~/lib/roverLive'
 import { minuteLabel, shortDate } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'
@@ -88,9 +88,9 @@ export function RoverReach({ plan }: { plan: Plan }) {
 
   if (load.status === 'unavailable')
     return (
-      <section aria-labelledby="rover-result" className="flex gap-3 rounded-xl border border-sun/40 bg-sun-fill/20 px-4 py-3.5">
+      <section aria-labelledby="rover-result" className="flex gap-3 rounded-xl border border-line-strong px-4 py-3.5">
         <span className="flex h-lh items-center">
-          <WarningCircleIcon aria-hidden className="size-5 shrink-0 text-sun" />
+          <WarningCircleIcon aria-hidden className="size-5 shrink-0 text-ink-muted" />
         </span>
         <div className="grid gap-1">
           <h2 id="rover-result" className="font-medium">

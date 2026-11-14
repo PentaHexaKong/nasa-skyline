@@ -20,6 +20,21 @@ export function daylightSpans(track: Track, stepMin: number): [number, number][]
   return spans
 }
 
+/**
+ * Minute ranges where any part of the Sun's disk clears the ridge: the pipeline's rule for direct sun, so a fraction
+ * above 0 % counts.
+ */
+function directSpans(track: Track, stepMin: number): [number, number][] {
+  const spans: [number, number][] = []
+  track.t_min.forEach((t, i) => {
+    if ((track.direct_fraction[i] ?? 0) <= 0) return
+    const last = spans.at(-1)
+    if (last && t - last[1] <= stepMin / 2 + 1e-9) last[1] = t + stepMin / 2
+    else spans.push([t - stepMin / 2, t + stepMin / 2])
+  })
+  return spans
+}
+
 /** Minutes of the day with line of sight to Earth, from the intervals. */
 function laneSpans(t: SkyTarget): [number, number][] {
   return t.lane ?? (t.reference.visible ? [[0, 1440]] : [])
@@ -56,10 +71,12 @@ export function DayProfile({
   const [ref, width] = useWidth<HTMLDivElement>()
   const dragging = useRef(false)
   const SUN_H = 150
-  const LANE_H = comms ? 22 : 0
-  const GAP = comms ? 14 : 0
-  const M = { t: 8, r: 8, b: 26, l: 40 }
-  const HEIGHT = M.t + SUN_H + GAP + LANE_H + M.b
+  const LANE_H = 22
+  const GAP = 14
+  // A lane for direct sun, so the threshold reads as a yes or no and not only as a curve; and one for Earth.
+  const LANES = comms ? 2 : 1
+  const M = { t: 8, r: 8, b: 26, l: 84 }
+  const HEIGHT = M.t + SUN_H + LANES * (GAP + LANE_H) + M.b
   const x = scaleLinear([0, 1440], [M.l, width - M.r])
   const y = scaleLinear([0, 1], [M.t + SUN_H, M.t])
   const points = track ? track.t_min.map((t, i): [number, number] => [t, track.direct_fraction[i] ?? 0]) : []
@@ -72,7 +89,8 @@ export function DayProfile({
     ([t]) => x(t),
     ([, f]) => y(f),
   )
-  const laneY = M.t + SUN_H + GAP
+  const sunY = M.t + SUN_H + GAP
+  const laneY = sunY + LANE_H + GAP
   const clamp = (m: number) => Math.max(0, Math.min(1439, Math.round(m)))
   const fromPointer = (e: PointerEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -137,6 +155,32 @@ export function DayProfile({
           )}
           <line x1={M.l} x2={width - M.r} y1={y(0)} y2={y(0)} className="stroke-line-strong" />
 
+          <g>
+            <text x={M.l - 6} y={sunY + LANE_H / 2 + 3.5} textAnchor="end" className="fill-ink-faint">
+              Direct sun
+            </text>
+            <line
+              x1={M.l}
+              x2={width - M.r}
+              y1={sunY + LANE_H / 2}
+              y2={sunY + LANE_H / 2}
+              className="stroke-sun opacity-40"
+              strokeDasharray="2 3"
+            />
+            {track &&
+              directSpans(track, stepMin).map(([a, b]) => (
+                <rect
+                  key={a}
+                  x={x(a)}
+                  y={sunY + 4}
+                  width={Math.max(1, x(b) - x(a))}
+                  height={LANE_H - 8}
+                  rx={2}
+                  className="fill-sun-fill stroke-sun"
+                />
+              ))}
+          </g>
+
           {comms && (
             <g>
               <text x={M.l - 6} y={laneY + LANE_H / 2 + 3.5} textAnchor="end" className="fill-ink-faint">
@@ -173,6 +217,9 @@ export function DayProfile({
           </g>
         </svg>
       </div>
+      <p className="text-xs text-ink-muted">
+        Direct sun counts as soon as any part of the Sun’s disk clears the ridge, so any share above 0 % is direct sun.
+      </p>
       <NoTrackNote track={track} />
     </>
   )

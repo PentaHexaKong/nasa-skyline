@@ -1,3 +1,4 @@
+import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { SERVICE_SITE } from './missionScience'
 import type { RoverRequest, RoverResponse } from './roverContract.proposed'
@@ -89,7 +90,10 @@ export function parseRoverReach(response: RoverResponse): RoverReach | null {
 /** Asks the rover service once per site and landing moment; a result for an older ask is dropped. */
 export function useRoverReach(siteId: string, landingMs: number): RoverLoad {
   const [load, setLoad] = useState<RoverLoad>({ status: 'loading' })
+  // Before hydration the planner renders its default plan; asking for it would hold the one-at-a-time service.
+  const hydrated = useHydrated()
   useEffect(() => {
+    if (!hydrated) return
     const body = roverRequest(siteId, landingMs)
     if (!body) {
       setLoad({ status: 'unavailable', message: 'Rover reach is computed for the three study sites only.' })
@@ -115,6 +119,6 @@ export function useRoverReach(siteId: string, landingMs: number): RoverLoad {
     return () => {
       current = false
     }
-  }, [siteId, landingMs])
+  }, [hydrated, siteId, landingMs])
   return load
 }

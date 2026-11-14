@@ -151,5 +151,6 @@ class RelayEngine:
             result=dict(timesS=timesS.tolist(),directAvailable=direct.tolist(),viaRelayAvailable=viaRelay.tolist(),
                         assistedAvailable=assisted.tolist(),siteRelayAvailable=siteLeg.tolist(),relayEarthAvailable=earthLeg.tolist(),
                         direct=metrics(direct,timesS,cadence),assisted=metrics(assisted,timesS,cadence),
-                        improvementFraction=float(assisted.mean()-direct.mean()),rfAvailability=None)
+                        improvementFraction=float(assisted.mean()-direct.mean()),rfAvailability=None,
+                        positionFrame='MOON_ME_DE421',relayPositionKm=np.round(relays,1).tolist(),earthPositionKm=np.round(earth).tolist())
             return dict(schemaVersion='1.0',dataState='computed',result=result,provenance=provenance)

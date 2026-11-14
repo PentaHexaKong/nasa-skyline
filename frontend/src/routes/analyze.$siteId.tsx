@@ -7,7 +7,7 @@ import { DayProfile, NoTrackNote } from '~/components/DayProfile'
 import { Intervals, intervalsOn } from '~/components/Intervals'
 import { type Moment, PhaseBadge } from '~/components/Moment'
 import { MonthTimeline } from '~/components/MonthTimeline'
-import { azWindow, Panorama, PanoramaKey } from '~/components/Panorama'
+import { Panorama, PanoramaKey } from '~/components/Panorama'
 import { Explain, Eyebrow, Shell } from '~/components/Shell'
 import { SiteDock } from '~/components/SiteDock'
 import { YearChart } from '~/components/YearChart'
@@ -147,7 +147,7 @@ function VisualizePage() {
           <div className="mx-auto mt-10 grid max-w-7xl gap-1 px-4 sm:px-6">
             <Eyebrow pip>The same sky, unrolled</Eyebrow>
             <p className="text-sm text-ink-muted">
-              Stand at the site and turn from east to west: the white line is the ridge in each direction.
+              Stand at the site and turn all the way round, from north back to north: the white line is the ridge in each direction.
             </p>
           </div>
           <div className="mt-4">
@@ -158,7 +158,8 @@ function VisualizePage() {
               now={m.sun}
               comms={comms}
               height={440}
-              azRange={azWindow(track)}
+              // The whole horizon: at the pole the Sun circles all the way round, so a cut-off view hides ridges that matter.
+              azRange={[0, 360]}
               hud={{
                 sun: sunHud(m),
                 comms: ref ? `${ref.name.split(' ')[0]} · ${ref.el_deg.toFixed(1)}° up · ${signed(ref.clearance_deg)}` : undefined,
@@ -177,8 +178,9 @@ function VisualizePage() {
             </div>
             <Explain>
               <p>
-                The horizon seen from the site, unrolled from east to west. The shape is the land out to {data.params.skyline_max_km} km.
-                The amber line is the Sun’s path on this day; where it turns dashed, the Sun is up but hidden behind terrain.
+                The horizon seen from the site, unrolled all the way round from north to north. The shape is the land out to{' '}
+                {data.params.skyline_max_km} km. The amber line is the Sun’s path on this day; where it turns dashed, the Sun is up but
+                hidden behind terrain.
               </p>
               {comms && (
                 <p>

@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest'
+import { planSearch } from '~/components/planner/plan'
 import { Route as Planner } from '~/routes/analyze.index'
-import { scenarioSearch } from '~/routes/analyze.scenario.$piece'
 import { Route as Moon } from '~/routes/explore.index'
 import { siteSearch } from './useSiteView'
 
@@ -16,7 +16,7 @@ test('the moon and site views drop a bad value and keep the good ones', () => {
   expect(siteSearch.parse({ day: 'hello', t: 720 })).toEqual({ t: 720 })
 })
 
-test('scenario links keep valid mission inputs and accept only the explicit preview flag', () => {
-  expect(scenarioSearch.parse({ stay: 12, minSun: 80, preview: 1 })).toEqual({ stay: 12, minSun: 80, preview: '1' })
-  expect(scenarioSearch.parse({ stay: 999, minSun: 80, preview: 'nonsense' })).toEqual({ minSun: 80 })
+test('add-on links keep valid mission inputs and drop the retired preview flag', () => {
+  expect(planSearch.parse({ stay: 12, minSun: 80, preview: 1 })).toEqual({ stay: 12, minSun: 80 })
+  expect(planSearch.parse({ stay: 999, minSun: 80, preview: 'nonsense' })).toEqual({ minSun: 80 })
 })

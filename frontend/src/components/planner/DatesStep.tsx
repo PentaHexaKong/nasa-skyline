@@ -1,6 +1,5 @@
 import { CalendarBlankIcon, CaretDownIcon, MapPinIcon, RocketLaunchIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions } from '~/components/planner/plan'
 import { verdictRows } from '~/components/planner/ResultStep'
 import { Explain, Eyebrow } from '~/components/Shell'
@@ -158,8 +157,7 @@ function WindowCard({ site, windows, plan, actions }: { site: SitePlan; windows:
   const [firstW, ...rest] = windows
   const pickWindow = (w: GoWindow) => actions.selectDay(plan.dates.indexOf(w.from))
   return (
-    <article className="overflow-hidden rounded-xl border border-line bg-surface/30">
-      <SiteThumb site={site.data} className="h-24 w-full" />
+    <article className="overflow-hidden rounded-xl border border-line">
       <div className="grid gap-3 p-4">
         <h4 className="flex items-center gap-2 font-semibold">
           <MapPinIcon aria-hidden />
@@ -172,7 +170,10 @@ function WindowCard({ site, windows, plan, actions }: { site: SitePlan; windows:
               onClick={() => pickWindow(firstW)}
               className="grid cursor-pointer gap-0.5 rounded-md bg-surface p-2 text-left hover:bg-surface-hover"
             >
-              <span className="text-2xs text-ink-muted">First window</span>
+              {/* A window can open before the landing day and run through it; say so, so its start never reads as the first day. */}
+              <span className="text-xs text-ink-muted">
+                {firstW.from < plan.date && firstW.to >= plan.date ? 'Your landing day is inside' : 'Next window'}
+              </span>
               <span className="tabular font-medium">
                 {firstW.from === firstW.to ? longDate(firstW.from) : `${shortDate(firstW.from)} – ${longDate(firstW.to)}`}
               </span>
@@ -184,7 +185,7 @@ function WindowCard({ site, windows, plan, actions }: { site: SitePlan; windows:
               onClick={() => setOpen((o) => !o)}
               className="grid cursor-pointer gap-0.5 rounded-md bg-surface p-2 text-left hover:bg-surface-hover disabled:cursor-default disabled:opacity-60"
             >
-              <span className="text-2xs text-ink-muted">Other windows</span>
+              <span className="text-xs text-ink-muted">Other windows</span>
               <span className="flex items-center justify-between font-medium">
                 {rest.length} more
                 {rest.length > 0 && <CaretDownIcon aria-hidden className={`transition-transform ${open ? 'rotate-180' : ''}`} />}

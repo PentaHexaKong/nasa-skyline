@@ -50,8 +50,41 @@ export function StandHereLink({ href, label, anchor }: { href: string; label: st
   )
 }
 
-export function Bubble({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <p className={`bubble max-w-[16rem] ${className}`}>{children}</p>
+/**
+ * What the mascot says: one short line. With `more`, the line gains a "Tell me more" that opens a plain explanation
+ * inside the bubble, for the reader who wants it; the page never depends on it being opened.
+ */
+export function Bubble({
+  children,
+  more,
+  className = '',
+}: {
+  children: ReactNode
+  /** The fuller explanation, and optionally a way to the deeper chart. */
+  more?: { text: ReactNode; link?: { href: string; label: string } }
+  className?: string
+}) {
+  if (!more) return <p className={`bubble max-w-[16rem] ${className}`}>{children}</p>
+  return (
+    <div className={`bubble max-w-[20rem] ${className}`}>
+      <p>{children}</p>
+      <details className="bubble-more group">
+        <summary className="mt-1.5 inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-story underline-offset-2 hover:underline">
+          <span className="group-open:hidden">Tell me more</span>
+          <span className="hidden group-open:inline">Show less</span>
+        </summary>
+        <div className="mt-2 grid gap-2 border-t border-black/10 pt-2 text-pretty">
+          <p>{more.text}</p>
+          {more.link && (
+            <a href={more.link.href} className="inline-flex items-center gap-1 text-xs font-medium text-story hover:underline">
+              {more.link.label}
+              <ArrowRightIcon aria-hidden weight="bold" className="size-3" />
+            </a>
+          )}
+        </div>
+      </details>
+    </div>
+  )
 }
 
 /** The mascot with what it says beside it. The words are also in the page's text, so the bubble is not the only place a reader finds them. */

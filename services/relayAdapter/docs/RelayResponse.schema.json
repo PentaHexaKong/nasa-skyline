@@ -19,7 +19,41 @@
       "anyOf": [
         {
           "additionalProperties": true,
-          "type": "object"
+          "type": "object",
+          "properties": {
+            "positionFrame": {
+              "const": "MOON_ME_DE421",
+              "type": "string",
+              "description": "Frame of relayPositionKm and earthPositionKm: Moon-centred, Moon-fixed MOON_ME_DE421."
+            },
+            "relayPositionKm": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                }
+              },
+              "description": "Relay satellite positions per satellite, per sample (aligned with timesS), as [x, y, z] in km from the Moon centre in MOON_ME_DE421, rounded to 0.1 km."
+            },
+            "earthPositionKm": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 3,
+                "maxItems": 3
+              },
+              "description": "Earth centre position per sample (aligned with timesS), as [x, y, z] in km from the Moon centre in MOON_ME_DE421, rounded to 1 km."
+            }
+          }
         },
         {
           "type": "null"

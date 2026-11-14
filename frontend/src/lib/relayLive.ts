@@ -1,5 +1,7 @@
+import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
+import type { Span } from './mission'
 import { SERVICE_SITE } from './missionScience'
 import { postScience } from './scienceRequest'
 
@@ -20,10 +22,24 @@ export type RelayLadder = {
   /** The stay is longer than the comparison's window, so only its first part is computed. */
   truncated: boolean
   steps: RelayStep[]
+  track: RelayTrack
+}
+
+/** The comparison sample by sample, for views that draw contact over time or the satellites in space. */
+export type RelayTrack = {
+  startMs: number
+  cadenceS: number
+  direct: boolean[]
+  /** Per satellite: it sees the site and Earth at that sample. */
+  relayed: boolean[][]
+  /** Per satellite, per sample, km from the Moon's centre in MOON_ME_DE421. Absent from adapters that predate positions. */
+  relayKm?: number[][][]
+  earthKm?: number[][]
 }
 
 export type RelayLoad = { status: 'loading' } | { status: 'ready'; ladder: RelayLadder } | { status: 'unavailable'; message: string }
 
+const vector = z.tuple([z.number(), z.number(), z.number()])
 const reply = z.object({
   dataState: z.literal('computed'),
   tier: z.enum(['verified-replay', 'propagated-two-body']),
@@ -33,6 +49,8 @@ const reply = z.object({
       directAvailable: z.array(z.boolean()),
       siteRelayAvailable: z.array(z.array(z.boolean())),
       relayEarthAvailable: z.array(z.array(z.boolean())),
+      relayPositionKm: z.array(z.array(vector)).optional(),
+      earthPositionKm: z.array(vector).optional(),
     }),
     provenance: z.object({ sampleUtc: z.array(z.string()).min(1) }),
   }),
@@ -77,10 +95,60 @@ export function suggestedRelays(steps: RelayStep[]) {
   return steps.length - 1
 }
 
+/** Contact with the first `relays` satellites as time spans: direct, or through any of them. */
+export function contactSpans(track: RelayTrack, relays: number): Span[] {
+  const cadenceMs = track.cadenceS * 1000
+  const spans: Span[] = []
+  let from: number | undefined
+  for (let t = 0; t <= track.direct.length; t++) {
+    const open = t < track.direct.length && (track.direct[t] || track.relayed.slice(0, relays).some((r) => r[t]))
+    if (open && from === undefined) from = t
+    if (!open && from !== undefined) {
+      spans.push([track.startMs + from * cadenceMs, track.startMs + t * cadenceMs])
+      from = undefined
+    }
+  }
+  return spans
+}
+
+/** Turns a comparison reply into the ladder and its sample track, or says why it cannot. */
+export function readRelayReply(body: unknown, stayS: number): RelayLoad {
+  const parsed = reply.safeParse(body)
+  if (!parsed.success) {
+    const message = (body as { error?: { message?: string } } | null)?.error?.message
+    return { status: 'unavailable', message: message ?? 'The relay comparison returned no result for this stay.' }
+  }
+  const { tier, cadenceS, relayScience } = parsed.data
+  const { directAvailable, siteRelayAvailable, relayEarthAvailable, relayPositionKm, earthPositionKm } = relayScience.result
+  const startUtc = relayScience.provenance.sampleUtc[0] ?? ''
+  return {
+    status: 'ready',
+    ladder: {
+      tier,
+      cadenceS,
+      startUtc,
+      durationS: directAvailable.length * cadenceS,
+      truncated: stayS > RELAY_MAX_S,
+      steps: relaySteps(directAvailable, siteRelayAvailable, relayEarthAvailable, cadenceS),
+      track: {
+        startMs: Date.parse(startUtc),
+        cadenceS,
+        direct: directAvailable,
+        relayed: siteRelayAvailable.map((site, k) => site.map((on, t) => on && Boolean(relayEarthAvailable[k]?.[t]))),
+        relayKm: relayPositionKm,
+        earthKm: earthPositionKm,
+      },
+    },
+  }
+}
+
 /** Asks the relay comparison once per site and window; a result for an older ask is dropped. */
 export function useRelayLadder(siteId: string, startMs: number, stayS: number): RelayLoad {
   const [load, setLoad] = useState<RelayLoad>({ status: 'loading' })
+  // Before hydration the planner renders its default plan; asking for it would hold the one-at-a-time service.
+  const hydrated = useHydrated()
   useEffect(() => {
+    if (!hydrated) return
     const site = SERVICE_SITE[siteId]
     if (!site) {
       setLoad({ status: 'unavailable', message: 'Relay coverage is computed for the three study sites only.' })
@@ -96,26 +164,7 @@ export function useRelayLadder(siteId: string, startMs: number, stayS: number): 
       satellites: RELAY_SATELLITES,
     })
       .then((body) => {
-        if (!current) return
-        const parsed = reply.safeParse(body)
-        if (!parsed.success) {
-          const message = (body as { error?: { message?: string } } | null)?.error?.message
-          setLoad({ status: 'unavailable', message: message ?? 'The relay comparison returned no result for this stay.' })
-          return
-        }
-        const { tier, cadenceS, relayScience } = parsed.data
-        const { directAvailable, siteRelayAvailable, relayEarthAvailable } = relayScience.result
-        setLoad({
-          status: 'ready',
-          ladder: {
-            tier,
-            cadenceS,
-            startUtc: relayScience.provenance.sampleUtc[0] ?? '',
-            durationS: directAvailable.length * cadenceS,
-            truncated: stayS > RELAY_MAX_S,
-            steps: relaySteps(directAvailable, siteRelayAvailable, relayEarthAvailable, cadenceS),
-          },
-        })
+        if (current) setLoad(readRelayReply(body, stayS))
       })
       .catch((error: unknown) => {
         if (current)
@@ -124,6 +173,6 @@ export function useRelayLadder(siteId: string, startMs: number, stayS: number): 
     return () => {
       current = false
     }
-  }, [siteId, startMs, stayS])
+  }, [hydrated, siteId, startMs, stayS])
   return load
 }

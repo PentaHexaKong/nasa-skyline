@@ -79,7 +79,8 @@ def testVerifiedRequestMatchesRecordedOutput(engine):
     assert provenance['tier']=='verified-replay'
     assert provenance['satellites']==2
     volatile=('tier','satellites','implementation','request')
-    assert json.dumps(response['result'],sort_keys=True,separators=(',',':'))==json.dumps(recorded['result'],sort_keys=True,separators=(',',':'))
+    positions=('positionFrame','relayPositionKm','earthPositionKm')
+    assert json.dumps({k:v for k,v in response['result'].items() if k not in positions},sort_keys=True,separators=(',',':'))==json.dumps(recorded['result'],sort_keys=True,separators=(',',':'))
     assert {k:v for k,v in provenance.items() if k not in volatile}==recorded['provenance']
 
 def testCapabilitiesReportBothTiers():
@@ -89,3 +90,14 @@ def testCapabilitiesReportBothTiers():
     assert capabilities['satellites']['maximum']==4
     assert capabilities['cadenceRangeS']['maximum']==960
     assert client.get('/v1/candidates').json()[0]['satelliteRange']['maximum']==4
+
+def testPositionsAlignWithSamples(engine):
+    for request,count in ((dict(siteId='CR1',startUtc='2025-01-06T00:00:00Z',durationS=7200),2),(dict(startUtc='2026-11-20T00:00:00Z',durationS=7200,satellites=3,cadenceS=240),3)):
+        result=engine.evaluate(request)['result']
+        samples=len(result['timesS'])
+        assert result['positionFrame']=='MOON_ME_DE421'
+        assert len(result['relayPositionKm'])==count==len(result['siteRelayAvailable'])
+        assert all(len(track)==samples and all(len(point)==3 for point in track) for track in result['relayPositionKm'])
+        assert len(result['earthPositionKm'])==samples and all(len(point)==3 for point in result['earthPositionKm'])
+        assert 1737<sum(c*c for c in result['relayPositionKm'][0][0])**.5<1e5
+        assert 3.5e5<sum(c*c for c in result['earthPositionKm'][0])**.5<4.1e5

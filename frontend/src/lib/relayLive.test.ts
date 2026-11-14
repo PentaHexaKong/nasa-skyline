@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { relaySteps, suggestedRelays } from './relayLive'
+import { contactSpans, readRelayReply, relaySteps, suggestedRelays } from './relayLive'
 
 // Ten samples, 600 s apart. Earth is in view directly for the first three only.
 const direct = [true, true, true, false, false, false, false, false, false, false]
@@ -45,5 +45,54 @@ describe('suggestedRelays', () => {
 
   it('suggests none when direct contact already covers the stay', () => {
     expect(suggestedRelays(relaySteps([T, T], [[T, T]], [[T, T]], 120))).toBe(0)
+  })
+})
+
+const START = '2027-03-01T00:00:00Z'
+const t0 = Date.parse(START)
+const body = (extra: object = {}) => ({
+  dataState: 'computed',
+  tier: 'propagated-two-body',
+  cadenceS: 600,
+  relayScience: {
+    result: { directAvailable: direct, siteRelayAvailable: site, relayEarthAvailable: earth, ...extra },
+    provenance: { sampleUtc: [START] },
+  },
+})
+
+describe('readRelayReply', () => {
+  it('keeps the samples and the positions beside the ladder', () => {
+    const relayKm = site.map((row) => row.map(() => [0, 0, 1800] as [number, number, number]))
+    const earthKm = direct.map(() => [384400, 0, 0] as [number, number, number])
+    const load = readRelayReply(body({ relayPositionKm: relayKm, earthPositionKm: earthKm }), 6000)
+    if (load.status !== 'ready') throw new Error(load.status)
+    const { track, steps } = load.ladder
+    expect(track.startMs).toBe(t0)
+    expect(track.relayed[3]?.[9]).toBe(false) // relay 4 sees the site but not Earth
+    expect(track.relayKm?.[0]?.[0]).toEqual([0, 0, 1800])
+    expect(track.earthKm).toHaveLength(10)
+    expect(steps[2]?.share).toBe(0.9)
+  })
+
+  it('accepts replies without positions', () => {
+    const load = readRelayReply(body(), 6000)
+    expect(load.status === 'ready' && load.ladder.track.relayKm).toBeUndefined()
+  })
+
+  it('rejects positions that are not 3-vectors', () => {
+    expect(readRelayReply(body({ earthPositionKm: [[1, 2]] }), 6000).status).toBe('unavailable')
+  })
+})
+
+describe('contactSpans', () => {
+  const load = readRelayReply(body(), 6000)
+  const track = load.status === 'ready' ? load.ladder.track : undefined
+  const at = (i: number) => t0 + i * 600_000
+
+  it('merges consecutive samples into spans that end where contact stops', () => {
+    if (!track) throw new Error('no track')
+    expect(contactSpans(track, 0)).toEqual([[at(0), at(3)]])
+    expect(contactSpans(track, 1)).toEqual([[at(0), at(8)]])
+    expect(contactSpans(track, 4)).toEqual([[at(0), at(9)]])
   })
 })

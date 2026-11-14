@@ -10,6 +10,35 @@ export const Route = createFileRoute('/method')({
   component: MethodPage,
 })
 
+/** The pipeline's conventions worth defining for a reader, in reading order, with the word the app uses for each. */
+const DEFINITIONS = [
+  ['direct_sun', 'Direct sun'],
+  ['daylight', 'Daylight'],
+  ['earth_visible', 'Earth in view'],
+  ['earth_any', 'Any part of Earth'],
+  ['elevation', 'Elevation'],
+  ['azimuth', 'Azimuth'],
+  ['time', 'Time'],
+] as const
+
+const sentence = (s: string) => `${s.charAt(0).toUpperCase()}${s.slice(1)}${s.endsWith('.') ? '' : '.'}`
+
+/**
+ * The terrain bands the skyline was traced through, from the provenance: each band's range, grid, and the angle one
+ * grid cell spans seen from its far end, which is how finely that band can place the ridge.
+ */
+function bands(dem: { [k: string]: unknown }[]) {
+  let from = 0
+  return dem.flatMap((d) => {
+    const to = Number(d.range_km)
+    const cell = Number(d.pixel_size_m)
+    if (!Number.isFinite(to) || !Number.isFinite(cell)) return []
+    const band = { role: String(d.role ?? to), from, to, cell, deg: (Math.atan(cell / (to * 1000)) * 180) / Math.PI }
+    from = to
+    return [band]
+  })
+}
+
 const deg = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(2)}°${v < 0 ? neg : pos}`
 
 function Section({
@@ -113,6 +142,72 @@ function MethodPage() {
               </li>
             ))}
           </ul>
+        </Section>
+
+        <Section
+          id="definitions"
+          eyebrow="Definitions"
+          title="What each word means"
+          intro="The rules every chart and verdict uses, as the pipeline states them."
+        >
+          <dl className="grid max-w-[72ch] gap-x-6 gap-y-3 border-t border-line pt-4 sm:grid-cols-[10rem_1fr]">
+            {DEFINITIONS.map(([key, term]) =>
+              ref.conventions[key] ? (
+                <div key={key} className="contents">
+                  <dt className="font-medium">{term}</dt>
+                  <dd className="text-ink-muted text-pretty">{sentence(ref.conventions[key])}</dd>
+                </div>
+              ) : null,
+            )}
+          </dl>
+        </Section>
+
+        <Section
+          id="uncertainty"
+          eyebrow="Uncertainty"
+          title="How sharp the horizon is"
+          intro={`The skyline is only as sharp as the terrain grid. One grid cell at the far end of each band spans this much of the sky. Shown for ${ref.site.name}; every site uses the same bands.`}
+        >
+          <div className="grid gap-8">
+            <table className="w-full max-w-[44rem] text-left text-sm">
+              <caption className="sr-only">Terrain grid by range and the angle one cell spans at the far end of each band</caption>
+              <thead className="text-ink-faint">
+                <tr className="border-b border-line">
+                  <th scope="col" className="py-2 pr-4 font-normal">
+                    Range
+                  </th>
+                  <th scope="col" className="py-2 pr-4 font-normal">
+                    Terrain grid
+                  </th>
+                  <th scope="col" className="py-2 font-normal">
+                    One cell spans
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="readout">
+                {bands(ref.provenance.dem).map((b) => (
+                  <tr key={b.role} className="border-b border-line">
+                    <td className="py-2 pr-4">
+                      {b.from}–{b.to} km
+                    </td>
+                    <td className="py-2 pr-4">{b.cell} m</td>
+                    <td className="py-2">{b.deg.toFixed(3)}°</td>
+                  </tr>
+                ))}
+                <tr>
+                  <td className="py-2 pr-4" colSpan={2}>
+                    Skyline sampled every
+                  </td>
+                  <td className="py-2">{p.az_step_deg}° of azimuth</td>
+                </tr>
+              </tbody>
+            </table>
+            <ul className="grid max-w-[62ch] list-disc gap-2 pl-5 text-ink-muted text-pretty marker:text-ink-faint">
+              {ref.provenance.known_limits.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          </div>
         </Section>
 
         <Section id="claims" eyebrow="Limits" title="What we don’t claim">

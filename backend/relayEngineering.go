@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -98,6 +99,9 @@ type comparisonRelay struct {
 		Direct              json.RawMessage `json:"direct"`
 		Assisted            json.RawMessage `json:"assisted"`
 		ImprovementFraction float64         `json:"improvementFraction"`
+		PositionFrame       string          `json:"positionFrame"`
+		RelayPositionKm     [][][]float64   `json:"relayPositionKm"`
+		EarthPositionKm     [][]float64     `json:"earthPositionKm"`
 	} `json:"result"`
 	Provenance struct {
 		EpochET       float64           `json:"epochEt"`
@@ -131,7 +135,27 @@ func callMissionService(ctx context.Context, client *http.Client, url string, pa
 	if err != nil || len(body) > 16<<20 || response.StatusCode != 200 {
 		return nil, fmt.Errorf("scientific service rejected evaluation (%d)", response.StatusCode)
 	}
+	var reply struct {
+		Error *struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if json.Unmarshal(body, &reply) == nil && reply.Error != nil && reply.Error.Code == "busy" {
+		return nil, errServiceBusy
+	}
 	return body, nil
+}
+
+// The science services run one evaluation at a time and answer the rest 200 with error.code "busy"; callers retry.
+var errServiceBusy = errors.New("the scientific service is busy with another evaluation")
+
+// writeServiceError reports a busy service as retryable and anything else with the caller's status and code.
+func writeServiceError(w http.ResponseWriter, err error, status int, code string) {
+	if errors.Is(err, errServiceBusy) {
+		writeError(w, 503, "busy", err.Error())
+		return
+	}
+	writeError(w, status, code, err.Error())
 }
 
 func validateRelayComparison(environment comparisonEnvironment, relay comparisonRelay, cadenceS int) error {
@@ -188,6 +212,37 @@ func validateRelayComparison(environment comparisonEnvironment, relay comparison
 	}
 	if environment.Result.TimesS[len(times)] != float64(len(times)*cadenceS) {
 		return fmt.Errorf("endpoint mismatch")
+	}
+	return validateRelayPositions(relay, len(times))
+}
+
+// Positions are optional so adapters that predate them still compare; once present they must match the timeline.
+func validateRelayPositions(relay comparisonRelay, samples int) error {
+	result := relay.Result
+	if result.RelayPositionKm == nil && result.EarthPositionKm == nil {
+		return nil
+	}
+	if result.PositionFrame != "" && result.PositionFrame != relay.Provenance.Frame {
+		return fmt.Errorf("incompatible position frame")
+	}
+	if len(result.EarthPositionKm) != samples || len(result.RelayPositionKm) != len(result.SiteRelayAvailable) || len(result.RelayPositionKm) == 0 {
+		return fmt.Errorf("incompatible position shapes")
+	}
+	tracks := append([][][]float64{result.EarthPositionKm}, result.RelayPositionKm...)
+	for _, track := range tracks {
+		if len(track) != samples {
+			return fmt.Errorf("incompatible position shapes")
+		}
+		for _, point := range track {
+			if len(point) != 3 {
+				return fmt.Errorf("position is not a 3-vector")
+			}
+			for _, value := range point {
+				if math.IsNaN(value) || math.IsInf(value, 0) {
+					return fmt.Errorf("nonfinite position")
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -252,7 +307,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 		adapterQuery := map[string]any{"siteId": query.SiteID, "startUtc": query.StartUTC, "durationS": query.DurationS, "satellites": query.satelliteCount(), "cadenceS": cadenceS}
 		relayBody, err := callMissionService(r.Context(), client, relayURL+"/v1/evaluate", adapterQuery)
 		if err != nil {
-			writeError(w, 422, "unsupported_scenario", err.Error())
+			writeServiceError(w, err, 422, "unsupported_scenario")
 			return
 		}
 		var replayClock comparisonRelay
@@ -263,7 +318,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 		missionQuery := map[string]any{"site": query.SiteID, "startUtc": replayClock.Provenance.SampleUTC[0], "durationS": query.DurationS, "cadenceS": cadenceS, "profile": "geometric", "earthDefinition": "center", "solarDefinition": "anyDisk", "horizonOffsetDeg": 0, "localResolutionM": 80}
 		environmentBody, err := callMissionService(r.Context(), client, missionURL+"/v1/evaluate", missionQuery)
 		if err != nil {
-			writeError(w, 502, "mission_unavailable", err.Error())
+			writeServiceError(w, err, 502, "mission_unavailable")
 			return
 		}
 		var environment comparisonEnvironment
