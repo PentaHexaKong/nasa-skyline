@@ -1,7 +1,24 @@
 [project]
 name = "skyline-pipeline"
 version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
+description = "Terrain skyline, Sun and comms visibility pipeline behind the Skyline app"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "numpy>=2.5.4",
+    "rasterio>=1.5.2",
+    "spiceypy>=8.3.0",
+]
+
+[dependency-groups]
+assets = [
+    "openexr>=3.2",
+    "pillow>=13.0.0",
+]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+markers = ["net: needs network access (JPL Horizons); run with -m net"]
+addopts = "-m 'not net'"
