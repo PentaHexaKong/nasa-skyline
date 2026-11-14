@@ -1,0 +1,50 @@
+{
+  "schemaVersion": "1.0.0",
+  "files": [
+    {
+      "path": "spice/de440s.bsp",
+      "sizeBytes": 32726016,
+      "sha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2"
+    },
+    {
+      "path": "spice/moon_080317.tf",
+      "sizeBytes": 21437,
+      "sha256": "78732477b96f9863e7b0d65bcee3c22b8707ca5ed0db56d1173319cb2e8c7993"
+    },
+    {
+      "path": "spice/moon_de440_250416.tf",
+      "sizeBytes": 19478,
+      "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
+    },
+    {
+      "path": "spice/moon_pa_de421_1900-2050.bpc",
+      "sizeBytes": 1770496,
+      "sha256": "656f90616403d75a75f0cd6c8830fc5b44f8cb4facb5ccb8915e752b397520cf"
+    },
+    {
+      "path": "spice/moon_pa_de440_200625.bpc",
+      "sizeBytes": 12863488,
+      "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f"
+    },
+    {
+      "path": "spice/naif0012.tls",
+      "sizeBytes": 5257,
+      "sha256": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b"
+    },
+    {
+      "path": "spice/pck00011.tpc",
+      "sizeBytes": 131226,
+      "sha256": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1"
+    },
+    {
+      "path": "lola/LDEM_60S_240MPP_ADJ.TIF",
+      "sizeBytes": 218961039,
+      "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34"
+    },
+    {
+      "path": "lola/LDEM_80S_80MPP_ADJ.TIF",
+      "sizeBytes": 189158392,
+      "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a"
+    }
+  ]
+}
