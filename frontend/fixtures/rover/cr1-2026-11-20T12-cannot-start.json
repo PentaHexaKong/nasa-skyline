@@ -1,0 +1,210 @@
+{
+ "schemaVersion": "skyline-rover-response/0.1.0",
+ "contractStatus": "proposed-for-team-review",
+ "dataState": "computed",
+ "scenarioId": "rover-32d4cde434d10ef8bf6a796d3fd1e15c843f76920f7042e6e5aaa8d2f5cdfb63",
+ "error": null,
+ "request": {
+  "startUtc": "2026-11-20T12:00:00Z",
+  "speedMps": 0.2,
+  "maximumSlopeDeg": 20.0
+ },
+ "result": {
+  "grid": {
+   "rows": 3,
+   "columns": 3,
+   "startCell": 4,
+   "terrainValidMask": [
+    [
+     true,
+     true,
+     true
+    ],
+    [
+     true,
+     true,
+     true
+    ],
+    [
+     true,
+     true,
+     true
+    ]
+   ],
+   "terrainTraversableMask": [
+    [
+     true,
+     true,
+     true
+    ],
+    [
+     true,
+     true,
+     true
+    ],
+    [
+     true,
+     true,
+     true
+    ]
+   ],
+   "cellPointIndices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "points": [
+    {
+     "estimatedSlopeDeg": 1.681175292522329,
+     "latitudeDeg": -89.46804389036296,
+     "longitudeDegEast": 222.99050452679876
+    },
+    {
+     "estimatedSlopeDeg": 0.9921168634899977,
+     "latitudeDeg": -89.469839288985,
+     "longitudeDegEast": 222.78194966192984
+    },
+    {
+     "estimatedSlopeDeg": 0.40538464162181564,
+     "latitudeDeg": -89.4716276159865,
+     "longitudeDegEast": 222.57198023136442
+    },
+    {
+     "estimatedSlopeDeg": 1.1209533926935151,
+     "latitudeDeg": -89.4661111232873,
+     "longitudeDegEast": 222.7974462720863
+    },
+    {
+     "estimatedSlopeDeg": 1.1012271928120894,
+     "latitudeDeg": -89.4679,
+     "longitudeDegEast": 222.589
+    },
+    {
+     "estimatedSlopeDeg": 1.742657214959662,
+     "latitudeDeg": -89.46968178696196,
+     "longitudeDegEast": 222.37915022042435
+    },
+    {
+     "estimatedSlopeDeg": 2.3957504819038817,
+     "latitudeDeg": -89.46417233884164,
+     "longitudeDegEast": 222.6057829594595
+    },
+    {
+     "estimatedSlopeDeg": 2.758588677074425,
+     "latitudeDeg": -89.46595472084613,
+     "longitudeDegEast": 222.39745385136
+    },
+    {
+     "estimatedSlopeDeg": 3.4623347887877403,
+     "latitudeDeg": -89.46772999552367,
+     "longitudeDegEast": 222.187732259175
+    },
+    {
+     "estimatedSlopeDeg": 1.4844673417961003,
+     "latitudeDeg": -89.46894246915019,
+     "longitudeDegEast": 222.8864033672961
+    },
+    {
+     "estimatedSlopeDeg": 0.7173183059598586,
+     "latitudeDeg": -89.46707826309382,
+     "longitudeDegEast": 222.89380035411398
+    },
+    {
+     "estimatedSlopeDeg": 0.41334480611127805,
+     "latitudeDeg": -89.47073434092574,
+     "longitudeDegEast": 222.67714231463137
+    },
+    {
+     "estimatedSlopeDeg": 0.48480732163583223,
+     "latitudeDeg": -89.46887039736976,
+     "longitudeDegEast": 222.68529870147856
+    },
+    {
+     "estimatedSlopeDeg": 1.1931503268368635,
+     "latitudeDeg": -89.47065545089025,
+     "longitudeDegEast": 222.47538801645985
+    },
+    {
+     "estimatedSlopeDeg": 1.068799734566581,
+     "latitudeDeg": -89.46700644340729,
+     "longitudeDegEast": 222.69339803959022
+    },
+    {
+     "estimatedSlopeDeg": 1.7975660043155512,
+     "latitudeDeg": -89.46514247914993,
+     "longitudeDegEast": 222.70144092508954
+    },
+    {
+     "estimatedSlopeDeg": 1.246557639250886,
+     "latitudeDeg": -89.46879178416565,
+     "longitudeDegEast": 222.48425108299358
+    },
+    {
+     "estimatedSlopeDeg": 1.8830434231634845,
+     "latitudeDeg": -89.46692810509956,
+     "longitudeDegEast": 222.49305217630015
+    },
+    {
+     "estimatedSlopeDeg": 2.4580622328940667,
+     "latitudeDeg": -89.46870663244148,
+     "longitudeDegEast": 222.28326543621301
+    },
+    {
+     "estimatedSlopeDeg": 2.5437373881822047,
+     "latitudeDeg": -89.46506441382517,
+     "longitudeDegEast": 222.50179194370716
+    },
+    {
+     "estimatedSlopeDeg": 3.0159506372939364,
+     "latitudeDeg": -89.46684325104535,
+     "longitudeDegEast": 222.29276763741336
+    }
+   ]
+  },
+  "directOnly": {
+   "dataState": "computed",
+   "reason": "Start fails terrain traversability or initial stopping requirements",
+   "reachableMask": [
+    [
+     false,
+     false,
+     false
+    ],
+    [
+     false,
+     false,
+     false
+    ],
+    [
+     false,
+     false,
+     false
+    ]
+   ],
+   "earliestArrivalS": [
+    [
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null
+    ],
+    [
+     null,
+     null,
+     null
+    ]
+   ],
+   "startAdmitted": false
+  }
+ }
+}

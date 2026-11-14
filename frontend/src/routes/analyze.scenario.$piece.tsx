@@ -13,6 +13,7 @@ import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanSearch } from '~/components/planner/plan'
 import { planSearch } from '~/components/planner/plan'
 import { RelayLadder } from '~/components/planner/RelayLadder'
+import { RoverReach } from '~/components/planner/RoverReach'
 import { resolvePlan, reviewSearch } from '~/components/planner/resolvePlan'
 import { missionSummary } from '~/components/planner/StepBar'
 import { Footer, Shell } from '~/components/Shell'
@@ -119,9 +120,10 @@ function Baseline({ plan }: { plan: Plan }) {
 function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
   const siteId = plan.focus ?? ''
   const feed = useFeed('mast', siteId)
+  if (piece === 'rover') return <RoverReach plan={plan} />
   if (piece === 'relay') return <RelayLadder plan={plan} />
-  if (piece !== 'rover' && feed.state === 'loading') return <p aria-busy="true">Checking scenario results…</p>
-  if (piece !== 'rover' && feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)) {
+  if (feed.state === 'loading') return <p aria-busy="true">Checking scenario results…</p>
+  if (feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)) {
     return (
       <section aria-label="Pipeline scenario output" className="grid gap-4">
         <p className="text-ink-muted">
@@ -139,11 +141,10 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
           Scenario result · not computed
         </h2>
         <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
-          {piece === 'rover'
-            ? 'Rover reach has not been computed for this plan. Your site, period and limits are kept here for the next analysis.'
-            : 'A computed result matching this site and the exact mission period is not available. Any improvement over your starting point is not computed.'}
+          A computed result matching this site and the exact mission period is not available. Any improvement over your starting point is
+          not computed.
         </p>
-        {piece !== 'rover' && feed.state === 'invalid' && (
+        {feed.state === 'invalid' && (
           <p className="text-sm text-ink-muted">The delivered file could not be validated, so its results are hidden.</p>
         )}
       </div>
