@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "skyline-mast-placement-request/1.0.0",
+  "site": "CR1",
+  "startUtc": "2025-01-06T00:00:00Z",
+  "durationS": 86400.0,
+  "cadenceS": 3600.0,
+  "profile": "geometric",
+  "solarDefinition": "anyDisk",
+  "earthDefinition": "center",
+  "horizonOffsetDeg": 0.0,
+  "localResolutionM": 80,
+  "eventToleranceS": 1.0,
+  "constraints": {
+    "minimumSolar": 0.8,
+    "minimumEarth": 0.5,
+    "maximumSolarOutageS": 3600.0,
+    "maximumEarthOutageS": 30000.0
+  },
+  "observerHeightM": 0,
+  "searchRadiusM": 80.0,
+  "gridResolutionM": 80.0,
+  "mastHeightsM": [
+    0.0,
+    2.0
+  ],
+  "maximumCableLengthM": 80.0,
+  "maximumSlopeDeg": null,
+  "verticalAzimuthDeg": 90.0,
+  "evaluationBudget": {
+    "maxEvaluations": 10,
+    "maxWallTimeS": 300.0
+  }
+}

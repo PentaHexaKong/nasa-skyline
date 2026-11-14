@@ -1,0 +1,92 @@
+[
+  {
+    "path": "Nasa/src/geometry/spiceGeometry.py",
+    "sha256": "2e64b3b840b2e34b7064ada50bd4da9886c21cc53a1d576de714a13ce5645759",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "adapted"
+  },
+  {
+    "path": "Nasa/src/geometry/lunarSites.py",
+    "sha256": "b17edb9017d848211d5788a703d34f65550b3737d64ae69c5e630b1386eb5808",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "adapted"
+  },
+  {
+    "path": "Nasa/src/geometry/terrainHorizon.py",
+    "sha256": "a6dec40c554afc0f203db37670f1fbfda5c37dd31ca1207373d5025d28187adb",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "adapted"
+  },
+  {
+    "path": "Nasa/src/geometry/visibility.py",
+    "sha256": "48fa5a104e9ee72596e84b8568d96f54ffd677cbdb3d0fdd00ffcae67e0d970e",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "reference only"
+  },
+  {
+    "path": "Nasa/src/communication/coverageMetrics.py",
+    "sha256": "48de806c4f6ab91ac80a36e54361f9c777afa3539d87e2402944f4e25f2a105e",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "reference only"
+  },
+  {
+    "path": "Nasa/src/validation/verifyCoverage.py",
+    "sha256": "dc76ff978f74ccb4616c6099605e6fcb119f0bc71e112a4ed49ed45c41be0f76",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "reference only"
+  },
+  {
+    "path": "Nasa/src/optimization/problemDefinition.py",
+    "sha256": "998bbac0ca77749ce1a8bbfa8de9e392021c0976471ff5a9a2dbd9bb0cda2d27",
+    "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "reuse": "reference only"
+  },
+  {
+    "path": "Nasa-int4/src/science/engine.py",
+    "sha256": "dabd0265b905536544a7dbfd516b6f19f496242adb23ed2bb37263e7e5a067ab",
+    "revision": "331f43afdaa0a543e665a59a940d3e5ddca8eded",
+    "reuse": "reference only"
+  },
+  {
+    "path": "ds/pipeline/sun.py",
+    "sha256": "adcb4f56b446f3a3c0a065d415895549652c0d9cceaa40f1e8c9c50c01e3485a",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "ds/pipeline/moon.py",
+    "sha256": "57780add65e3ce1f1df8870bc52f04073f7e15d10479568d063ad34539058f55",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "ds/pipeline/visibility.py",
+    "sha256": "b1cb384a08d84319b39254b36f265621a5f35dd71323ad0dbb201546433e1200",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "ds/pipeline/run.py",
+    "sha256": "b6d7ab6e2a8b3d7ff7a89b9b615a7c59af3a0055b7878bcc75f8c012b830b824",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "ds/pipeline/sites.py",
+    "sha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "contracts/scientificengine-request.schema.json",
+    "sha256": "9d56f8c37a38a78461b3ebb67cd64277ecd9958d1d87feda31cd2349baa29a47",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  },
+  {
+    "path": "contracts/scientificengine-result.schema.json",
+    "sha256": "e34e390bd4f789174c069a0bb8e610d5ab7c5fc0af0c10c00bd063762f62d971",
+    "revision": "40d02b58157bc51c9b2f89811d368f8e14bdd7db",
+    "reuse": "reference only"
+  }
+]

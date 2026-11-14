@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "skyline-rover-request/0.1.0",
+  "site": "CR1",
+  "startUtc": "2025-01-06T18:00:00Z",
+  "durationS": 1800,
+  "timeStepS": 120,
+  "terrainDemId": "LDEM_80S_80MPP_ADJ.TIF",
+  "projectionId": "LOLA-south-polar-stereographic-DE421",
+  "gridRadiusCells": 1,
+  "gridResolutionM": 80.0,
+  "observerHeightM": 0.0,
+  "speedMps": 0.2,
+  "maximumSlopeDeg": 20.0,
+  "movementRule": "four-neighbor-no-diagonals",
+  "allowWaiting": true,
+  "movementRequiresSunlight": true,
+  "movementRequiresCommunication": true,
+  "stoppingRequiresSunlight": true,
+  "stoppingRequiresCommunication": true,
+  "solarDefinition": "anyDisk",
+  "profile": "geometric",
+  "horizonOffsetDeg": 0,
+  "communicationMode": "direct-only",
+  "budget": {
+    "maxGeometryEvaluations": 21,
+    "maxGraphNodes": 1089,
+    "maxTransitions": 10000,
+    "maxWallTimeS": 300.0
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "candidateId": {
+      "const": "nominal-candidate-2",
+      "default": "nominal-candidate-2",
+      "title": "Candidateid",
+      "type": "string"
+    },
+    "siteId": {
+      "default": "CR1",
+      "enum": [
+        "CR1",
+        "GR1",
+        "SR1"
+      ],
+      "title": "Siteid",
+      "type": "string"
+    },
+    "startUtc": {
+      "default": "2025-01-01T00:00:00Z",
+      "format": "date-time",
+      "title": "Startutc",
+      "type": "string"
+    },
+    "durationS": {
+      "default": 86400,
+      "maximum": 2419200,
+      "minimum": 120,
+      "title": "Durations",
+      "type": "integer"
+    },
+    "cadenceS": {
+      "const": 120,
+      "default": 120,
+      "title": "Cadences",
+      "type": "integer"
+    },
+    "profile": {
+      "const": "geometric",
+      "default": "geometric",
+      "title": "Profile",
+      "type": "string"
+    },
+    "terrainProfile": {
+      "const": "lola-80-240-zero-mask",
+      "default": "lola-80-240-zero-mask",
+      "title": "Terrainprofile",
+      "type": "string"
+    },
+    "rfQualified": {
+      "const": false,
+      "default": false,
+      "title": "Rfqualified",
+      "type": "boolean"
+    }
+  },
+  "title": "RelayRequest",
+  "type": "object"
+}

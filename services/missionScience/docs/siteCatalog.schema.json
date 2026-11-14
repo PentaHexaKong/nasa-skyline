@@ -1,0 +1,217 @@
+{
+  "$defs": {
+    "CatalogEntry": {
+      "additionalProperties": true,
+      "properties": {
+        "canonicalId": {
+          "title": "Canonicalid",
+          "type": "string"
+        },
+        "displayName": {
+          "title": "Displayname",
+          "type": "string"
+        },
+        "body": {
+          "enum": [
+            "moon",
+            "earth"
+          ],
+          "title": "Body",
+          "type": "string"
+        },
+        "latitudeDeg": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitudedeg",
+          "type": "number"
+        },
+        "longitudeDegEast": {
+          "exclusiveMaximum": 360,
+          "minimum": 0,
+          "title": "Longitudedegeast",
+          "type": "number"
+        },
+        "frame": {
+          "title": "Frame",
+          "type": "string"
+        },
+        "coordinateSource": {
+          "title": "Coordinatesource",
+          "type": "string"
+        },
+        "coordinateUncertaintyM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coordinateuncertaintym"
+        },
+        "observerHeightM": {
+          "title": "Observerheightm",
+          "type": "number"
+        },
+        "groundElevationM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Groundelevationm"
+        },
+        "datum": {
+          "title": "Datum",
+          "type": "string"
+        },
+        "dems": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Dems",
+          "type": "array"
+        },
+        "epochs": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Epochs"
+        },
+        "missionLimits": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Missionlimits"
+        },
+        "profiles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Profiles",
+          "type": "array"
+        },
+        "supportedObserverHeightsM": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Supportedobserverheightsm",
+          "type": "array"
+        },
+        "liveEvaluation": {
+          "title": "Liveevaluation",
+          "type": "string"
+        },
+        "relay": {
+          "additionalProperties": true,
+          "title": "Relay",
+          "type": "object"
+        },
+        "aliases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Aliases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "canonicalId",
+        "displayName",
+        "body",
+        "latitudeDeg",
+        "longitudeDegEast",
+        "frame",
+        "coordinateSource",
+        "coordinateUncertaintyM",
+        "observerHeightM",
+        "groundElevationM",
+        "datum",
+        "dems",
+        "epochs",
+        "missionLimits",
+        "profiles",
+        "supportedObserverHeightsM",
+        "liveEvaluation",
+        "relay",
+        "aliases"
+      ],
+      "title": "CatalogEntry",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "properties": {
+    "schemaVersion": {
+      "const": "site-catalog/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "longitudeConvention": {
+      "title": "Longitudeconvention",
+      "type": "string"
+    },
+    "aliases": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Aliases",
+      "type": "object"
+    },
+    "sites": {
+      "items": {
+        "$ref": "#/$defs/CatalogEntry"
+      },
+      "title": "Sites",
+      "type": "array"
+    },
+    "sourceEvidence": {
+      "additionalProperties": true,
+      "title": "Sourceevidence",
+      "type": "object"
+    },
+    "externalRegistries": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Externalregistries",
+      "type": "array"
+    },
+    "tolerances": {
+      "additionalProperties": true,
+      "title": "Tolerances",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "longitudeConvention",
+    "aliases",
+    "sites",
+    "sourceEvidence",
+    "externalRegistries",
+    "tolerances"
+  ],
+  "title": "CatalogResponse",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:skyline:site-catalog:1.0.0"
+}

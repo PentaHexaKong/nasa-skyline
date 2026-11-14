@@ -1,0 +1,1395 @@
+{
+  "schemaVersion": "site-catalog/1.0.0",
+  "longitudeConvention": "planetocentric latitude, east longitude in [0,360) for lunar entries",
+  "aliases": {},
+  "sites": [
+    {
+      "canonicalId": "CR1",
+      "displayName": "Connecting Ridge",
+      "body": "moon",
+      "latitudeDeg": -89.4679,
+      "longitudeDegEast": 222.589,
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "verified published ROI center",
+      "coordinateSource": "https://arxiv.org/pdf/1208.5587#page=55",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 0.0,
+      "groundElevationM": 1942.8549873634875,
+      "datum": "radial meters above 1737400 m sphere",
+      "dems": [
+        {
+          "filename": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "resolutionM": [
+            80.0,
+            80.0
+          ],
+          "boundsM": [
+            -304000.0,
+            -304000.0,
+            304000.0,
+            304000.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        },
+        {
+          "filename": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "resolutionM": [
+            240.0,
+            240.0
+          ],
+          "boundsM": [
+            -931200.0,
+            -931200.0,
+            931200.0,
+            931200.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        }
+      ],
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0
+      ],
+      "liveEvaluation": "supported subject to asset and time checks",
+      "relay": {
+        "status": "supported",
+        "candidateId": "nominal-candidate-2",
+        "startUtc": "2025-01-01T00:00:00Z",
+        "endUtcExclusive": "2025-01-29T00:00:00Z",
+        "cadenceS": 120,
+        "maxIntegratedDurationS": 86400,
+        "profile": "geometric",
+        "observerHeightM": 0,
+        "elevationMaskDeg": 0,
+        "maximumStandaloneDurationS": 2419200
+      },
+      "aliases": [],
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "verified publisher DE421 CRS and pixel-center interpolation",
+      "observerPositionM": [
+        -11892.176223883378,
+        -10931.203677354179,
+        -1739267.849448847
+      ],
+      "demIdentity": [
+        "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+        "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34"
+      ],
+      "observerHeightSupport": {
+        "mode": "continuous geometry within radial envelope",
+        "minimumM": 0,
+        "maximumM": 18057.145012636513,
+        "datum": "metres above local interpolated terrain",
+        "engineeringCertification": false
+      },
+      "terrainProfile": {
+        "localResolutionM": 80,
+        "localRadiusM": 50000,
+        "extendedResolutionM": 240,
+        "extendedRadiusM": 400000,
+        "optionalLocalResolutionM": 20,
+        "optionalLocalStatus": "requires separately provisioned and validated raster"
+      }
+    },
+    {
+      "canonicalId": "GR1",
+      "displayName": "de Gerlache Rim",
+      "body": "moon",
+      "latitudeDeg": -88.6952,
+      "longitudeDegEast": 291.7154,
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "verified published ROI center",
+      "coordinateSource": "https://arxiv.org/pdf/1208.5587#page=55",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 0.0,
+      "groundElevationM": 1779.1955739820883,
+      "datum": "radial meters above 1737400 m sphere",
+      "dems": [
+        {
+          "filename": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "resolutionM": [
+            80.0,
+            80.0
+          ],
+          "boundsM": [
+            -304000.0,
+            -304000.0,
+            304000.0,
+            304000.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        },
+        {
+          "filename": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "resolutionM": [
+            240.0,
+            240.0
+          ],
+          "boundsM": [
+            -931200.0,
+            -931200.0,
+            931200.0,
+            931200.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        }
+      ],
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0
+      ],
+      "liveEvaluation": "supported subject to asset and time checks",
+      "relay": {
+        "status": "supported",
+        "candidateId": "nominal-candidate-2",
+        "startUtc": "2025-01-01T00:00:00Z",
+        "endUtcExclusive": "2025-01-29T00:00:00Z",
+        "cadenceS": 120,
+        "maxIntegratedDurationS": 86400,
+        "profile": "geometric",
+        "observerHeightM": 0,
+        "elevationMaskDeg": 0,
+        "maximumStandaloneDurationS": 2419200
+      },
+      "aliases": [],
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "verified publisher DE421 CRS and pixel-center interpolation",
+      "observerPositionM": [
+        14652.971229224686,
+        -36792.50202612198,
+        -1738728.2353910792
+      ],
+      "demIdentity": [
+        "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+        "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34"
+      ],
+      "observerHeightSupport": {
+        "mode": "continuous geometry within radial envelope",
+        "minimumM": 0,
+        "maximumM": 18220.804426017912,
+        "datum": "metres above local interpolated terrain",
+        "engineeringCertification": false
+      },
+      "terrainProfile": {
+        "localResolutionM": 80,
+        "localRadiusM": 50000,
+        "extendedResolutionM": 240,
+        "extendedRadiusM": 400000,
+        "optionalLocalResolutionM": 20,
+        "optionalLocalStatus": "requires separately provisioned and validated raster"
+      }
+    },
+    {
+      "canonicalId": "SR1",
+      "displayName": "Shackleton Rim",
+      "body": "moon",
+      "latitudeDeg": -89.7755,
+      "longitudeDegEast": 203.552,
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "verified published ROI center",
+      "coordinateSource": "https://arxiv.org/pdf/1208.5587#page=55",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 0.0,
+      "groundElevationM": 1733.7246268702506,
+      "datum": "radial meters above 1737400 m sphere",
+      "dems": [
+        {
+          "filename": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "resolutionM": [
+            80.0,
+            80.0
+          ],
+          "boundsM": [
+            -304000.0,
+            -304000.0,
+            304000.0,
+            304000.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        },
+        {
+          "filename": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "resolutionM": [
+            240.0,
+            240.0
+          ],
+          "boundsM": [
+            -931200.0,
+            -931200.0,
+            931200.0,
+            931200.0
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere"
+        }
+      ],
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0
+      ],
+      "liveEvaluation": "supported subject to asset and time checks",
+      "relay": {
+        "status": "supported",
+        "candidateId": "nominal-candidate-2",
+        "startUtc": "2025-01-01T00:00:00Z",
+        "endUtcExclusive": "2025-01-29T00:00:00Z",
+        "cadenceS": 120,
+        "maxIntegratedDurationS": 86400,
+        "profile": "geometric",
+        "observerHeightM": 0,
+        "elevationMaskDeg": 0,
+        "maximumStandaloneDurationS": 2419200
+      },
+      "aliases": [],
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "verified publisher DE421 CRS and pixel-center interpolation",
+      "observerPositionM": [
+        -6246.71610930546,
+        -2722.8933256100663,
+        -1739120.3743629472
+      ],
+      "demIdentity": [
+        "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+        "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34"
+      ],
+      "observerHeightSupport": {
+        "mode": "continuous geometry within radial envelope",
+        "minimumM": 0,
+        "maximumM": 18266.27537312975,
+        "datum": "metres above local interpolated terrain",
+        "engineeringCertification": false
+      },
+      "terrainProfile": {
+        "localResolutionM": 80,
+        "localRadiusM": 50000,
+        "extendedResolutionM": 240,
+        "extendedRadiusM": 400000,
+        "optionalLocalResolutionM": 20,
+        "optionalLocalStatus": "requires separately provisioned and validated raster"
+      }
+    },
+    {
+      "canonicalId": "apollo11",
+      "displayName": "Apollo 11, Tranquility Base",
+      "body": "moon",
+      "latitudeDeg": 0.67416,
+      "longitudeDegEast": 23.47314,
+      "frame": "MOON_ME_DE440_ME421",
+      "coordinateStatus": "reported by existing application, source realization unresolved",
+      "coordinateSource": "Apollo 11 LM, mean observed position in the ME frame, LROC Coordinates of Lunar Anthropogenic Features, 28 Jul 2016 (uncertainty 0.3 m); checked 2026-11-14.",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": 0.3,
+      "reportedUncertaintyStatus": "DS source claim, independently unverified",
+      "observerHeightM": 2.0,
+      "groundElevationM": -1926.7,
+      "datum": "DS-reported radial height above 1737400 m sphere",
+      "dems": [
+        {
+          "role": "global map, all ranges",
+          "range_km": 200.0,
+          "url": "https://planetarymaps.usgs.gov/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+          "size_bytes": 8494203833,
+          "etag": "\"722bebaeb337b9afc8b24ae5bd817aa3-1013\"",
+          "last_modified": "Tue, 08 Nov 2022 23:01:12 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "read_from": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
+          "window": {
+            "row_off": 21169,
+            "col_off": 50391,
+            "rows": 3398,
+            "cols": 3398
+          },
+          "crs": "+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 118.4505876,
+          "dtype": "scale 0.5 offset 0.0"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unverified coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/apollo11.json",
+        "sha256": "5a248abd1e54e413f89098cad3e99f644ece1c9f2407990c2b1724bbaa6dbed5"
+      },
+      "dsDefinition": {
+        "id": "apollo11",
+        "name": "Apollo 11, Tranquility Base",
+        "latitudeDeg": 0.67416,
+        "longitudeDeg": 23.47314,
+        "observerHeightM": 2.0,
+        "source": "Apollo 11 LM, mean observed position in the ME frame, LROC Coordinates of Lunar Anthropogenic Features, 28 Jul 2016 (uncertainty 0.3 m); checked 2026-11-14.",
+        "reference": "Equatorial near-side contrast: Earth is always above the horizon (tidal locking) and the Sun climbs high.",
+        "body": "moon"
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "unverified for live mission-science evaluation",
+      "reportedObserverPositionM": [
+        1591749.1561585704,
+        691225.128137667,
+        20419.672123603817
+      ]
+    },
+    {
+      "canonicalId": "im1-malapert",
+      "displayName": "IM-1 Odysseus, near Malapert A",
+      "body": "moon",
+      "latitudeDeg": -80.13,
+      "longitudeDegEast": 1.44,
+      "frame": "MOON_ME_DE440_ME421",
+      "coordinateStatus": "reported by existing application, source realization unresolved",
+      "coordinateSource": "NASA/LRO, Feb 2024 (nasa.gov/missions/lro/nasas-lro-images-intuitive-machines-odysseus-lander), rounded to 0.01 deg; frame assumed ME.",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 2592.0,
+      "datum": "DS-reported radial height above 1737400 m sphere",
+      "dems": [
+        {
+          "role": "near field",
+          "range_km": 15.0,
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+          "size_bytes": 2696082051,
+          "etag": "W/\"a0b2f283-189327867b8\"",
+          "last_modified": "Fri, 07 Jul 2023 22:28:19 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "window": {
+            "row_off": 0,
+            "col_off": 14775,
+            "rows": 1006,
+            "cols": 1604
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 20.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "near field beyond the 80S grid edge",
+          "range_km": 15.0,
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_75S_30MPP_ADJ.TIF",
+          "size_bytes": 2802850273,
+          "etag": "W/\"a71019e1-189325e5008\"",
+          "last_modified": "Fri, 07 Jul 2023 21:59:49 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "window": {
+            "row_off": 4715,
+            "col_off": 14964,
+            "rows": 1071,
+            "cols": 1071
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 30.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "mid field",
+          "range_km": 100.0,
+          "file": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 0,
+            "col_off": 2630,
+            "rows": 1316,
+            "cols": 2529
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 80.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "far field",
+          "range_km": 200.0,
+          "file": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 1791,
+            "col_off": 3072,
+            "rows": 1679,
+            "cols": 1679
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 240.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unverified coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/im1-malapert.json",
+        "sha256": "8f1f9152e74dd41e16c0fafec1462688ca72aa322df04f20728a9796546361e9"
+      },
+      "dsDefinition": {
+        "id": "im1-malapert",
+        "name": "IM-1 Odysseus, near Malapert A",
+        "latitudeDeg": -80.13,
+        "longitudeDeg": 1.44,
+        "observerHeightM": 2.0,
+        "source": "NASA/LRO, Feb 2024 (nasa.gov/missions/lro/nasas-lro-images-intuitive-machines-odysseus-lander), rounded to 0.01 deg; frame assumed ME.",
+        "reference": "Rough polar terrain at 80 S near Malapert Massif: a flown-mission case that is not as far poleward as Mons Mouton.",
+        "body": "moon"
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "unverified for live mission-science evaluation",
+      "reportedObserverPositionM": [
+        298163.8764007115,
+        7495.253753164994,
+        -1714240.7193906219
+      ]
+    },
+    {
+      "canonicalId": "im2-mons-mouton",
+      "displayName": "IM-2 Athena, Mons Mouton",
+      "body": "moon",
+      "latitudeDeg": -84.7906,
+      "longitudeDegEast": 29.1957,
+      "frame": "MOON_ME_DE440_ME421",
+      "coordinateStatus": "reported by existing application, source realization unresolved",
+      "coordinateSource": "Final resting place of IM-2 Athena (Mar 2025) from LROC images 1408 and 1401 (lroc.im-ldi.com/images/1408, /1401); intended site was 84.78 S, 29.13 E.",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 5321.9,
+      "datum": "DS-reported radial height above 1737400 m sphere",
+      "dems": [
+        {
+          "role": "near field",
+          "range_km": 15.0,
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+          "size_bytes": 2696082051,
+          "etag": "W/\"a0b2f283-189327867b8\"",
+          "last_modified": "Fri, 07 Jul 2023 22:28:19 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "window": {
+            "row_off": 7499,
+            "col_off": 18254,
+            "rows": 1604,
+            "cols": 1604
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 20.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "mid field",
+          "range_km": 100.0,
+          "file": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 811,
+            "col_off": 3500,
+            "rows": 2529,
+            "cols": 2529
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 80.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "far field",
+          "range_km": 200.0,
+          "file": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 2466,
+            "col_off": 3362,
+            "rows": 1679,
+            "cols": 1679
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 240.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unverified coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/im2-mons-mouton.json",
+        "sha256": "1c56dd205d55ad5f8f9a01e9ea1154ba4265a262aea1fffe02d02cd8da74e0c8"
+      },
+      "dsDefinition": {
+        "id": "im2-mons-mouton",
+        "name": "IM-2 Athena, Mons Mouton",
+        "latitudeDeg": -84.7906,
+        "longitudeDeg": 29.1957,
+        "observerHeightM": 2.0,
+        "source": "Final resting place of IM-2 Athena (Mar 2025) from LROC images 1408 and 1401 (lroc.im-ldi.com/images/1408, /1401); intended site was 84.78 S, 29.13 E.",
+        "reference": "South-pole case: 5.2 deg from the pole, the Sun never climbs more than the colatitude plus the 1.54 deg axial tilt (about 7 deg) above the flat horizon, so shadows and short sunlit spells decide power, and Earth rises over rough polar terrain.",
+        "body": "moon"
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "unverified for live mission-science evaluation",
+      "reportedObserverPositionM": [
+        138130.2590739491,
+        77184.78849637344,
+        -1735525.6067209563
+      ]
+    },
+    {
+      "canonicalId": "longyearbyen",
+      "displayName": "Longyearbyen, Svalbard",
+      "body": "earth",
+      "latitudeDeg": 78.22,
+      "longitudeDegEast": 15.65,
+      "frame": "ITRF93 / WGS84 as declared by DS pipeline",
+      "coordinateStatus": "Earth rehearsal",
+      "coordinateSource": "Town centre, rounded to 0.01 deg (approximate; verify against a primary source before citing).",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 25.8,
+      "datum": "DS-reported Copernicus terrain; vertical realization unresolved",
+      "dems": [
+        {
+          "file": "Copernicus_DSM_COG_10_N77_00_E013_00_DEM.tif",
+          "sha256": "08a3b2161bf74a2b7b2f19535070cd5ece9a7029d4e95a2ddc691bcaf7b671ef"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N77_00_E014_00_DEM.tif",
+          "sha256": "70113655af34ce279ddbb88578deeb98a40b1632a3238462707ba746969a287e"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N77_00_E015_00_DEM.tif",
+          "sha256": "03aa8a0e9f4595926b7b279496247ec1260fb729a81e8f07484b9a5c37423cfb"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N77_00_E016_00_DEM.tif",
+          "sha256": "a05746d830a7a1688fdfc64e90fbeaacc72f5f5ecd280299f3357f4587868439"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N77_00_E017_00_DEM.tif",
+          "sha256": "b8fc2f2c68b0c2c494965a36a207355bf6640afa36917e8ccbf6992e852ba5ec"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N78_00_E013_00_DEM.tif",
+          "sha256": "3e68a805297ecbdf4547bcf5c1f6cbf12d54289a15a5caf96cb6a8adf98cbdb3"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N78_00_E014_00_DEM.tif",
+          "sha256": "c12449d15a16ffe3f05a75320d765af1fbeea91342d4527a966b9f454d755801"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N78_00_E015_00_DEM.tif",
+          "sha256": "4d211ea7b9d074eda9dd893a430bc9661069ea98ea4735d9d9dbf94c2bd2ef68"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N78_00_E016_00_DEM.tif",
+          "sha256": "a954ff5a80f524fe10a99be58fb8576ece02da6e959c86875cdaf74499bc8857"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N78_00_E017_00_DEM.tif",
+          "sha256": "4cc39c6bc0f9ef033ec6bea43361ac5983b93bf644b7459a3bbf799e687d40b0"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unsupported by lunar engine",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/longyearbyen.json",
+        "sha256": "3d09abc8e84b7473bb0d8169e0e724e21e9cb9ce02a834104e24222a6713fcc2"
+      },
+      "dsDefinition": {
+        "id": "longyearbyen",
+        "name": "Longyearbyen, Svalbard",
+        "latitudeDeg": 78.22,
+        "longitudeDeg": 15.65,
+        "observerHeightM": 2.0,
+        "source": "Town centre, rounded to 0.01 deg (approximate; verify against a primary source before citing).",
+        "reference": "Polar night: the Sun stays below the horizon from about late Oct to mid Feb; the town marks the Sun's return on the hillside steps around 8 Mar. Unverified: find a primary source before citing."
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "geodetic WGS84, reported",
+      "demRegistrationStatus": "unverified for live mission-science evaluation"
+    },
+    {
+      "canonicalId": "malapert-massif",
+      "displayName": "Malapert Massif",
+      "body": "moon",
+      "latitudeDeg": -86.0011,
+      "longitudeDegEast": 2.055,
+      "frame": "MOON_ME_DE440_ME421",
+      "coordinateStatus": "reported by existing application, source realization unresolved",
+      "coordinateSource": "Artemis III candidate region (NASA, 28 Oct 2024). Highest 18.6-year average Sun visibility (PGDA product 69, 0.819) inside a 7.5 km disc around 86 S, 0 E, the region heart per LROC image 1294; pipeline.pick, checked 2026-11-14. The disc stands in for the USGS region outline, which was not reachable.",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 5156.8,
+      "datum": "DS-reported radial height above 1737400 m sphere",
+      "dems": [
+        {
+          "role": "near field",
+          "range_km": 15.0,
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+          "size_bytes": 2696082051,
+          "etag": "W/\"a0b2f283-189327867b8\"",
+          "last_modified": "Fri, 07 Jul 2023 22:28:19 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "window": {
+            "row_off": 8337,
+            "col_off": 14616,
+            "rows": 1604,
+            "cols": 1604
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 20.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "mid field",
+          "range_km": 100.0,
+          "file": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 1021,
+            "col_off": 2590,
+            "rows": 2529,
+            "cols": 2529
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 80.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "far field",
+          "range_km": 200.0,
+          "file": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 2536,
+            "col_off": 3059,
+            "rows": 1679,
+            "cols": 1679
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 240.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unverified coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/malapert-massif.json",
+        "sha256": "2e14dec55d8551c7b94e25a9598206a1dd319c9978f1634fa76ed238eed1408f"
+      },
+      "dsDefinition": {
+        "id": "malapert-massif",
+        "name": "Malapert Massif",
+        "latitudeDeg": -86.0011,
+        "longitudeDeg": 2.055,
+        "observerHeightM": 2.0,
+        "source": "Artemis III candidate region (NASA, 28 Oct 2024). Highest 18.6-year average Sun visibility (PGDA product 69, 0.819) inside a 7.5 km disc around 86 S, 0 E, the region heart per LROC image 1294; pipeline.pick, checked 2026-11-14. The disc stands in for the USGS region outline, which was not reachable.",
+        "reference": "High ground in an Artemis III candidate region: hill-top power and Earth view.",
+        "body": "moon"
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "unverified for live mission-science evaluation",
+      "reportedObserverPositionM": [
+        121443.22932466959,
+        4357.614258667835,
+        -1738316.3477073465
+      ]
+    },
+    {
+      "canonicalId": "rjukan",
+      "displayName": "Rjukan, Norway",
+      "body": "earth",
+      "latitudeDeg": 59.88,
+      "longitudeDegEast": 8.59,
+      "frame": "ITRF93 / WGS84 as declared by DS pipeline",
+      "coordinateStatus": "Earth rehearsal",
+      "coordinateSource": "Coordinates as given in the project brief (town centre, rounded to 0.01 deg).",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 301.1,
+      "datum": "DS-reported Copernicus terrain; vertical realization unresolved",
+      "dems": [
+        {
+          "file": "Copernicus_DSM_COG_10_N59_00_E007_00_DEM.tif",
+          "sha256": "4ff62ddda60635c0fc6c3a2973958ab53fa65cd0f53a165885f2ecba0c3a87b4"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N59_00_E008_00_DEM.tif",
+          "sha256": "f364540699ff248090a58a24beeff393486ec7b2c9ac69c92784f01c36866219"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N59_00_E009_00_DEM.tif",
+          "sha256": "1782d4d19d9e2f799a76f30336270cf8e9bb957897e5f7a6086a39c550786dcc"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N60_00_E007_00_DEM.tif",
+          "sha256": "c944705ce545f2ab1da4ca304f4e174b00c45ea239c0fe6a8cd775c08979a86f"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N60_00_E008_00_DEM.tif",
+          "sha256": "c8b69e45f9b3648faf45670eadc4a53c4cad015aade08dbf6d8c13be86dae212"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N60_00_E009_00_DEM.tif",
+          "sha256": "2a1bc944b6e98bf720a6cbe5ec5e58739920a980b1bc397c100725469a749ae8"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unsupported by lunar engine",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/rjukan.json",
+        "sha256": "5635e8163cec4bd15799daa05bab180d870dd45d3c41f89090ec82e8a1e99de9"
+      },
+      "dsDefinition": {
+        "id": "rjukan",
+        "name": "Rjukan, Norway",
+        "latitudeDeg": 59.88,
+        "longitudeDeg": 8.59,
+        "observerHeightM": 2.0,
+        "source": "Coordinates as given in the project brief (town centre, rounded to 0.01 deg).",
+        "reference": "Unverified: commonly described as in shadow about half the year, autumn to March (the reason for its 2013 mirrors). Find a primary source before citing."
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "geodetic WGS84, reported",
+      "demRegistrationStatus": "unverified for live mission-science evaluation"
+    },
+    {
+      "canonicalId": "shackleton-ridge",
+      "displayName": "Shackleton connecting ridge",
+      "body": "moon",
+      "latitudeDeg": -89.4749,
+      "longitudeDegEast": 222.5569,
+      "frame": "MOON_ME_DE440_ME421",
+      "coordinateStatus": "reported by existing application, source realization unresolved",
+      "coordinateSource": "Highest 18.6-year average Sun visibility (PGDA product 69, 0.884) within 14 km of 89.684 S, 196.739 E, where the Shackleton - de Gerlache ridge meets the Shackleton rim (LROC image 1247; ridgeline about 14 km); pipeline.pick, checked 2026-11-14.",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 1947.5,
+      "datum": "DS-reported radial height above 1737400 m sphere",
+      "dems": [
+        {
+          "role": "near field",
+          "range_km": 15.0,
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_20MPP_ADJ.TIF",
+          "size_bytes": 2696082051,
+          "etag": "W/\"a0b2f283-189327867b8\"",
+          "last_modified": "Fri, 07 Jul 2023 22:28:19 GMT",
+          "accept_ranges": "bytes",
+          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
+          "window": {
+            "row_off": 14985,
+            "col_off": 13860,
+            "rows": 1604,
+            "cols": 1604
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 20.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "mid field",
+          "range_km": 100.0,
+          "file": "LDEM_80S_80MPP_ADJ.TIF",
+          "sha256": "82030dcbdd7c4bb0c7d858e9b4b293b9f2cda5a543ba31ec0f42784bd6beee5a",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_80S_80MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 2683,
+            "col_off": 2401,
+            "rows": 2529,
+            "cols": 2529
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 80.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        },
+        {
+          "role": "far field",
+          "range_km": 200.0,
+          "file": "LDEM_60S_240MPP_ADJ.TIF",
+          "sha256": "3f9663257b63022f2b0d5a623482ff3cadddceb91594a4e4ca14a94d8cec8b34",
+          "url": "https://pgda.gsfc.nasa.gov/data/LOLA_20mpp/LDEM_60S_240MPP_ADJ.TIF",
+          "mode": "downloaded",
+          "window": {
+            "row_off": 3090,
+            "col_off": 2996,
+            "rows": 1679,
+            "cols": 1679
+          },
+          "crs": "+proj=stere +lat_0=-90 +lat_ts=-90 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
+          "reference_radius_m": 1737400.0,
+          "pixel_size_m": 240.0,
+          "dtype": "float32 metres relative to the reference sphere"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unverified coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/shackleton-ridge.json",
+        "sha256": "4ab0ca4a99e77ae23e120cf66c497bbb18ad49d9e852a286969e6b75d0f65435"
+      },
+      "dsDefinition": {
+        "id": "shackleton-ridge",
+        "name": "Shackleton connecting ridge",
+        "latitudeDeg": -89.4749,
+        "longitudeDeg": 222.5569,
+        "observerHeightM": 2.0,
+        "source": "Highest 18.6-year average Sun visibility (PGDA product 69, 0.884) within 14 km of 89.684 S, 196.739 E, where the Shackleton - de Gerlache ridge meets the Shackleton rim (LROC image 1247; ridgeline about 14 km); pipeline.pick, checked 2026-11-14.",
+        "reference": "High ground on the Shackleton - de Gerlache ridge: hill-top power and Earth view.",
+        "body": "moon"
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "planetocentric",
+      "demRegistrationStatus": "unverified for live mission-science evaluation",
+      "reportedObserverPositionM": [
+        -11741.82070389402,
+        -10780.867675483985,
+        -1739276.4546468658
+      ]
+    },
+    {
+      "canonicalId": "viganella",
+      "displayName": "Viganella, Italy",
+      "body": "earth",
+      "latitudeDeg": 46.05,
+      "longitudeDegEast": 8.19,
+      "frame": "ITRF93 / WGS84 as declared by DS pipeline",
+      "coordinateStatus": "Earth rehearsal",
+      "coordinateSource": "Coordinates as given in the project brief (village centre, rounded to 0.01 deg).",
+      "coordinateUncertaintyM": null,
+      "reportedCoordinateUncertaintyM": null,
+      "reportedUncertaintyStatus": "unspecified",
+      "observerHeightM": 2.0,
+      "groundElevationM": 618.9,
+      "datum": "DS-reported Copernicus terrain; vertical realization unresolved",
+      "dems": [
+        {
+          "file": "Copernicus_DSM_COG_10_N45_00_E007_00_DEM.tif",
+          "sha256": "638c155dd9a5f0b7ee818146def740093da33cee4606071b2bbf7ce3fa00ab95"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N45_00_E008_00_DEM.tif",
+          "sha256": "02fac5d646f443f4f288a3d59b4cb995300e1c4fcbe4b5c1c6078a165a3d9ad4"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N46_00_E007_00_DEM.tif",
+          "sha256": "426e3d1492d94e4f23d444843f852ff5be675da5c4c14e661b5642006864047d"
+        },
+        {
+          "file": "Copernicus_DSM_COG_10_N46_00_E008_00_DEM.tif",
+          "sha256": "47769664394ee1ff3b51f5c1b43a3441d7f7bce8d086d0ed2f3a892b895fae3e"
+        }
+      ],
+      "epochs": null,
+      "missionLimits": null,
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "liveEvaluation": "unsupported by lunar engine",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No verified coordinate-equivalent replay site"
+      },
+      "aliases": [],
+      "scientificCanonicalId": null,
+      "sourceArtifact": {
+        "path": "frontend/data/viganella.json",
+        "sha256": "7d7c813a6774a64cc24321955bdec41fce728adf05d6d7403157bfddd69ef85b"
+      },
+      "dsDefinition": {
+        "id": "viganella",
+        "name": "Viganella, Italy",
+        "latitudeDeg": 46.05,
+        "longitudeDeg": 8.19,
+        "observerHeightM": 2.0,
+        "source": "Coordinates as given in the project brief (village centre, rounded to 0.01 deg).",
+        "reference": "No direct sun in the village from about 11 Nov to 2 Feb (the reason for its 2006 mirror)."
+      },
+      "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
+      "latitudeConvention": "geodetic WGS84, reported",
+      "demRegistrationStatus": "unverified for live mission-science evaluation"
+    }
+  ],
+  "sourceEvidence": {
+    "deRosa": "https://arxiv.org/pdf/1208.5587#page=55",
+    "demFrame": "https://pgda.gsfc.nasa.gov/products/90",
+    "originalScienceRevision": "827d9af913c95f8701c8fe4fb2480c6078019279",
+    "kernels": [
+      {
+        "filename": "naif0012.tls",
+        "sha256": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b"
+      },
+      {
+        "filename": "pck00011.tpc",
+        "sha256": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1"
+      },
+      {
+        "filename": "de440s.bsp",
+        "sha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2"
+      },
+      {
+        "filename": "moon_pa_de421_1900-2050.bpc",
+        "sha256": "656f90616403d75a75f0cd6c8830fc5b44f8cb4facb5ccb8915e752b397520cf"
+      },
+      {
+        "filename": "moon_080317.tf",
+        "sha256": "78732477b96f9863e7b0d65bcee3c22b8707ca5ed0db56d1173319cb2e8c7993"
+      },
+      {
+        "filename": "moon_pa_de440_200625.bpc",
+        "sha256": "60cd55aa401ea2ea97360636f567554bfe4e37bb829f901b4460a455dfaf783f"
+      },
+      {
+        "filename": "moon_de440_250416.tf",
+        "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
+      }
+    ]
+  },
+  "tolerances": {
+    "coordinateDeg": 1e-09,
+    "observerPositionM": 1e-06,
+    "meaning": "Numerical identity limits, not physical location uncertainty"
+  },
+  "externalRegistries": [
+    {
+      "registryId": "frozen-int4-mission-scopes",
+      "engineVersion": "skyline-scientific-engine/1.0.0",
+      "baselineCommit": "f16acd39f06e11fd6d884d01c9ac6c72a218cc1b",
+      "sourceArtifacts": [
+        {
+          "path": "Nasa-int4/configs/mission/missionTradeoffs-v1.json",
+          "sha256": "f896ed180c50d5d0ff0a5a1a1ddec642185822043a08c06cf46e1ea2155a36dd"
+        },
+        {
+          "path": "Nasa-int4/configs/mission/cr1MissionScenario-v1.json",
+          "sha256": "2f3d6dee21bdd845a65ddb769fc9ea68e2dc66701e1365cb4e6c94aeace41d8e"
+        },
+        {
+          "path": "Nasa-int4/configs/science/scientificEngine-v1.json",
+          "sha256": "c73c9076f7cac02cb7e260ce9c54286cfadb9af3030b5037b64e09fc6b9ba480"
+        }
+      ],
+      "coordinateFrames": {
+        "orbital": "Moon-centered J2000",
+        "surface": "MOON_ME_DE421",
+        "lunarRadiusKm": 1737.4
+      },
+      "longitudeConvention": "signed east longitude as stored in frozen configuration",
+      "observerDatum": "radial metres above 1737400 m sphere, source declaration",
+      "coordinateUncertaintyM": null,
+      "scopes": [
+        {
+          "scenarioId": "S1_CR1_CONNECTING_RIDGE",
+          "name": "Connecting Ridge Convex Anti-Earth Slope Traverse (Primary Validated Baseline)",
+          "roiSiteId": "CR1",
+          "provenance": "Anchored at Connecting Ridge ROI (De Rosa et al. 2012 Table 2, https://arxiv.org/pdf/1208.5587#page=55); elevations sampled from LOLA 80 m/px DEM LDEM_80S_80MPP_ADJ.TIF in MOON_ME_DE421.",
+          "terrainRegime": "Moderate convex ridge slope (-30.4 m vertical drop over 753 m chord; -1.59 m chord clearance for a 15 m mast, +2.42 m clearance for a 30 m mast) during C2 southern apolune pass.",
+          "epochUtc": "2025-01-01T00:00:00",
+          "startOffsetS": 478800.0,
+          "durationS": 14400.0,
+          "stepS": 1200.0,
+          "ephemerisPaddingS": 7200.0,
+          "mastLocation": {
+            "mastId": "MAST_CR1",
+            "name": "Connecting Ridge High-Ground Mast",
+            "latitudeDeg": -89.462,
+            "longitudeDeg": -137.1,
+            "groundElevationM": 1949.4
+          },
+          "roverWaypoints": [
+            {
+              "timeS": 0.0,
+              "latitudeDeg": -89.462,
+              "longitudeDeg": -137.1,
+              "groundElevationM": 1949.4
+            },
+            {
+              "timeS": 3600.0,
+              "latitudeDeg": -89.4573,
+              "longitudeDeg": -137.5924,
+              "groundElevationM": 1944.78
+            },
+            {
+              "timeS": 7200.0,
+              "latitudeDeg": -89.4526,
+              "longitudeDeg": -138.0764,
+              "groundElevationM": 1942.5
+            },
+            {
+              "timeS": 10800.0,
+              "latitudeDeg": -89.4442,
+              "longitudeDeg": -138.9035,
+              "groundElevationM": 1918.96
+            },
+            {
+              "timeS": 14400.0,
+              "latitudeDeg": -89.4538,
+              "longitudeDeg": -137.956,
+              "groundElevationM": 1944.6
+            }
+          ]
+        },
+        {
+          "scenarioId": "S2_SR1_SHACKLETON_RIM",
+          "name": "Shackleton Rim Steep Outer-Flank Defilade Traverse",
+          "roiSiteId": "SR1",
+          "provenance": "Anchored at Shackleton Rim ROI (De Rosa et al. 2012 Table 2, lat=-89.7755 deg, lon=-156.4480 deg, https://arxiv.org/pdf/1208.5587#page=55); elevations sampled from LOLA 80 m/px DEM LDEM_80S_80MPP_ADJ.TIF in MOON_ME_DE421.",
+          "terrainRegime": "Steep convex crater-rim flank (-105.9 m vertical drop over 1,137 m chord; min chord clearance -23.26 m for a 15 m mast and -5.35 m even for a 60 m mast), representing severe terrain defilade where surface towers cannot close line of sight.",
+          "epochUtc": "2025-01-01T00:00:00",
+          "startOffsetS": 478800.0,
+          "durationS": 14400.0,
+          "stepS": 1200.0,
+          "ephemerisPaddingS": 7200.0,
+          "mastLocation": {
+            "mastId": "MAST_SR1",
+            "name": "Shackleton Rim Crest Mast",
+            "latitudeDeg": -89.7755,
+            "longitudeDeg": -156.448,
+            "groundElevationM": 1733.72
+          },
+          "roverWaypoints": [
+            {
+              "timeS": 0.0,
+              "latitudeDeg": -89.7755,
+              "longitudeDeg": -156.448,
+              "groundElevationM": 1733.72
+            },
+            {
+              "timeS": 3600.0,
+              "latitudeDeg": -89.763,
+              "longitudeDeg": -156.448,
+              "groundElevationM": 1726.47
+            },
+            {
+              "timeS": 7200.0,
+              "latitudeDeg": -89.7505,
+              "longitudeDeg": -156.448,
+              "groundElevationM": 1683.35
+            },
+            {
+              "timeS": 10800.0,
+              "latitudeDeg": -89.738,
+              "longitudeDeg": -156.448,
+              "groundElevationM": 1627.79
+            },
+            {
+              "timeS": 14400.0,
+              "latitudeDeg": -89.756,
+              "longitudeDeg": -156.448,
+              "groundElevationM": 1709.14
+            }
+          ]
+        },
+        {
+          "scenarioId": "S3_GR1_DE_GERLACHE_RIM",
+          "name": "de Gerlache Rim Saddle Traverse During Single-Relay Perilune Handover",
+          "roiSiteId": "GR1",
+          "provenance": "Anchored at de Gerlache Rim ROI (De Rosa et al. 2012 Table 2, lat=-88.6952 deg, lon=-68.2846 deg, https://arxiv.org/pdf/1208.5587#page=55); elevations sampled from LOLA 80 m/px DEM LDEM_80S_80MPP_ADJ.TIF in MOON_ME_DE421.",
+          "terrainRegime": "Rim saddle traverse (-60.1 m vertical drop over 555 m westward chord) coinciding with C2's northern-hemisphere perilune occultation (t=464,400-471,600 s) and C4's RELAY_2 -> RELAY_1 south-pole handover.",
+          "epochUtc": "2025-01-01T00:00:00",
+          "startOffsetS": 463200.0,
+          "durationS": 14400.0,
+          "stepS": 1200.0,
+          "ephemerisPaddingS": 7200.0,
+          "mastLocation": {
+            "mastId": "MAST_GR1",
+            "name": "de Gerlache Rim Crest Mast",
+            "latitudeDeg": -88.6952,
+            "longitudeDeg": -68.2846,
+            "groundElevationM": 1779.2
+          },
+          "roverWaypoints": [
+            {
+              "timeS": 0.0,
+              "latitudeDeg": -88.6952,
+              "longitudeDeg": -68.2846,
+              "groundElevationM": 1779.2
+            },
+            {
+              "timeS": 3600.0,
+              "latitudeDeg": -88.6952,
+              "longitudeDeg": -68.55,
+              "groundElevationM": 1773.26
+            },
+            {
+              "timeS": 7200.0,
+              "latitudeDeg": -88.6952,
+              "longitudeDeg": -68.82,
+              "groundElevationM": 1755.26
+            },
+            {
+              "timeS": 10800.0,
+              "latitudeDeg": -88.6952,
+              "longitudeDeg": -69.08,
+              "groundElevationM": 1719.08
+            },
+            {
+              "timeS": 14400.0,
+              "latitudeDeg": -88.6952,
+              "longitudeDeg": -68.68,
+              "groundElevationM": 1769.11
+            }
+          ]
+        }
+      ],
+      "mastHeightsM": [
+        0.0,
+        5.0,
+        10.0,
+        15.0,
+        20.0,
+        30.0,
+        45.0,
+        60.0
+      ],
+      "roverAntennaHeightM": 1.8,
+      "baselineMastAntennaHeightM": 15.0,
+      "profiles": {
+        "engine-v1": {
+          "description": "Version and capability discovery with source-integrity verification"
+        },
+        "spice-geometric-v1": {
+          "aberrationCorrection": "NONE",
+          "origin": "MOON center",
+          "epochScale": "UTC converted to ET/TDB",
+          "frames": [
+            "J2000",
+            "MOON_ME_DE421",
+            "MOON_ME_DE440_ME421"
+          ],
+          "interval": "half-open [start,end)"
+        },
+        "lola-horizon-v1": {
+          "frame": "MOON_ME_DE421",
+          "radiusM": 1737400,
+          "heightDatum": "radial m above 1737400 m sphere",
+          "azimuth": "clockwise from local north",
+          "coordinates": "Planetocentric latitude and east longitude in [0,360). Signed published longitude is retained as sourceLongitudeDeg.",
+          "azimuthStepDeg": 0.25,
+          "localRadiusM": 50000,
+          "outerRadiusM": 400000,
+          "nearRadiusM": 1000,
+          "nearStepM": 40,
+          "observerHeightM": 0,
+          "globalMaxHeightM": 20000,
+          "interpolation": "all four bilinear stencil cells valid",
+          "missingCoverage": "explicit unavailable"
+        },
+        "lola-geometric-center-v1": {
+          "aberrationCorrection": "NONE",
+          "surfaceFrame": "MOON_ME_DE421",
+          "interval": "half-open [start,end), uniform bins",
+          "rule": "body center elevation >= max(terrain horizon, requested elevation mask)",
+          "solarDiskFraction": "not_computed",
+          "timeFraction": "uniform bin fraction",
+          "horizonProfile": "lola-horizon-v1",
+          "webPipelineDifference": "Existing web pipeline apparent LT+S and partial-disk outputs retain their own version and semantics"
+        },
+        "lunar-rf-analytical-v1": {
+          "presets": "configs/rf/lunarRfPresets-v1.json",
+          "minimumMarginDb": 3,
+          "validity": "analytical illustrative RF assumptions; operational RF reliability unverified"
+        },
+        "third-body-dop853-v1": {
+          "epochUtc": "2025-01-01T00:00:00Z",
+          "maximumDurationS": 2419200,
+          "defaultStepS": 600,
+          "stateFrame": "Moon-centered J2000",
+          "lunarRadiusKm": 1737.4,
+          "rtol": 1e-12,
+          "atol": 1e-11,
+          "ephemerisGridS": 1800,
+          "ephemerisPaddingS": 7200,
+          "method": "DOP853",
+          "maxStep": "minimum output interval",
+          "forceModel": "lunar point mass plus Earth/Sun direct and indirect third-body accelerations",
+          "safety": "trajectory-wide samples, perilune events, terminal impact; 100 km altitude and 50 km initial periapsis floors",
+          "endpointIncluded": true,
+          "visibility": "not_computed",
+          "decisionEncoding": "The 11-value optimizer vector uses the original rounded satellite-count gene and active phase selection."
+        },
+        "md2c-v1": {
+          "configuration": "configs/optimization/missionMethodologyCorrection-v1.json",
+          "origin": "fixed verified C2/C4 or NONE, unchanged MD-1 four-hour scenario definitions",
+          "cadenceS": 30,
+          "sampleCountPerScenario": 481,
+          "interval": "endpoint inclusive sampled mission grid",
+          "blackout": "longest false count times 30 seconds",
+          "horizon": "inherited three-ray 1-degree sectors to 25 km and 20 m local chords",
+          "constraints": "nominal sampled availability >= 0.99 plus physical placement and inherited safety",
+          "objectives": [
+            "normalized nonmonetary engineering complexity",
+            "worst active component-outage unavailability",
+            "1-clipped minimum nominal connected-route RF margin/30 dB"
+          ],
+          "stress": "RF-only, pointing-only and combined component/RF/pointing diagnostics remain separate",
+          "coordinates": "Historical mission placement.longitudeDeg retains the native signed east-longitude convention."
+        }
+      },
+      "aliasStatus": "No scenario or traverse observer is admitted as a point-site alias",
+      "relayCompatibility": "Frozen INT-4 mission profile only; independent nominal Candidate 2 point-site mapping unverified"
+    }
+  ]
+}

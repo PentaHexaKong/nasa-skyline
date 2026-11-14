@@ -1,0 +1,294 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SKYLINE Relay Adapter",
+    "version": "1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/candidates": {
+      "get": {
+        "summary": "Candidates",
+        "operationId": "candidates_v1_candidates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/provenance": {
+      "get": {
+        "summary": "Provenance",
+        "operationId": "provenance_v1_provenance_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/evaluate": {
+      "post": {
+        "summary": "Evaluate",
+        "operationId": "evaluate_v1_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RelayRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RelayResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "RelayRequest": {
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schemaversion",
+            "default": "1.0"
+          },
+          "candidateId": {
+            "type": "string",
+            "const": "nominal-candidate-2",
+            "title": "Candidateid",
+            "default": "nominal-candidate-2"
+          },
+          "siteId": {
+            "type": "string",
+            "enum": [
+              "CR1",
+              "GR1",
+              "SR1"
+            ],
+            "title": "Siteid",
+            "default": "CR1"
+          },
+          "startUtc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startutc",
+            "default": "2025-01-01T00:00:00Z"
+          },
+          "durationS": {
+            "type": "integer",
+            "maximum": 2419200.0,
+            "minimum": 120.0,
+            "title": "Durations",
+            "default": 86400
+          },
+          "cadenceS": {
+            "type": "integer",
+            "const": 120,
+            "title": "Cadences",
+            "default": 120
+          },
+          "profile": {
+            "type": "string",
+            "const": "geometric",
+            "title": "Profile",
+            "default": "geometric"
+          },
+          "terrainProfile": {
+            "type": "string",
+            "const": "lola-80-240-zero-mask",
+            "title": "Terrainprofile",
+            "default": "lola-80-240-zero-mask"
+          },
+          "rfQualified": {
+            "type": "boolean",
+            "const": false,
+            "title": "Rfqualified",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RelayRequest"
+      },
+      "RelayResponse": {
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schemaversion",
+            "default": "1.0"
+          },
+          "dataState": {
+            "type": "string",
+            "enum": [
+              "computed",
+              "unavailable"
+            ],
+            "title": "Datastate"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "provenance": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provenance"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "dataState"
+        ],
+        "title": "RelayResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

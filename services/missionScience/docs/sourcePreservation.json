@@ -1,0 +1,62 @@
+[
+  {
+    "path": "Nasa/src/geometry/spiceGeometry.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/geometry/lunarSites.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/geometry/terrainHorizon.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/geometry/visibility.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/communication/coverageMetrics.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/validation/verifyCoverage.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa/src/optimization/problemDefinition.py",
+    "matches": true
+  },
+  {
+    "path": "Nasa-int4/src/science/engine.py",
+    "matches": true
+  },
+  {
+    "path": "ds/pipeline/sun.py",
+    "matches": true
+  },
+  {
+    "path": "ds/pipeline/moon.py",
+    "matches": true
+  },
+  {
+    "path": "ds/pipeline/visibility.py",
+    "matches": true
+  },
+  {
+    "path": "ds/pipeline/run.py",
+    "matches": true
+  },
+  {
+    "path": "ds/pipeline/sites.py",
+    "matches": true
+  },
+  {
+    "path": "contracts/scientificengine-request.schema.json",
+    "matches": true
+  },
+  {
+    "path": "contracts/scientificengine-result.schema.json",
+    "matches": true
+  }
+]

@@ -1,0 +1,522 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SKYLINE Mission Science",
+    "version": "1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/capabilities": {
+      "get": {
+        "summary": "Capabilities",
+        "operationId": "capabilities_v1_capabilities_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/sites": {
+      "get": {
+        "summary": "Sites",
+        "operationId": "sites_v1_sites_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/scientific-profiles": {
+      "get": {
+        "summary": "Profiles",
+        "operationId": "profiles_v1_scientific_profiles_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/evaluate": {
+      "post": {
+        "summary": "Evaluate",
+        "operationId": "evaluate_v1_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvaluationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/compare": {
+      "post": {
+        "summary": "Compare",
+        "operationId": "compare_v1_compare_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EvaluationResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Compare V1 Compare Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/optimize": {
+      "post": {
+        "summary": "Optimize",
+        "operationId": "optimize_v1_optimize_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchRequest": {
+        "properties": {
+          "evaluations": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationRequest"
+            },
+            "type": "array",
+            "maxItems": 16,
+            "minItems": 1,
+            "title": "Evaluations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evaluations"
+        ],
+        "title": "BatchRequest"
+      },
+      "Constraints": {
+        "properties": {
+          "minimumSolar": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Minimumsolar",
+            "default": 0
+          },
+          "minimumEarth": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Minimumearth",
+            "default": 0
+          },
+          "maximumSolarOutageS": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Maximumsolaroutages",
+            "default": 31536000
+          },
+          "maximumEarthOutageS": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Maximumearthoutages",
+            "default": 31536000
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Constraints"
+      },
+      "EvaluationRequest": {
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schemaversion",
+            "default": "1.0"
+          },
+          "site": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/components/schemas/Site"
+              }
+            ],
+            "title": "Site",
+            "default": "CR1"
+          },
+          "startUtc": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Startutc"
+          },
+          "durationS": {
+            "type": "number",
+            "maximum": 31536000.0,
+            "minimum": 60.0,
+            "title": "Durations",
+            "default": 86400
+          },
+          "cadenceS": {
+            "type": "number",
+            "maximum": 3600.0,
+            "minimum": 30.0,
+            "title": "Cadences",
+            "default": 600
+          },
+          "profile": {
+            "type": "string",
+            "enum": [
+              "geometric",
+              "apparent"
+            ],
+            "title": "Profile",
+            "default": "geometric"
+          },
+          "solarDefinition": {
+            "type": "string",
+            "enum": [
+              "center",
+              "anyDisk",
+              "fullDisk"
+            ],
+            "title": "Solardefinition",
+            "default": "anyDisk"
+          },
+          "earthDefinition": {
+            "type": "string",
+            "const": "center",
+            "title": "Earthdefinition",
+            "default": "center"
+          },
+          "horizonOffsetDeg": {
+            "type": "number",
+            "maximum": 5.0,
+            "minimum": -5.0,
+            "title": "Horizonoffsetdeg",
+            "default": 0
+          },
+          "localResolutionM": {
+            "type": "integer",
+            "enum": [
+              20,
+              80
+            ],
+            "title": "Localresolutionm",
+            "default": 80
+          },
+          "eventToleranceS": {
+            "type": "number",
+            "maximum": 30.0,
+            "minimum": 0.01,
+            "title": "Eventtolerances",
+            "default": 1
+          },
+          "constraints": {
+            "$ref": "#/components/schemas/Constraints"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "startUtc"
+        ],
+        "title": "EvaluationRequest"
+      },
+      "EvaluationResponse": {
+        "properties": {
+          "schemaVersion": {
+            "type": "string",
+            "const": "1.0",
+            "title": "Schemaversion",
+            "default": "1.0"
+          },
+          "dataState": {
+            "type": "string",
+            "enum": [
+              "computed",
+              "unavailable"
+            ],
+            "title": "Datastate"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Result"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "provenance": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Provenance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataState"
+        ],
+        "title": "EvaluationResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "SearchRequest": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/EvaluationRequest"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Candidates"
+          },
+          "delaysDays": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "maxItems": 8,
+            "minItems": 1,
+            "title": "Delaysdays",
+            "default": [
+              0,
+              7,
+              14,
+              30
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "candidates"
+        ],
+        "title": "SearchRequest"
+      },
+      "Site": {
+        "properties": {
+          "siteId": {
+            "type": "string",
+            "maxLength": 80,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Siteid"
+          },
+          "latitudeDeg": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "title": "Latitudedeg"
+          },
+          "longitudeDeg": {
+            "type": "number",
+            "maximum": 360.0,
+            "minimum": -360.0,
+            "title": "Longitudedeg"
+          },
+          "sourceFrame": {
+            "type": "string",
+            "const": "MOON_ME_DE421",
+            "title": "Sourceframe",
+            "default": "MOON_ME_DE421"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "title": "Sourceurl",
+            "default": "user supplied coordinates"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "siteId",
+          "latitudeDeg",
+          "longitudeDeg"
+        ],
+        "title": "Site"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
