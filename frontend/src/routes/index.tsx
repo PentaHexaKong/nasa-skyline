@@ -53,8 +53,8 @@ function Home() {
   const hydrated = useHydrated()
   const doors = useRef<HTMLUListElement>(null)
   return (
-    <Shell>
-      <main ref={ref} className="starfield relative grid min-h-[calc(100svh-3.5rem)] overflow-hidden">
+    <Shell bare>
+      <main ref={ref} className="starfield relative grid min-h-svh overflow-hidden">
         {hydrated && (
           <Suspense fallback={null}>
             <HorizonMoon eph={eph} clearOf={doors} />
@@ -88,7 +88,6 @@ function Home() {
           {/* Room for the Moon on a page taller than the screen; on one screen the Moon fills whatever is left (HorizonMoon). */}
           <div className="min-h-20" />
           <div className="eyebrow flex w-full items-baseline justify-between gap-4 text-2xs text-ink-faint">
-            <span>One Moon. Your way in.</span>
             <Link to="/method" className="hover:text-ink">
               How we know
             </Link>
