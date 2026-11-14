@@ -10,7 +10,8 @@ import { Shell } from '~/components/Shell'
 import { loadSummary, MOON_SITES } from '~/lib/data'
 import { buildBrief } from '~/lib/mission'
 
-const DEFAULT_STEP: StepId = 'result'
+// The flow starts at Set up; links that mean the answer (the scenario pages' way back) ask for Result by name.
+const DEFAULT_STEP: StepId = 'setup'
 
 export const Route = createFileRoute('/analyze/')({
   validateSearch: planSearch,
@@ -38,7 +39,9 @@ function PlannerPage() {
   const plan: Plan = useMemo(() => resolvePlan(all, p), [all, p])
   const { dates, index, date, window, requirements, sites } = plan
   const chosenIds = sites.map((s) => s.data.site.id)
-  const step = stepOf(p.step) ?? DEFAULT_STEP
+  // The step lives in the URL, so it is the same on the server: read it before hydration too, or a link to Set up
+  // flashes Result first.
+  const step = stepOf(params.step) ?? DEFAULT_STEP
 
   const actions: PlanActions = {
     go,
