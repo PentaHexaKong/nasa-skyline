@@ -5,7 +5,7 @@ import { lazy, Suspense } from 'react'
 import { PhaseBadge } from '~/components/Moment'
 import { Eyebrow, Shell } from '~/components/Shell'
 import { SiteDock } from '~/components/SiteDock'
-import { loadSummary, SITES } from '~/lib/data'
+import { loadSummary, MAP_SITES } from '~/lib/data'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
 import { headline, siteFromUnderstandSearch, sunHud, useSiteView } from '~/lib/useSiteView'
@@ -15,7 +15,7 @@ const SiteIsland = lazy(() => import('~/components/SiteIsland'))
 export const Route = createFileRoute('/explore/$siteId')({
   validateSearch: siteFromUnderstandSearch,
   loader: async ({ params }) => {
-    if (!SITES.some((s) => s.id === params.siteId)) throw notFound()
+    if (!MAP_SITES.some((s) => s.id === params.siteId)) throw notFound()
     return loadSummary(params.siteId)
   },
   head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.site.name ?? 'Site'} · Explore · Skyline` }] }),
@@ -90,8 +90,8 @@ function ExplorePage() {
           </dl>
           <div className="pointer-events-auto flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <Link
-              to="/understand/$lessonId"
-              params={{ lessonId: m.phase === 'shadow' ? 'ridge' : ref && !ref.visible ? 'earth' : 'hilltop' }}
+              to="/understand"
+              hash={m.phase === 'shadow' ? 'ridge' : ref && !ref.visible ? 'earth' : 'hilltop'}
               className="underline underline-offset-3 hover:text-ink"
             >
               Why?
@@ -110,6 +110,7 @@ function ExplorePage() {
         <div className="absolute inset-x-0 bottom-0 pb-4">
           <SiteDock
             siteOnPhone
+            sites={MAP_SITES}
             data={data}
             view={view}
             go={go}

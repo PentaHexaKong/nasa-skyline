@@ -9,7 +9,7 @@ import type { MoonPose, MoonScene } from '~/components/ParallaxMoon'
 import { Footer, Shell } from '~/components/Shell'
 import { SpaceChapter, type SpaceSearch } from '~/components/SpaceChapter'
 import { Bubble, Guide, Mascot, Orbits, StoryLink, useScrollProgress } from '~/components/story'
-import { loadMoonEphemeris, loadSummary, MOON_SITES, type Summary } from '~/lib/data'
+import { loadMoonEphemeris, loadSummary, MAP_SITES, type Summary } from '~/lib/data'
 import { measure, shortName, siteSpans } from '~/lib/mission'
 import { forgiving } from '~/lib/useSiteView'
 
@@ -27,7 +27,7 @@ export const Route = createFileRoute('/explore/')({
     scale: forgiving(z.enum(['closer'])),
   }),
   loader: async () => {
-    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))])
+    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MAP_SITES.map((s) => loadSummary(s.id)))])
     return { eph, summaries }
   },
   head: () => ({

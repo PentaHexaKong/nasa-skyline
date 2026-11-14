@@ -23,13 +23,15 @@ import type { MissionWindow, Requirements } from './mission'
 export const API_URL: string = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api'
 
 /**
- * The service's catalogue identifiers for the app's three sites (`examples/siteCatalog.json`, canonicalId). Both name
+ * The service's catalogue identifiers for the app's sites (`examples/siteCatalog.json`, canonicalId). Both name
  * the same De Rosa et al. 2012 points; `catalogMatches` in the tests checks the coordinates agree.
  */
 export const SERVICE_SITE: Record<string, string> = {
   'connecting-ridge': 'CR1',
   'de-gerlache-rim': 'GR1',
   'shackleton-rim': 'SR1',
+  'shackleton-ridge': 'shackleton-ridge',
+  apollo11: 'apollo11',
 }
 
 /** Hourly search samples, refined to 1 s at each event: inside the service's 6000-interval and 3600 s cadence limits for any stay up to 60 days. */

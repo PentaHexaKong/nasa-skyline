@@ -59,7 +59,7 @@ SITES = {
         ),
         Site(
             "shackleton-ridge",
-            "Shackleton connecting ridge",
+            "Connecting Ridge (sunniest spot)",
             -89.4749,
             222.5569,
             2.0,

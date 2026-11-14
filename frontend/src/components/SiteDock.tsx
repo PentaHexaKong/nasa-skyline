@@ -14,6 +14,7 @@ export function SiteDock({
   onSite,
   action,
   siteOnPhone = false,
+  sites = SITES,
 }: {
   data: Summary
   view: SiteView
@@ -21,6 +22,8 @@ export function SiteDock({
   onSite: (id: string) => void
   action?: ReactNode
   siteOnPhone?: boolean
+  /** The sites the picker offers; the 3D view passes only those with terrain. */
+  sites?: typeof SITES
 }) {
   const { play, track, minute, index, selectDay } = view
   return (
@@ -29,7 +32,7 @@ export function SiteDock({
         <Select
           aria-label="Site"
           value={data.site.id}
-          items={Object.fromEntries(SITES.map((site) => [site.id, site.name.split(',')[0] ?? site.name]))}
+          items={Object.fromEntries(sites.map((site) => [site.id, site.name.split(',')[0] ?? site.name]))}
           onValueChange={(id) => id && onSite(id as string)}
           className={siteOnPhone ? 'min-w-0 flex-1 sm:w-40 sm:flex-none' : 'w-40'}
         />

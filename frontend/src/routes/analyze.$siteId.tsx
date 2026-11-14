@@ -2,19 +2,20 @@ import { LinkButton } from '@cloudflare/kumo/components/button'
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Select } from '@cloudflare/kumo/components/select'
 import { CubeIcon } from '@phosphor-icons/react'
-import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
 import { DayProfile, NoTrackNote } from '~/components/DayProfile'
 import { Intervals, intervalsOn } from '~/components/Intervals'
-import { type Moment, PhaseBadge } from '~/components/Moment'
+import { changeReadout, earthChangeReadout, PhaseBadge, type Readout, Readouts, sunReadout } from '~/components/Moment'
 import { MonthTimeline } from '~/components/MonthTimeline'
 import { Panorama, PanoramaKey } from '~/components/Panorama'
 import { Explain, Eyebrow, Shell } from '~/components/Shell'
 import { SiteDock } from '~/components/SiteDock'
 import { YearChart } from '~/components/YearChart'
-import { loadSummary, readerReference, SITES, type Summary } from '~/lib/data'
-import { DAY_MS } from '~/lib/mission'
+import { hasTerrain, loadSummary, NEIGHBOURS, readerReference, SITES, type Summary, surfaceMetres } from '~/lib/data'
+import { DAY_MS, measure, siteSpans } from '~/lib/mission'
 import { earthTarget } from '~/lib/target'
-import { dataEnd, duration, longDate, minuteLabel, minutes, shortDate, sunStateAt } from '~/lib/time'
+import { longDate, minuteLabel, minutes, shortDate } from '~/lib/time'
 import { headline, siteSearch, sunHud, useSiteView } from '~/lib/useSiteView'
 
 export const Route = createFileRoute('/analyze/$siteId')({
@@ -54,17 +55,101 @@ function lede(d: Day, name: string, dark: ReturnType<typeof darkStretch>) {
 
 const signed = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}°`
 
-/** "Terrain sunset in 2 h 14 min" within two days, else the date it happens. */
-function nextChange(m: Pick<Moment, 'state'>, [setting, rising] = ['Terrain sunset', 'Direct sun returns']) {
-  const { next, inMs, inSun } = m.state
-  const label = inSun ? setting : rising
-  if (!next || inMs == null) return { label, value: 'Not this year', sub: 'Outside the computed range' }
-  const soon = inMs < 48 * 3_600_000
+const days = (h: number) => `${(h / 24).toFixed(1)} days`
+
+/** One site's year in the four planner readings, measured the way the planner measures a stay. */
+function yearOf(d: Summary) {
+  const spans = siteSpans(d)
+  const m = measure(spans, spans.coverage)
   return {
-    label,
-    value: soon ? `in ${duration(inMs)}` : shortDate(next.toISOString().slice(0, 10)),
-    sub: soon ? `${next.toISOString().slice(11, 16)} UTC` : `in ${duration(inMs)}`,
+    sun: m.sunShare,
+    noSun: m.noSun.hours,
+    earth: m.earthShare,
+    noEarth: m.noEarth.hours,
+    ridge: Math.max(...d.skyline.elevation_deg),
+    ground: d.site.ground_height_m,
   }
+}
+
+const ROWS = [
+  { key: 'sun', label: 'Direct sun, share of the year', show: (v: number) => `${(v * 100).toFixed(1)} %` },
+  { key: 'noSun', label: 'Longest without direct sun', show: days },
+  { key: 'earth', label: 'Earth in view, share of the year', show: (v: number) => `${(v * 100).toFixed(1)} %` },
+  { key: 'noEarth', label: 'Longest without Earth', show: days },
+  { key: 'ridge', label: 'Highest point of the horizon', show: (v: number) => `${v.toFixed(1)}°` },
+  { key: 'ground', label: 'Ground height', show: (v: number) => `${Math.round(v).toLocaleString('en-GB')} m` },
+] as const
+
+/** The same year at a site a short walk away: how much a small move changes (C8). */
+function Nearby({ data, day, t }: { data: Summary; day: string; t: number }) {
+  const id = NEIGHBOURS[data.site.id]
+  const [near, setNear] = useState<Summary | null>(null)
+  useEffect(() => {
+    setNear(null)
+    if (id) loadSummary(id).then(setNear)
+  }, [id])
+  if (!id || !near) return null
+  const metres = Math.round(surfaceMetres(data.site, near.site))
+  const here = yearOf(data)
+  const there = yearOf(near)
+  const pct = (v: number) => `${Math.round(v * 100)} %`
+  return (
+    <section aria-labelledby="nearby-h" className="grid gap-4">
+      <div className="grid gap-2">
+        <Eyebrow pip>A short walk away</Eyebrow>
+        <h2 id="nearby-h" className="text-2xl font-medium text-balance">
+          {metres} m away, a different year
+        </h2>
+        <p className="max-w-[62ch] leading-relaxed text-ink-muted text-pretty">
+          {near.site.name} is {metres} m from here. Over the same year the Sun is in direct view {pct(here.sun)} of the time here and{' '}
+          {pct(there.sun)} there.
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full max-w-[48rem] text-left text-sm">
+          <caption className="sr-only">
+            {data.site.name} and {near.site.name} over the computed year
+          </caption>
+          <thead className="text-ink-faint">
+            <tr className="border-b border-line">
+              <td className="py-2 pr-4" />
+              <th scope="col" className="py-2 pr-4 font-normal">
+                {data.site.name} <span className="text-ink-faint">(this site)</span>
+              </th>
+              <th scope="col" className="py-2 font-normal">
+                <Link
+                  to="/analyze/$siteId"
+                  params={{ siteId: near.site.id }}
+                  search={{ day, t }}
+                  className="text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink"
+                >
+                  {near.site.name}
+                </Link>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="readout">
+            {ROWS.map((r) => (
+              <tr key={r.key} className="border-b border-line">
+                <th scope="row" className="py-2 pr-4 font-sans font-normal text-ink-muted">
+                  {r.label}
+                </th>
+                <td className="py-2 pr-4">{r.show(here[r.key])}</td>
+                <td className="py-2">{r.show(there[r.key])}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Explain>
+        <p>
+          Near the pole the Sun skims the horizon, so a ridge one or two degrees high decides whether a lander has power. A couple of
+          hundred metres changes which ridges stand in the way. Both columns come from the same NASA LOLA terrain and the same year. Ground
+          this close is only as sharp as the 20 m terrain map, so read the gap as a direction, not an exact figure.
+        </p>
+      </Explain>
+    </section>
+  )
 }
 
 function VisualizePage() {
@@ -77,15 +162,12 @@ function VisualizePage() {
   const dark = darkStretch(data)
   const comms = earthTarget(data, track, current.date, minute)
   const ref = comms?.reference
-  const change = nextChange(m)
-  const earthState = sunStateAt(data.earth_intervals ?? [], m.at, dataEnd(data.params))
-  const earthChange = nextChange({ state: earthState }, ['Earthset', 'Earthrise'])
   const seek = (ms: number) => go({ day: new Date(ms).toISOString().slice(0, 10), t: Math.floor((ms % DAY_MS) / 60_000) })
 
-  const readouts = [
-    { label: earthChange.label, value: m.phase === 'loading' ? '…' : earthChange.value, sub: earthChange.sub, tone: '' },
-    { label: 'Direct sun', value: minutes(current.direct_min), tone: 'text-sun' },
-    { label: change.label, value: m.phase === 'loading' ? '…' : change.value, sub: change.sub, tone: '' },
+  const pending = (r: Readout): Readout => (m.phase === 'loading' ? { ...r, value: '…', sub: undefined } : r)
+  const readouts: Readout[] = [
+    sunReadout(m),
+    pending(changeReadout(m.state)),
     ref
       ? {
           label: 'Earth',
@@ -94,6 +176,7 @@ function VisualizePage() {
           tone: ref.visible ? 'text-comms' : 'text-ink-muted',
         }
       : { label: 'Earth', value: !track ? '…' : 'Not computed', tone: 'text-ink-muted' },
+    pending(earthChangeReadout(data, m.at)),
   ]
 
   return (
@@ -109,21 +192,15 @@ function VisualizePage() {
                 {headline(current)}
               </h1>
               <p className="max-w-[60ch] leading-relaxed text-ink-muted text-pretty">{lede(current, data.site.name, dark)}</p>
-              <div>
-                <LinkButton href={`/explore/${data.site.id}?day=${current.date}&t=${minute}`} variant="secondary" icon={CubeIcon}>
-                  Explore in 3D
-                </LinkButton>
-              </div>
-            </div>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-5 sm:gap-x-10">
-              {readouts.map((r) => (
-                <div key={r.label} className="grid content-start gap-1.5">
-                  <dt className="eyebrow text-ink-faint sm:whitespace-nowrap">{r.label}</dt>
-                  <dd className={`readout text-lg leading-tight sm:text-2xl sm:leading-none sm:whitespace-nowrap ${r.tone}`}>{r.value}</dd>
-                  <dd className="readout min-h-[1lh] text-xs font-normal text-ink-faint sm:whitespace-nowrap">{r.sub}</dd>
+              {hasTerrain(data.site.id) && (
+                <div>
+                  <LinkButton href={`/explore/${data.site.id}?day=${current.date}&t=${minute}`} variant="secondary" icon={CubeIcon}>
+                    Explore in 3D
+                  </LinkButton>
                 </div>
-              ))}
-            </dl>
+              )}
+            </div>
+            <Readouts items={readouts} />
             <div className="flex flex-wrap items-center gap-2 sm:hidden">
               <Select
                 aria-label="Site"
@@ -270,6 +347,8 @@ function VisualizePage() {
               </p>
             </Explain>
           </section>
+
+          <Nearby data={data} day={current.date} t={minute} />
 
           <div className="grid grid-cols-1 gap-12 xl:grid-cols-2">
             <section aria-labelledby="intervals" className="grid content-start gap-3">

@@ -21,12 +21,10 @@ export type Lesson = {
   /** One or two sentences that set the scene. */
   intro: string
   prompt: string
-  options: { id: string; label: string }[]
-  answer: string
   sites: string[]
   See: (props: { data: Record<string, Summary> }) => ReactNode
   why: string
-  teacher: { goal: string; ask: string; note?: string }
+  teacher: { goal: string; ask: string }
   tryIt: { label: string; href: string }[]
 }
 
@@ -298,12 +296,6 @@ export const LESSONS: Lesson[] = [
     intro:
       'The Moon turns once for every trip around Earth, so near its equator the Sun is up for about two weeks, then down for about two weeks. Shackleton Rim sits on the edge of a crater, a fraction of a degree from the south pole.',
     prompt: 'Over a year, how does sunlight come to Shackleton Rim?',
-    options: [
-      { id: 'fortnight', label: 'Two weeks of sun, two weeks of night, all year' },
-      { id: 'dark', label: 'Hardly at all: the pole is dark' },
-      { id: 'mostly', label: 'Neither: mostly sun, broken by spells of shadow' },
-    ],
-    answer: 'mostly',
     sites: ['shackleton-rim'],
     See: PolarDaySee,
     why: 'The Moon’s axis stands almost upright, so near the pole the Sun does not climb and set. It circles low around the horizon, once a month. Whether a lander sees it depends on the horizon in each direction: where the ground around is lower, the Sun stays in view; where a hill rises, it slips into shadow. Over the year the Sun’s circle drifts a little higher, then a little lower, so the shadows come in some months more than others.',
@@ -321,18 +313,12 @@ export const LESSONS: Lesson[] = [
     question: 'Can a mountain hide the Sun?',
     intro: 'On Connecting Ridge, the high ground between Shackleton and de Gerlache craters, the Sun never climbs high.',
     prompt: 'The Sun is above the horizon, but low. Is the lander in sunlight?',
-    options: [
-      { id: 'yes', label: 'Yes, the Sun is up' },
-      { id: 'no', label: 'No, something is in the way' },
-    ],
-    answer: 'no',
     sites: ['connecting-ridge'],
     See: RidgeSee,
     why: 'Sunlight needs a clear line from the Sun to the lander. Near the pole the Sun only skims the horizon, so a ridge a few degrees high is enough to block it, even with the Sun up. The white line is the real horizon, measured from a NASA terrain map.',
     teacher: {
       goal: 'Separate “the Sun is up” from “the Sun reaches me”.',
       ask: 'Where on Earth do mountains hide the Sun for weeks? What do people there do?',
-      note: 'The skyline comes from the LRO LOLA terrain model, so it is accurate to the model, not to every boulder.',
     },
     tryIt: [{ label: 'Compare Connecting Ridge with the rims', href: '/analyze?profile=lunar-day' }],
   },
@@ -341,19 +327,12 @@ export const LESSONS: Lesson[] = [
     question: 'Is higher ground always sunnier?',
     intro: 'Two places near the south pole: Connecting Ridge, and the rim of Shackleton crater, which stands lower.',
     prompt: 'Which one gets more direct sunlight over a year?',
-    options: [
-      { id: 'ridge', label: 'The higher ridge' },
-      { id: 'rim', label: 'The lower rim' },
-      { id: 'same', label: 'About the same' },
-    ],
-    answer: 'rim',
     sites: ['connecting-ridge', 'shackleton-rim'],
     See: HilltopSee,
     why: 'What counts is not your height but your horizon. Shackleton Rim sits on the edge of a deep crater, so in most directions the ground falls away and you see over it, even past the curve of the Moon. The ridge is higher, but in some directions the terrain still rises above its horizon and blocks the low polar Sun.',
     teacher: {
       goal: 'Sunlight depends on what you can see, and the local horizon decides that, not height alone.',
       ask: 'If the rim is so sunny, why might a mission still choose the ridge?',
-      note: 'Both sites are within about half a degree of the pole, so latitude barely separates them; the horizon does.',
     },
     tryIt: [
       { label: 'Stand on Shackleton Rim', href: '/explore/shackleton-rim' },
@@ -365,19 +344,12 @@ export const LESSONS: Lesson[] = [
     question: 'Can a lander always see Earth?',
     intro: 'The Moon keeps the same face toward Earth, so Earth barely moves in its sky.',
     prompt: 'Will a lander near the south pole see Earth all the time?',
-    options: [
-      { id: 'always', label: 'Yes, always' },
-      { id: 'part', label: 'Only part of the time' },
-      { id: 'never', label: 'Never' },
-    ],
-    answer: 'part',
     sites: CONTACT_SITES,
     See: EarthSee,
     why: 'Earth hangs almost still in the Moon’s sky, but it rocks a few degrees over a month. At the pole Earth sits on the horizon, so the rocking lifts it above the ridges and drops it behind them. No Earth in view means no direct radio contact.',
     teacher: {
       goal: 'Line of sight decides direct contact, and the Moon’s wobble moves it.',
       ask: 'How could a lander talk to Earth while Earth is hidden?',
-      note: 'This is line of sight only, not a working radio link.',
     },
     tryIt: [
       { label: 'Plan around Earth contact', href: '/analyze?profile=talk-to-earth' },
@@ -385,5 +357,3 @@ export const LESSONS: Lesson[] = [
     ],
   },
 ]
-
-export const lessonById = (id: string) => LESSONS.find((l) => l.id === id)

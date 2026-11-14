@@ -168,6 +168,9 @@ export function goWindows(runs: LandingRun[], dates: string[], fromIndex: number
 
 export const shortName = (s: Summary) => s.site.name.split(',')[0] ?? s.site.name
 
+/** Near a pole the Sun skims the horizon and terrain decides the light; elsewhere it rises high and sets for two weeks. */
+export const isPolar = (s: Summary) => Math.abs(s.site.lat_deg) >= 75
+
 export type Evaluation = ReturnType<typeof evaluate>
 
 /** Everything the planner shows about one site for the current mission. Every step reads this, so they cannot disagree. */
@@ -176,6 +179,8 @@ export type SitePlan = {
   elRange: [number, number]
   stay: Measure | null
   was: Measure | null
+  /** Whether a landing on the slip's original day worked, by the same rule as now; null without a slip. */
+  wasGo: boolean | null
   checks: Evaluation | null
   touchdown: Touchdown
   runs: LandingRun[]
@@ -200,6 +205,7 @@ export function planSite(
     elRange,
     stay,
     was: baseIndex == null ? null : stayFrom(baseIndex),
+    wasGo: baseIndex == null ? null : statuses[baseIndex] === 'go',
     checks: stay && evaluate(stay, requirements),
     touchdown: touchdown(spans, startOf(index)),
     runs: landingRuns(statuses),

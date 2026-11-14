@@ -76,3 +76,9 @@ test('scenario results need a computed feed for the exact site and period', () =
   expect(matchesScenario(feed, feed.site_id, { ...window, start: 1 })).toBe(false)
   expect(matchesScenario(feed, feed.site_id, { ...window, end: window.end + 1 })).toBe(false)
 })
+
+test('a Sun shortfall away from the pole is the lunar night, so no mast is suggested', () => {
+  const at = (lat_deg: number) => ({ ...site({ minSun: 80 }), data: { site: { lat_deg } } as SitePlan['data'] })
+  expect(scenarioGuidance(at(0.67)).priority).toEqual([])
+  expect(scenarioGuidance(at(-89.47)).priority).toEqual(['mast'])
+})

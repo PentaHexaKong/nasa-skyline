@@ -5,7 +5,7 @@ import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { verdictRows } from '~/components/planner/ResultStep'
 import { addonsSearch } from '~/components/planner/resolvePlan'
 import { Bubble, Mascot, type MascotPose } from '~/components/story'
-import { type SitePlan, shortName, siteResult, verdict } from '~/lib/mission'
+import { isPolar, type SitePlan, shortName, siteResult, verdict } from '~/lib/mission'
 import { SCENARIO_PIECES, SCENARIOS, type ScenarioPiece, scenarioGuidance } from '~/lib/scenarios'
 import { longDate, minuteLabel } from '~/lib/time'
 
@@ -13,7 +13,12 @@ const either = (xs: string[]) => new Intl.ListFormat('en-GB', { type: 'disjuncti
 const ICON = { mast: SolarPanelIcon, relay: BroadcastIcon, rover: CarIcon } as const
 
 /** One line per add-on for the site in focus, from the same whole-stay checks as the result. */
-function addonLine(piece: ScenarioPiece, g: ReturnType<typeof scenarioGuidance>) {
+function addonLine(piece: ScenarioPiece, g: ReturnType<typeof scenarioGuidance>, polar: boolean) {
+  if (piece === 'mast' && g.sun.length && !polar)
+    return {
+      missed: g.sun,
+      text: 'A mast cannot help here: the Sun is below the horizon, not behind hills. Land just after sunrise instead.',
+    }
   if (piece === 'mast')
     return g.sun.length
       ? { missed: g.sun, text: 'Panels on a mast can see over nearby ridges. Shown with a worked example from another site.' }
@@ -39,6 +44,12 @@ function guideSays(site: SitePlan, name: string): { pose: MascotPose; line: stri
       pose: 'planner-thinking',
       line: `At ${name} the hills hide both the Sun and Earth too often. A mast and relays are the two fixes to look at.`,
       more: 'Near the Moon’s south pole the Sun and Earth both sit low in the sky, so ridges kilometres away can block them for days. A mast lifts the solar panels above some of those shadows, and relay satellites pass messages along while Earth is hidden. Another landing date may avoid both problems, so check the dates too.',
+    }
+  if (g.sun.length && !isPolar(site.data))
+    return {
+      pose: 'planner-thinking',
+      line: `At ${name} the stay runs into the lunar night. Land soon after sunrise, or plan power for two weeks of dark.`,
+      more: 'Away from the poles the Sun climbs high and hills hardly matter, but it sets for about two weeks at a time, like a very long night on Earth. A mast cannot see over that. The fix is the date: land just after local sunrise so the stay fits in one lunar day, or carry power for the night.',
     }
   if (g.sun.length)
     return {
@@ -128,7 +139,8 @@ export function RecommendedPlan({ plan, actions, search }: { plan: Plan; actions
           <ul className="divide-y divide-line border-y border-line">
             {order.map((piece) => {
               const Icon = ICON[piece]
-              const { missed, text } = addonLine(piece, g)
+              const polar = isPolar(site.data)
+              const { missed, text } = addonLine(piece, g, polar)
               const suggested = g.priority.includes(piece)
               return (
                 <li key={piece}>

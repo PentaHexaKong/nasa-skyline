@@ -1,4 +1,4 @@
-import type { Evaluation, MissionWindow, SitePlan } from './mission'
+import { type Evaluation, isPolar, type MissionWindow, type SitePlan } from './mission'
 
 export const SCENARIO_PIECES = ['mast', 'relay', 'rover'] as const
 export type ScenarioPiece = (typeof SCENARIO_PIECES)[number]
@@ -40,13 +40,17 @@ export function matchesScenario(
 
 export type RequirementCheck = Evaluation['checks'][number]
 
-/** Use the same whole-stay checks as Result. Touchdown alone never ranks an intervention. */
-export function scenarioGuidance(site: Pick<SitePlan, 'stay' | 'checks' | 'touchdown'>) {
+/**
+ * Use the same whole-stay checks as Result. Touchdown alone never ranks an intervention. A mast is suggested only near a
+ * pole, where terrain takes the Sun; elsewhere a Sun shortfall is the lunar night, which no mast sees over.
+ */
+export function scenarioGuidance(site: Pick<SitePlan, 'stay' | 'checks' | 'touchdown'> & Partial<Pick<SitePlan, 'data'>>) {
   const checks = site.stay ? site.checks : null
   const missed = checks?.checks.filter((c) => !c.pass) ?? []
   const sun = missed.filter((c) => c.key === 'minSun' || c.key === 'maxNoSun')
   const earth = missed.filter((c) => c.key === 'minEarth' || c.key === 'maxNoEarth')
-  const priority: ScenarioPiece[] = [...(sun.length ? ['mast' as const] : []), ...(earth.length ? ['relay' as const] : [])]
+  const mast = sun.length > 0 && (!site.data || isPolar(site.data))
+  const priority: ScenarioPiece[] = [...(mast ? ['mast' as const] : []), ...(earth.length ? ['relay' as const] : [])]
   return {
     sun,
     earth,

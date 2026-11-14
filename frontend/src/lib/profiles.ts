@@ -59,6 +59,17 @@ export const PROFILES = [
     stay: 29,
     requirements: { minSun: 80, maxNoSun: 100, minEarth: 40, maxNoEarth: 336 },
   },
+  {
+    id: 'pole-vs-equator',
+    name: 'Pole versus equator',
+    pitch: 'The same stay at Apollo 11 and at the south pole: Earth never sets at one, the Sun barely sets at the other.',
+    sites: ['apollo11', 'connecting-ridge', 'shackleton-rim'],
+    // Apollo 11 sunrise is 14 Dec 14:35 UTC and sunset 29 Dec 10:14 UTC, so this stay sits inside one lunar day there.
+    day: '2026-12-15',
+    t: 12 * 60,
+    stay: 13,
+    requirements: { minSun: 80, maxNoSun: 48, minEarth: 80, maxNoEarth: 48 },
+  },
 ] as const satisfies readonly Profile[]
 
 export type ProfileId = (typeof PROFILES)[number]['id']

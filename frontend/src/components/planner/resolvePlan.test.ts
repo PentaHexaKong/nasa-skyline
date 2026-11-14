@@ -79,3 +79,12 @@ test('opening an add-on keeps every mission setting and the baseline', () => {
   expect(addons).toEqual({ ...search, step: 'addons', piece: 'relay' })
   expect(resolvePlan(all, planSearch.parse(addons))).toEqual(resolvePlan(all, search))
 })
+
+test('after a slip, each site says whether the original day worked, by the same rule as the new one', () => {
+  const base = resolvePlan(all, { profile: 'lunar-day', day: '2026-12-01' })
+  const slipped = resolvePlan(all, { profile: 'lunar-day', day: '2026-12-08', base: '2026-12-01' })
+  expect(base.sites.every((s) => s.wasGo === null)).toBe(true)
+  for (const [i, s] of slipped.sites.entries()) {
+    expect(s.wasGo).toBe(siteResult(base.sites[i] as (typeof base.sites)[number]).works)
+  }
+})

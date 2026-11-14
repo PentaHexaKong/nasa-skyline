@@ -61,10 +61,6 @@ export function ProfileCards({ plan, actions, compact = false }: { plan: Plan; a
           )
         })}
       </ul>
-      <p className="text-xs text-ink-faint">
-        <span className="text-ink-muted">Pole versus equator</span>: not computed, so it cannot be chosen yet. It needs equatorial site
-        results.
-      </p>
     </div>
   )
 }

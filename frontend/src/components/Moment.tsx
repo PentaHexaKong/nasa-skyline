@@ -45,34 +45,59 @@ export function PhaseBadge({ phase }: { phase: Moment['phase'] }) {
   )
 }
 
-/** "Earthset in 2 d 4 h" / "Earthrise in 9 h 12 min", from the Earth visibility intervals (O4). */
-export function NextEarth({ data, at }: { data: Summary; at: Date }) {
-  const state = sunStateAt(data.earth_intervals ?? [], at, dataEnd(data.params))
-  if (!state.next || state.inMs == null) {
-    return <p className="text-base text-ink-muted">No {state.inSun ? 'Earthset' : 'Earthrise'} within the computed year.</p>
+export type Readout = { label: string; value: string; sub?: string; tone?: string }
+
+const signedDeg = (v: number) => `${v >= 0 ? '+' : '−'}${Math.abs(v).toFixed(1)}°`
+const deg = (v: number) => `${v.toFixed(1).replace('-', '−')}°`
+
+/** The Sun's height above a flat horizon: the number solar power turns on (C4), with its clearance over the ridge that way. */
+export function sunReadout(m: Moment): Readout {
+  if (m.phase === 'loading') return { label: 'Sun elevation', value: '…', tone: 'text-sun' }
+  if (!m.sun) return { label: 'Sun elevation', value: 'Below −1°', sub: 'Night', tone: 'text-ink-muted' }
+  return {
+    label: 'Sun elevation',
+    value: deg(m.sun.el),
+    sub: m.horizon == null ? undefined : `${signedDeg(m.sun.el - m.horizon)} vs the ridge`,
+    tone: m.state.inSun ? 'text-sun' : 'text-ink-muted',
   }
-  return (
-    <p className="text-base">
-      <span className="text-ink-muted">{state.inSun ? 'Earthset in ' : 'Earthrise in '}</span>
-      <span className="tabular font-medium">{duration(state.inMs)}</span>
-    </p>
-  )
 }
 
-/** "Terrain sunset in 2 h 14 min" / "Direct sun returns in 89 d 3 h": the operational number (C6, O4). */
-export function NextChange({ m, compact = false }: { m: Moment; compact?: boolean }) {
-  const { state } = m
-  if (!state.next || state.inMs == null) {
-    return <p className="text-base text-ink-muted">No {state.inSun ? 'terrain sunset' : 'direct sun'} within the computed year.</p>
+/** "Terrain sunset · in 2 h 14 min" within two days, else the date it happens (C6, O4). */
+export function changeReadout(
+  state: Moment['state'],
+  [setting, rising]: [string, string] = ['Terrain sunset', 'Direct sun returns'],
+): Readout {
+  const { next, inMs, inSun } = state
+  const label = inSun ? setting : rising
+  if (!next || inMs == null)
+    return { label, value: 'Not this year', sub: inSun ? 'In view to the end of the data' : 'Hidden to the end of the data' }
+  const soon = inMs < 48 * 3_600_000
+  return {
+    label,
+    value: soon ? `in ${duration(inMs)}` : shortDate(next.toISOString().slice(0, 10)),
+    sub: soon ? `${clock(next)} UTC` : `in ${duration(inMs)}`,
   }
-  const when = `${clock(state.next)} UTC${state.inMs > 86_400_000 ? `, ${shortDate(state.next.toISOString().slice(0, 10))}` : ''}`
+}
+
+/** Earthset or Earthrise, from the Earth line-of-sight intervals. */
+export const earthChangeReadout = (data: Summary, at: Date) =>
+  changeReadout(sunStateAt(data.earth_intervals ?? [], at, dataEnd(data.params)), ['Earthset', 'Earthrise'])
+
+/** Label over value over note, in a two-column grid: the Sun row first, then Earth. */
+export function Readouts({ items, compact = false }: { items: Readout[]; compact?: boolean }) {
   return (
-    <div className={compact ? '' : 'grid gap-0.5'}>
-      <p className="text-base">
-        <span className="text-ink-muted">{state.inSun ? 'Terrain sunset in ' : 'Direct sun returns in '}</span>
-        <span className="tabular font-medium">{duration(state.inMs)}</span>
-      </p>
-      {!compact && <p className="tabular text-xs text-ink-muted">{when}</p>}
-    </div>
+    <dl className={`grid grid-cols-2 ${compact ? 'gap-x-4 gap-y-3' : 'gap-x-6 gap-y-5 sm:gap-x-10'}`}>
+      {items.map((r) => (
+        <div key={r.label} className="grid content-start gap-1">
+          <dt className="eyebrow text-ink-faint sm:whitespace-nowrap">{r.label}</dt>
+          <dd
+            className={`readout leading-tight ${compact ? 'text-lg' : 'text-lg sm:text-2xl sm:leading-none sm:whitespace-nowrap'} ${r.tone ?? ''}`}
+          >
+            {r.value}
+          </dd>
+          <dd className="readout min-h-[1lh] text-xs font-normal text-ink-faint sm:whitespace-nowrap">{r.sub}</dd>
+        </div>
+      ))}
+    </dl>
   )
 }

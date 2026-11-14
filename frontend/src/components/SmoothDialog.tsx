@@ -1,3 +1,4 @@
+import { KumoPortalProvider } from '@cloudflare/kumo'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 /** Native modal focus, Escape handling and inert background, with a short entrance and exit. */
@@ -59,7 +60,8 @@ export function SmoothDialog({ open, onClose, children }: { open: boolean; onClo
           ×
         </button>
       </header>
-      {(open || present) && children}
+      {/* Overlays must portal inside the modal: body sits under the top layer and is inert. */}
+      <KumoPortalProvider container={ref}>{(open || present) && children}</KumoPortalProvider>
     </dialog>
   )
 }

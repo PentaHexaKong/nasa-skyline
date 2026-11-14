@@ -18,7 +18,7 @@ import {
 import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Lanes } from '~/components/Lanes'
-import { moment, NextChange, NextEarth, PhaseBadge } from '~/components/Moment'
+import { changeReadout, earthChangeReadout, moment, PhaseBadge, Readouts, sunReadout } from '~/components/Moment'
 import { Panorama } from '~/components/Panorama'
 import { DeeperAnalysis } from '~/components/planner/DeeperAnalysis'
 import { SiteThumb } from '~/components/planner/Illustrations'
@@ -29,6 +29,7 @@ import { RecommendedPlan } from '~/components/planner/RecommendedPlan'
 import { Eyebrow, OpenEnd } from '~/components/Shell'
 import {
   evaluate,
+  isPolar,
   type Measure,
   REQUIREMENTS,
   type SitePlan,
@@ -283,12 +284,19 @@ function SiteColumn({ site, plan }: { site: SitePlan; plan: Plan }) {
       />
       <div className="grid gap-1">
         <PhaseBadge phase={now.phase} />
-        <NextChange m={now} compact />
-        <NextEarth data={data} at={now.at} />
-        <p className="tabular text-xs text-ink-muted">
-          Sun elevation {now.sun ? `${now.sun.el.toFixed(1).replace('-', '−')}°` : now.phase === 'loading' ? '…' : 'below −1°'}, Earth
-          elevation {earth ? `${earth.reference.el_deg.toFixed(1).replace('-', '−')}°` : '…'}
-        </p>
+        <Readouts
+          compact
+          items={[
+            sunReadout(now),
+            changeReadout(now.state),
+            {
+              label: 'Earth elevation',
+              value: earth ? `${earth.reference.el_deg.toFixed(1).replace('-', '−')}°` : '…',
+              tone: earth?.reference.visible ? 'text-comms' : 'text-ink-muted',
+            },
+            earthChangeReadout(data, now.at),
+          ]}
+        />
         {note && <p className="text-xs text-ink-muted text-pretty">{note}</p>}
       </div>
       {stay ? (
@@ -335,6 +343,70 @@ function MarkerKey({ mixedScales }: { mixedScales: boolean }) {
 }
 
 /** The answer first, beside the Moon at the landing moment: the verdict, how many sites work, and the next day that does. */
+const better = (q: Requirement, now: Measure, was: Measure) => (q.read(now) - q.read(was)) * (q.bound === 'at least' ? 1 : -1) > 0
+
+function Works({ yes }: { yes: boolean }) {
+  return <span className={yes ? 'text-go' : 'text-miss'}>{yes ? 'Works' : 'Doesn’t work'}</span>
+}
+
+/** After a slip: per site, whether the original day worked and whether the new one does, then the readings that moved. */
+function SlipChange({ plan }: { plan: Plan }) {
+  if (!plan.base) return null
+  const days = plan.slip
+  return (
+    <section aria-labelledby="slip-change" className="grid gap-3 border-t border-line pt-4">
+      <h3 id="slip-change" className="font-medium">
+        What changed from {shortDate(plan.base)}{' '}
+        <span className="tabular font-normal text-ink-muted">
+          ({days > 0 ? '+' : '−'}
+          {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'})
+        </span>
+      </h3>
+      <ul className="grid gap-3">
+        {plan.sites.map((s) => {
+          const now = siteResult(s).works
+          const moved = s.stay && s.was ? REQUIREMENTS.filter((q) => change(q, s.stay as Measure, s.was as Measure) !== 'no change') : null
+          return (
+            <li key={s.data.site.id} className="grid gap-1 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4">
+              <span className="font-medium">{shortName(s.data)}</span>
+              <div className="grid gap-1">
+                <p>
+                  {s.wasGo === null ? (
+                    <span className="text-ink-muted">Not computed</span>
+                  ) : s.wasGo === now ? (
+                    <>
+                      <Works yes={now} /> <span className="text-ink-muted">on both days</span>
+                    </>
+                  ) : (
+                    <>
+                      <Works yes={s.wasGo} /> <ArrowRightIcon aria-label="now" className="inline" /> <Works yes={now} />
+                    </>
+                  )}
+                </p>
+                <p className="tabular text-sm text-ink-muted">
+                  {!moved
+                    ? 'One of the two stays runs past the computed data.'
+                    : moved.length === 0
+                      ? 'The four readings are unchanged.'
+                      : moved.map((q, i) => (
+                          <span key={q.key}>
+                            {i > 0 && ' · '}
+                            {q.label}{' '}
+                            <span className={better(q, s.stay as Measure, s.was as Measure) ? 'text-go' : 'text-miss'}>
+                              {change(q, s.stay as Measure, s.was as Measure)}
+                            </span>
+                          </span>
+                        ))}
+                </p>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
+  )
+}
+
 function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
   const v = verdict(verdictRows(plan), plan.slip)
   const markers: MoonMarker[] = plan.sites.map((s) => ({
@@ -357,6 +429,7 @@ function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
         <p className="max-w-[58ch] text-lg leading-relaxed text-ink-muted text-pretty">
           {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
         </p>
+        <SlipChange plan={plan} />
         <div className="flex flex-wrap gap-3">
           {plan.base ? (
             <button
@@ -537,7 +610,7 @@ function BeforeYouDecide({ plan }: { plan: Plan }) {
 
 /** Result and the way forward on one page: summary, the sites, the table, what to do next, the live check, the brief. */
 export function ResultStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
-  const polar = plan.sites.map((s) => Math.abs(s.data.site.lat_deg) >= 75)
+  const polar = plan.sites.map((s) => isPolar(s.data))
   return (
     <div className="grid gap-12">
       <Verdict plan={plan} actions={actions} />

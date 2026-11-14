@@ -163,6 +163,26 @@ const terrainBin = import.meta.glob<string>('../data/generated/terrain/*.bin', {
 export const hasTerrain = (id: SiteId, tier: 'inner' | 'outer' = 'inner') =>
   `../data/generated/terrain/${tier === 'outer' ? `${id}.outer` : id}.json` in terrainMeta
 
+/** Sites computed a short walk apart, to show how much a small move changes (C8). Each names the other. */
+export const NEIGHBOURS: Record<string, SiteId> = {
+  'connecting-ridge': 'shackleton-ridge',
+  'shackleton-ridge': 'connecting-ridge',
+}
+
+const MOON_RADIUS_M = 1_737_400
+
+/** Great-circle distance over the Moon's reference sphere, in metres. */
+export function surfaceMetres(a: { lat_deg: number; lon_deg_east: number }, b: { lat_deg: number; lon_deg_east: number }) {
+  const r = Math.PI / 180
+  const h =
+    Math.sin(((b.lat_deg - a.lat_deg) * r) / 2) ** 2 +
+    Math.cos(a.lat_deg * r) * Math.cos(b.lat_deg * r) * Math.sin(((b.lon_deg_east - a.lon_deg_east) * r) / 2) ** 2
+  return 2 * MOON_RADIUS_M * Math.asin(Math.sqrt(h))
+}
+
+/** Sites with a 3D terrain tile: the ones Explore, Understand and the lab can stand on. The others are for planning only. */
+export const MAP_SITES = MOON_SITES.filter((s) => hasTerrain(s.id))
+
 /** Heights in metres, rows north to south. ponytail: Int16Array reads platform byte order; every browser target is little-endian. */
 export async function loadTerrain(id: SiteId, tier: 'inner' | 'outer' = 'inner'): Promise<Terrain> {
   const file = tier === 'outer' ? `${id}.outer` : id

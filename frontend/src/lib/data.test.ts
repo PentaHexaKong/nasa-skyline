@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { loadMoonEphemeris, loadSummary, loadTracks, MOON_SITES, readerReference } from './data'
+import { loadMoonEphemeris, loadSummary, loadTracks, MAP_SITES, MOON_SITES, NEIGHBOURS, readerReference, surfaceMetres } from './data'
 import { earthTarget } from './target'
 
 test('a Moon site parses with Earth as its comms target', async () => {
@@ -18,7 +18,14 @@ test('a Moon site parses with Earth as its comms target', async () => {
 test('the Moon ephemeris covers the computed window hourly', async () => {
   const e = await loadMoonEphemeris()
   expect(e.subsolar_lat_deg).toHaveLength(365 * 24)
-  expect(MOON_SITES.map((s) => s.id).sort()).toEqual(['connecting-ridge', 'de-gerlache-rim', 'shackleton-rim'])
+  expect(MOON_SITES.map((s) => s.id).sort()).toEqual([
+    'apollo11',
+    'connecting-ridge',
+    'de-gerlache-rim',
+    'shackleton-ridge',
+    'shackleton-rim',
+  ])
+  expect(MAP_SITES.map((s) => s.id).sort()).toEqual(['connecting-ridge', 'de-gerlache-rim', 'shackleton-rim'])
 })
 
 test('reader reference: team to-dos leave the page, the "Unverified" mark stays', () => {
@@ -29,4 +36,11 @@ test('reader reference: team to-dos leave the page, the "Unverified" mark stays'
     'A lander touched down near here in 2025. Unverified.',
   )
   expect(readerReference('A region centre, not a landing point.')).toBe('A region centre, not a landing point.')
+})
+
+test('the sunniest spot on Connecting Ridge is its near neighbour, 212 m away', async () => {
+  const [a, b] = await Promise.all([loadSummary('connecting-ridge'), loadSummary('shackleton-ridge')])
+  expect(NEIGHBOURS['connecting-ridge']).toBe('shackleton-ridge')
+  expect(NEIGHBOURS['shackleton-ridge']).toBe('connecting-ridge')
+  expect(Math.round(surfaceMetres(a.site, b.site))).toBe(212)
 })

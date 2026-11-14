@@ -7,7 +7,7 @@ import { MOON_PREVIEW } from '~/components/moonTextures'
 import type { MoonPose, MoonScene, TourSite } from '~/components/ParallaxMoon'
 import { Eyebrow, Footer, Shell } from '~/components/Shell'
 import { Bubble, Mascot, StandHereLink } from '~/components/story'
-import { loadMoonEphemeris, loadSummary, MOON_SITES, type MoonEphemeris, type Summary } from '~/lib/data'
+import { loadMoonEphemeris, loadSummary, MAP_SITES, type MoonEphemeris, type Summary } from '~/lib/data'
 import { shortName } from '~/lib/mission'
 import { bestHour, SYNODIC_HOURS, subPoints, whenAt } from '~/lib/moonLight'
 import { longDate } from '~/lib/time'
@@ -19,7 +19,7 @@ import { longDate } from '~/lib/time'
  */
 export const Route = createFileRoute('/understand/')({
   loader: async () => {
-    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))])
+    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MAP_SITES.map((s) => loadSummary(s.id)))])
     return { eph, summaries }
   },
   head: () => ({
@@ -193,13 +193,7 @@ function LessonChapter({
       {/* The scientist asks the class the lesson's question; the why stays one tap away for whoever wants it. */}
       <div className="flex items-end gap-3">
         <Mascot pose={POSES[n - 1] ?? 'scientist-question'} className="size-24 shrink-0" />
-        <Bubble
-          className="mb-6"
-          more={{
-            text: dropWhy ? l.teacher.goal : l.why,
-            link: { href: `/understand/${l.id}`, label: 'Open the full lesson' },
-          }}
-        >
+        <Bubble className="mb-6" more={{ text: dropWhy ? l.teacher.goal : l.why }}>
           {l.teacher.ask}
         </Bubble>
       </div>

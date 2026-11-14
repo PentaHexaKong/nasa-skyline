@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { LabJourney } from '~/components/lab/LabJourney'
 import { Footer, Shell } from '~/components/Shell'
-import { loadMoonEphemeris, loadSummary, MOON_SITES } from '~/lib/data'
+import { loadMoonEphemeris, loadSummary, MAP_SITES } from '~/lib/data'
 import { INVESTIGATION_IDS, LUNAR_DAYS } from '~/lib/investigation'
 import { forgiving } from '~/lib/useSiteView'
 
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/understand/lab')({
     day: forgiving(z.coerce.number().min(0).max(LUNAR_DAYS)),
   }),
   loader: async () => {
-    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))])
+    const [eph, summaries] = await Promise.all([loadMoonEphemeris(), Promise.all(MAP_SITES.map((s) => loadSummary(s.id)))])
     return { eph, summaries }
   },
   head: () => ({ meta: [{ title: 'Understand lab · Skyline' }] }),
