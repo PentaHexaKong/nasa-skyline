@@ -16,7 +16,7 @@ Latitude and longitude below are degrees. Lunar latitude is planetocentric and l
 | shackleton-ridge | Shackleton connecting ridge | moon | -89.4749 | 222.5569 | MOON_ME_DE440_ME421 | 1947.500000 | 2.0 | unverified coordinate realization | unsupported |
 | viganella | Viganella, Italy | earth | 46.05 | 8.19 | ITRF93 / WGS84 as declared by DS pipeline | 618.900000 | 2.0 | unsupported by lunar engine | unsupported |
 
-ROI elevations retain six decimals here for numerical reproducibility. Their physical uncertainty remains unspecified. DS ground elevations are copied from exports rounded to 0.1 m. Lunar elevations refer to a 1737400 m sphere, with independent registration unresolved for the DS entries. Earth vertical realization remains unresolved.
+ROI elevations retain six decimals here for numerical reproducibility. Their physical uncertainty remains unspecified. DS ground elevations are taken from exports rounded to 0.1 m. Lunar elevations refer to a 1737400 m sphere, with independent registration unresolved for the DS entries. Earth vertical realization remains unresolved.
 
 ## Supported independent-engine profile
 
@@ -46,7 +46,7 @@ CR1, GR1 and SR1 quote De Rosa et al. Table 2. Their coordinate uncertainty is u
 
 The machine-readable registry and `site-catalog-reconciliation.md` provide per-entry provenance and unresolved mapping decisions.
 
-## Frozen mission scopes
+## INT-4 mission scopes
 
 These scenario definitions are preserved separately in `externalRegistries`. Ground heights are configuration declarations and coordinate uncertainty is unspecified. All surface coordinates use declared DE421 and the 1737400 m radial sphere. Each source supplies five rover waypoints over 14400 s. Full profiles and source hashes are included in the registry.
 
@@ -56,4 +56,4 @@ These scenario definitions are preserved separately in `externalRegistries`. Gro
 | S2_SR1_SHACKLETON_RIM | -89.7755 | -156.448 | 1733.72 | 2025-01-01 UTC plus 478800 s |
 | S3_GR1_DE_GERLACHE_RIM | -88.6952 | -68.2846 | 1779.2 | 2025-01-01 UTC plus 463200 s |
 
-The configured mast heights are 0, 5, 10, 15, 20, 30, 45 and 60 m, with baseline mast height 15 m and rover antenna height 1.8 m. These are frozen mission-engine capabilities. Independent point-site evaluation supports height-specific environment geometry within its radial envelope. Independent nominal relay replay retains its 0 m observer-height constraint. Frozen C2/C4 mission constellations and the independent nominal Candidate 2 replay retain their separate definitions. Source DEM is the configured LOLA 80 m raster. Full observer equivalence and independent relay replay mapping remain unverified for all traverses.
+The configured mast heights are 0, 5, 10, 15, 20, 30, 45 and 60 m, with baseline mast height 15 m and rover antenna height 1.8 m. These are pinned INT-4 mission-engine capabilities. Independent point-site evaluation supports height-specific environment geometry within its radial envelope. Independent nominal relay replay retains its 0 m observer-height constraint. Frozen C2/C4 mission constellations and the independent nominal Candidate 2 replay retain their separate definitions. Source DEM is the configured LOLA 80 m raster. Full observer equivalence and independent relay replay mapping remain unverified for all traverses.

@@ -2,20 +2,17 @@
 
 Run against the independent mission-science engine and existing application. The placement evaluator uses the height-aware terrain, SPICE, visibility, interval, blackout and panel routines.
 
-## Actual test results
+## Current test results
 
 | Check | Result |
 | --- | --- |
-| Complete mission-science Python suite | 73 passed, zero failures/skips, 65.58 s |
-| Complete frontend suite | 53 passed, zero failures/pending tests |
-| Full Go suite with live scientific services | 78 passing cases comprising 36 top-level tests and 42 subtests, zero failures/skips, 90.939 s |
-| Existing relay Python suite | 20 passed, zero failures/skips, 4.64 s |
-| Existing DS Python suite | 57 passed, one existing network test deselected, 40.94 s |
-| Go static checks | `go vet ./...` passed |
-| TypeScript | `pnpm --dir frontend exec tsc --noEmit` passed |
-| Production build | Compose frontend build passed |
+| Mission-science Python suite | 85 passed |
+| Frontend Vitest suite | 100 passed |
+| Relay-adapter Python suite | 14 passed, 6 skipped (live-service tests skip without running services) |
+| DS Python suite | 55 passed, 1 deselected |
+| Go suite (`go test ./...`) | passes |
 
-Existing Starlette/Rasterio deprecation warnings remain in the test output. DS uses Rasterio's bundled PROJ database. The relay suite uses the independent seven-kernel directory.
+Run live Go tests with the services running: start the stack with `docker compose up --build`, then run `cd backend && go test -count=1 ./...` with the scientific service URLs set. DS uses Rasterio's bundled PROJ database. The relay suite uses the independent seven-kernel directory.
 
 Analytical tests cover equatorial offsets, inverse round trips at all three canonical sites, exact zero offset, nested grid enumeration and spherical flat/planar DEM slope fixtures. Real-data tests compare sampled elevations and observer radii, preserve exact zero-offset scientific results, and distinguish ten location/height observer positions and cache identities.
 
@@ -31,11 +28,11 @@ The coarse grid has five points and ten location/height combinations. The spatia
 
 | Case | Locations | Planned evaluations | Feasible combinations | Nondominated combinations | Wall time s | Cumulative process peak RSS MiB |
 | --- | --- | --- | --- | --- | --- | --- |
-| coldCoarseGrid | 5 | 10 | 5 | 3 | 101.830 | 522.18 |
-| memoizedCoarseGrid | 5 | 10 | 5 | 3 | 10.619 | 522.18 |
-| refinedSpatialGrid | 13 | 26 | 14 | 6 | 171.666 | 553.62 |
+| coldCoarseGrid | 5 | 10 | 5 | 3 | 41.836 | 572.91 |
+| memoizedCoarseGrid | 5 | 10 | 5 | 3 | 5.899 | 572.91 |
+| refinedSpatialGrid | 13 | 26 | 14 | 6 | 72.686 | 572.91 |
 
-The first case uses empty temporary terrain/result caches. OS file caching is uncontrolled. Later cases share the evaluator and caches. Memory is OS working-set/RSS accounting including Python, native libraries and scientific caches. Peaks are cumulative since process start across cases. The final working set is approximately 228.11 MiB, with 26 native-result entries, 26 horizon entries and 61999 ephemeris entries. This measures the stated workload and environment.
+The first case uses empty temporary terrain/result caches. OS file caching is uncontrolled. Later cases share the evaluator and caches. Memory is process peak RSS including Python, native libraries and scientific caches, cumulative since process start, so all three cases report the same value. Runtime is macOS arm64, Python 3.12. The caches hold 26 native-result entries, 26 horizon entries and 61999 ephemeris entries. This measures the stated workload and environment.
 
 Repeated coarse evaluation preserved its scenario identity. All ten shared scientific location/height scenario identities were identical in the refined grid. The finer grid contains every coarse location. Its additional positions use interpolation of the same 80 m terrain, and all thirteen are flagged as finer than the DEM. The maximum nondominated Earth availability remained approximately 0.753741425; refinement expanded the available cost/height trade-offs.
 
@@ -57,9 +54,9 @@ A standalone independent pass over the actual Go-generated feed recomputed missi
 
 ## Go/FE and immutable-feed integration
 
-The deployed Go route returns the complete ten-evaluation CR1 case in 67.460 s in the integrated validation. Timing depends on cache state from earlier requests. The actual response passed authoritative Pydantic validation, and all deployed Python source hashes matched the final local package. The request, full API response and compact MastFeed are retained under `examples/` in both repositories.
+The Go route returns the complete ten-evaluation CR1 case through the integrated stack. The actual response passed authoritative Pydantic validation. The request, full API response and compact MastFeed are retained under `examples/` in both repositories.
 
-The real `exportMastFeed.py` CLI runs through Go (measured wall times 79.217 and 69.440 s) and preserves existing payload bytes. A live unsupported Apollo 11 request produces no feed. A second one-hour zero-offset scenario passes and preserves unrequested panel exposure as null. Immutable payloads retain complete scenario identities, and site-only lookup files require explicit scenario selection.
+The real `exportMastFeed.py` CLI runs through Go and preserves existing payload bytes. A live unsupported Apollo 11 request produces no feed. A second one-hour zero-offset scenario passes and preserves unrequested panel exposure as null. Immutable payloads retain complete scenario identities, and site-only lookup files require explicit scenario selection.
 
 The frontend proxy gives the placement route a 610 s read budget, because the default 100 s proxy timeout is too short for it. Go retains its 600 s mast-evaluation budget.
 
@@ -73,4 +70,4 @@ Wall-time checks are cooperative between complete scientific evaluations, and an
 
 The optimizer's domain is the declared generated grid and selected heights. Construction safety, global optimality, physical event completeness and RF-qualified communication remain unvalidated. Panel scores retain the center-incidence-times-visible-disk approximation and ideal unconstrained tracking. Results carry computed status and `independentlyValidated=false`.
 
-The original orbital engine and frozen INT-4 are unmodified. Existing live integrations and regression suites pass.
+The pinned INT-4 engine is not modified. Existing live integrations and regression suites are run with the commands above.

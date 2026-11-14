@@ -8,4 +8,4 @@ POST /api/relay-engineering/compare accepts siteId, startUtc and durationS. A re
 
 The independent adapter accepts longer windows through its own API, up to the complete saved 28-day interval. The integrated one-day limit bounds the environmental event-search work and transport deadline. It is an implementation limit rather than a physical orbit-validity limit.
 
-Documentation changes include a compatibility matrix and explicit geometric/RF semantics. Frozen INT-4 shared schemas and source artifacts are unchanged. The existing mission-science API receives only an additive observer-position provenance field. No live imports from Nasa are present in either new scientific package.
+Documentation changes include a compatibility matrix and explicit geometric/RF semantics. The INT-4 shared schemas and source artifacts are not modified. The existing mission-science API receives only an additive observer-position provenance field. Neither scientific package imports from the INT-4 checkout at runtime.

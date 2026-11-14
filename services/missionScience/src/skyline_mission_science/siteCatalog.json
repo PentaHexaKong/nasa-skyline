@@ -1119,15 +1119,15 @@
       "baselineCommit": "f16acd39f06e11fd6d884d01c9ac6c72a218cc1b",
       "sourceArtifacts": [
         {
-          "path": "Nasa-int4/configs/mission/missionTradeoffs-v1.json",
+          "path": "int4/configs/mission/missionTradeoffs-v1.json",
           "sha256": "f896ed180c50d5d0ff0a5a1a1ddec642185822043a08c06cf46e1ea2155a36dd"
         },
         {
-          "path": "Nasa-int4/configs/mission/cr1MissionScenario-v1.json",
+          "path": "int4/configs/mission/cr1MissionScenario-v1.json",
           "sha256": "2f3d6dee21bdd845a65ddb769fc9ea68e2dc66701e1365cb4e6c94aeace41d8e"
         },
         {
-          "path": "Nasa-int4/configs/science/scientificEngine-v1.json",
+          "path": "int4/configs/science/scientificEngine-v1.json",
           "sha256": "c73c9076f7cac02cb7e260ce9c54286cfadb9af3030b5037b64e09fc6b9ba480"
         }
       ],

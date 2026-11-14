@@ -1,22 +1,18 @@
 # Scientific contract verification report
 
-Verified against the final independent-engine source and running Compose stack.
+Verified against the independent-engine source.
 
 ## Results
 
-| Check | Actual result |
+| Check | Result |
 | --- | --- |
-| Full independent mission-science Python suite | 53 passed, zero failures/skips |
-| Existing DS Python suite | 57 passed, one existing network test deselected |
-| Independent relay-adapter Python suite with real seven-kernel directory | 18 passed, zero failures/skips |
-| Full frontend Vitest suite | 44 passed, zero failures/skips |
-| Go suite with all live service URLs enabled | 28 top-level tests and 27 subtests passed, zero failures/skips |
-| Go vet | Passed |
-| TypeScript `tsc --noEmit` | Passed |
-| Compose readiness | All seven services healthy |
-| Browser | The mission form completes a one-hour geometric CR1 evaluation through the bundled schema-validated client |
+| Mission-science Python suite | 85 passed |
+| DS Python suite | 55 passed, 1 deselected |
+| Relay-adapter Python suite | 14 passed, 6 skipped (live-service tests skip without running services) |
+| Frontend Vitest suite | 100 passed |
+| Go suite (`go test ./...`) | passes |
 
-The DS test run used Rasterio's bundled PROJ database through `PROJ_DATA` and `PROJ_LIB` to avoid the incompatible host PostgreSQL database. Existing Starlette and Rasterio deprecation warnings remain in the test output.
+Run live Go tests with the services running: start the stack with `docker compose up --build`, then run `cd backend && go test -count=1 ./...` with the scientific service URLs set.
 
 ## Contract and scientific checks
 
@@ -26,7 +22,7 @@ Regressions preserve the requested endpoint near a refined transition and preven
 
 Frontend tests compare the generated backend/frontend schemas, parse the real API example, reject missing or invalid availability fields, verify unit conversions and preserve null metrics across all noncomputed states. The response schema carries no default annotations that could fill missing scientific data during frontend parsing.
 
-Go tests preserve the real scientific payload, reject malformed/versionless/unitless envelopes, verify explicit transport-error states and exercise the new endpoint through a real Go bridge into Python. They include a computed CR1 case and an unsupported Apollo 11 case. Existing live relay comparison and frozen-engine integration tests also passed.
+Go tests preserve the real scientific payload, reject malformed/versionless/unitless envelopes, verify explicit transport-error states and exercise the new endpoint through a real Go bridge into Python. They include a computed CR1 case and an unsupported Apollo 11 case. Existing live relay comparison and INT-4 engine integration tests run when the scientific service URLs are set.
 
 ## Real API and feed export
 

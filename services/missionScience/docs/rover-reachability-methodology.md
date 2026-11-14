@@ -2,7 +2,7 @@
 
 ## Scope and implementation
 
-The independent `skyline_rover_science` package reuses the existing height-aware terrain, finite solar-disk and direct-Earth scientific evaluator. The optional process owns its cache and request gate. The original orbital engine, frozen INT-4, propagator and existing scientific API implementations remain unchanged. This prototype serves the site-comparison extension associated with R4 and the proposed rover direction in ADR-0005.
+The independent `skyline_rover_science` package reuses the existing height-aware terrain, finite solar-disk and direct-Earth scientific evaluator. The optional process owns its cache and request gate. The rover package does not modify the orbital engine, the pinned INT-4 engine, the propagator or the existing scientific API implementations. This prototype serves the site-comparison extension associated with R4 and the proposed rover direction in ADR-0005.
 
 Supported canonical catalog sites are CR1, GR1 and SR1. Each request preserves the catalog coordinate source. A frontend location with an unverified mapping receives an explicit unsupported result. Every candidate observer receives its actual derived coordinate and independent terrain horizon. There is no shared angular horizon offset.
 

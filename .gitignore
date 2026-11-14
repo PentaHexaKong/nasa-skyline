@@ -12,3 +12,6 @@ relayFeedRuntime.json
 services/missionScience/data/
 services/relayAdapter/data/*
 !services/relayAdapter/data/states/
+
+# External INT-4 engine checkout for the optional legacy profile
+external/

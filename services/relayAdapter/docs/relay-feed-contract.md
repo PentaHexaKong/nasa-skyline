@@ -4,7 +4,7 @@ Version `skyline-relay-feed/1.0.0`, implemented for R4, O2/O3/O7 and C2/C9/C10.
 
 ## Authoritative delivery
 
-`POST /api/relay-engineering/v1/relay-feed` accepts the existing comparison request with `siteId`, `startUtc` and integer `durationS`. It calls the existing relay replay and mission-science services. The original `/api/relay-engineering/compare` route keeps its response fields and shares the same validation. The orbital propagator and frozen INT-4 are unmodified.
+`POST /api/relay-engineering/v1/relay-feed` accepts the existing comparison request with `siteId`, `startUtc` and integer `durationS`. It calls the existing relay replay and mission-science services. The original `/api/relay-engineering/compare` route keeps its response fields and shares the same validation. The route does not modify the orbital propagator or the pinned INT-4 engine.
 
 The supported candidates remain the pinned nominal Candidate 2, two saved two-body J2000 spacecraft trajectories. Sites are CR1, GR1 and SR1 at the verified zero-additional-height terrain observers. Requested windows use aligned 120 s offsets within [2025-01-01T00:00:00Z, 2025-01-29T00:00:00Z), with duration from 120 to 86400 s. The candidate and profile are fixed. Apparent geometry, elevated observers, arbitrary points, other trajectories and dates require separate verification.
 

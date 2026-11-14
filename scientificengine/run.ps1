@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 Set-Location $PSScriptRoot
 $pythonExe = $env:SCIENTIFIC_ENGINE_PYTHON
 if (-not $pythonExe) {
-    $pythonExe = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'Nasa/scenariosandstuffs/Nasa-learning/.venv-learning/Scripts/python.exe'
+    $pythonExe = Join-Path (Split-Path $PSScriptRoot -Parent) 'external/int4/.venv/Scripts/python.exe'
 }
 if (-not (Test-Path -LiteralPath $pythonExe)) { throw 'Set SCIENTIFIC_ENGINE_PYTHON to the scientific Python environment.' }
 $env:PYTHONUTF8 = '1'

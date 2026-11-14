@@ -1,6 +1,6 @@
 # Integration handoff
 
-Start the new service with the package installed and uvicorn skyline_mission_science.api:app on an explicitly chosen host/port. Zeddin can add a separately versioned Go proxy to the new endpoint. Forward scientific errors and dataState unchanged. Configure the URL separately from the frozen INT-4 service. API admission is serialized and busy responses should be displayed or retried with bounded user-visible handling.
+Start the new service with the package installed and uvicorn skyline_mission_science.api:app on an explicitly chosen host/port. Zeddin can add a separately versioned Go proxy to the new endpoint. Forward scientific errors and dataState unchanged. Configure the URL separately from the INT-4 service. API admission is serialized and busy responses should be displayed or retried with bounded user-visible handling.
 
 Billy can send configs/exampleRequest.json to /v1/evaluate. Plot timesS against bodies.SUN and bodies.EARTH azimuthDeg/elevationDeg. The horizon has periodic equal-width azimuth sectors starting at north. Use the returned visibility definition and provenance when labeling intervals and fractions. Show unavailable results, missed-event flags and geometric Earth-center semantics. Compare evaluates a common physical definition across supplied requests.
 

@@ -1,41 +1,36 @@
 # RelayFeed validation
 
-Run against the existing Compose stack and independent relay adapter. Requirements R4, O2/O3/O7 and C2/C9/C10.
+Checked with the independent relay adapter and the export CLI. Requirements R4, O2/O3/O7 and C2/C9/C10.
 
-## Actual suite results
+## Current suite results
 
 | Check | Result |
 | --- | --- |
-| Full relay-adapter Python suite | 20 passed, zero failures/skips, 5.27 s |
-| Existing DS Python suite | 57 passed, one existing network test deselected, 51.08 s |
-| Full frontend suite | 49 passed, zero failures/pending tests |
-| Full Go suite with live scientific services | 76 passing cases comprising 34 top-level tests and 42 subtests, zero failures/skips, 55.975 s |
-| Go static checks | `go vet ./...` passed in the Go 1.24 container |
-| TypeScript | `pnpm --dir frontend exec tsc --noEmit` passed |
-| Production frontend build | Compose frontend build passed |
+| Relay-adapter Python suite | 14 passed, 6 skipped (live-service tests skip without running services) |
+| DS Python suite | 55 passed, 1 deselected |
+| Frontend Vitest suite | 100 passed |
+| Go suite (`go test ./...`) | passes |
 
-The relay suite uses the independent adapter's seven-kernel directory. DS uses Rasterio's bundled PROJ database. Existing Starlette and Rasterio deprecation warnings remain in the test output.
-
-All seven Compose services ran healthy, with HTTP 200 from the mission page.
+Run live Go tests with the services running: start the stack with `docker compose up --build`, then run the Go suite with the scientific service URLs set.
 
 ## Supported real-data replay matrix
 
 Each row evaluates 86400 ET seconds on the existing 120 s grid, with 720 left-endpoint samples. Shares are fractions in [0,1]. Blackouts are seconds under the stated sample-bin model.
 
-| Site | Nominal requested UTC date | Direct share | Longest direct blackout s | Direct-or-relay share | Longest assisted blackout s | HTTP wall time s |
+| Site | Nominal requested UTC date | Direct share | Longest direct blackout s | Direct-or-relay share | Longest assisted blackout s | Export wall time s |
 | --- | --- | --- | --- | --- | --- | --- |
-| CR1 | 2025-01-06 | 0.3625 | 55080 | 1.0000 | 0 | 13.595 |
-| GR1 | 2025-01-06 | 1.0000 | 0 | 1.0000 | 0 | 12.825 |
-| SR1 | 2025-01-06 | 0.0000 | 86400 | 1.0000 | 0 | 50.836 |
-| CR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 31.796 |
-| GR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 31.423 |
-| SR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 32.545 |
+| CR1 | 2025-01-06 | 0.3625 | 55080 | 1.0000 | 0 | 1.588 |
+| GR1 | 2025-01-06 | 1.0000 | 0 | 1.0000 | 0 | 1.351 |
+| SR1 | 2025-01-06 | 0.0000 | 86400 | 1.0000 | 0 | 1.658 |
+| CR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 1.012 |
+| GR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 1.226 |
+| SR1 | 2025-01-28 | 0.0000 | 86400 | 1.0000 | 0 | 1.018 |
 
-All six cases passed schema validation, exact elapsed-grid checks, absolute ET epoch agreement within 1e-6 s, simultaneous-hop consistency, metric recomputation and interval partition/clipping checks. The greatest epoch difference is 3.5762786865234375e-7 s. Reproduce with `python services/relayAdapter/scripts/validateRelayFeed.py` against the running stack.
+All six cases passed schema validation, exact elapsed-grid checks, absolute ET epoch agreement within 1e-6 s, simultaneous-hop consistency, metric recomputation and interval partition/clipping checks. The greatest epoch difference is 3.5762786865234375e-7 s. Reproduce with `python services/relayAdapter/scripts/validateRelayFeed.py` against the running stack. Export wall times are per-scenario times through the Python export CLI, not HTTP times.
 
 The CR1 Jan 6 target matches the documented geometric result exactly: direct fraction 0.3625, assisted fraction 1.0, direct blackout 55080 s and remaining assisted blackout 0 s. The direct blackout touches the window start. These are sampled geometric results for the evaluated windows. All six assisted shares are 1.0 under the same sample-bin definition.
 
-Measurements include host HTTP transfer through the frontend proxy, Go orchestration and both scientific services. Cache state is uncontrolled. Case timings are end-to-end service runtimes. The native scientific algorithms and saved orbit trajectory remain the existing implementation.
+Export wall times are Python export CLI runtimes for each scenario. Cache state is uncontrolled. The native scientific algorithms and saved orbit trajectory remain the existing implementation.
 
 ## Timing reconciliation and regression
 
@@ -55,7 +50,7 @@ Live requests reject Apollo 11, a 2026 epoch, an unaligned start second, a 121 s
 
 ## Feed publication and FE compatibility
 
-The export CLI runs through the authoritative Go route. Repeated exports retain the original immutable payload bytes (measured CLI wall times 13.555 and 13.127 s). A live unsupported Apollo 11 CLI request fails with HTTP 422 and produces no feed file. Concurrent identical publication, conflicting content, unrelated site-file protection, missing science and RF-flag validation are covered by the Python suite.
+The export CLI runs through the authoritative Go route. Repeated exports retain the original immutable payload bytes. A live unsupported Apollo 11 CLI request fails with HTTP 422 and produces no feed file. Concurrent identical publication, conflicting content, unrelated site-file protection, missing science and RF-flag validation are covered by the Python suite.
 
 Six immutable payloads cover three sites and two dates. `frontend/data/feeds/relay/<site-id>.json` contains explicit-selection manifests, with complete scenario payloads below `relay/scenarios`. The frontend loads the selected identity, checks its embedded site and scenario, validates the scientific contract and renders supplied intervals. Legacy fixture feeds keep their own contract and behaviour.
 
@@ -63,4 +58,4 @@ The CR1 example is `examples/relayFeed.computed.json`. It reports producer/sourc
 
 ## Verification boundary
 
-The measurements establish the tested software contracts, source identities, synchronized sampled geometry and boolean/metric consistency. Physical RF performance, continuous connectivity and subcadence outage completeness remain unvalidated. Event times are sample-bin boundaries, with explicit clipping and unknown physical transition uncertainty. The original orbital engine and frozen INT-4 received no edits in this task.
+The measurements establish the tested software contracts, source identities, synchronized sampled geometry and boolean/metric consistency. Physical RF performance, continuous connectivity and subcadence outage completeness remain unvalidated. Event times are sample-bin boundaries, with explicit clipping and unknown physical transition uncertainty. The orbital propagator and the pinned INT-4 engine are not modified by the adapter.

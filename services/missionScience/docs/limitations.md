@@ -2,9 +2,9 @@
 
 The implementation provides a bounded standalone evaluator, API and exhaustive delay-scenario search. Competition readiness remains conditional on the restrictions below.
 
-Only CR1, GR1 and SR1 are enabled curated sites. The DS catalog is inspected but its frame realization and terrain mapping are not reconciled into the new registry. Arbitrary DE421 coordinates are accepted only if the full inherited horizon search region fits the copied DEMs. Explicit coverage checks reject unsupported terrain.
+Only CR1, GR1 and SR1 are enabled curated sites. The DS catalog is inspected but its frame realization and terrain mapping are not reconciled into the new registry. Arbitrary DE421 coordinates are accepted only if the full horizon search region fits the packaged DEMs. Explicit coverage checks reject unsupported terrain.
 
-The solar disk assumes a uniform circle behind a locally straight skyline. Variation across the disk is not integrated. Event detection refines sign changes and reports the possibility of missed subcadence events, multiple crossings and tangencies. Grazing contacts are not certified. Sector horizon jumps are numerical skyline artifacts. Negative-elevation paths are excluded by the inherited terrain model. No calibrated uncertainty interval is supplied.
+The solar disk assumes a uniform circle behind a locally straight skyline. Variation across the disk is not integrated. Event detection refines sign changes and reports the possibility of missed subcadence events, multiple crossings and tangencies. Grazing contacts are not certified. Sector horizon jumps are numerical skyline artifacts. Negative-elevation paths are excluded by the terrain model. No calibrated uncertainty interval is supplied.
 
 The 20 m DEM was not copied because it is about 2.7 GB. Resolution sensitivity reports unavailable for that option. The actual 80 m and 240 m rasters are included in the independent project. Terrain horizons depend on a +20 km far-terrain envelope assumption.
 

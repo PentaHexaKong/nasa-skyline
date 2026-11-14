@@ -1,6 +1,6 @@
 # SKYLINE scientific engine connection
 
-The INT-4 Python interface owns SPICE geometry, native DOP853 propagation, LOLA terrain, analytical RF and MD-2C mission evaluation. This directory supplies the HTTP adapter used by the Go backend. The scientific implementation lives in the dedicated `Nasa-int4` worktree and has a pinned physical-source manifest.
+The INT-4 Python interface owns SPICE geometry, native DOP853 propagation, LOLA terrain, analytical RF and MD-2C mission evaluation. This directory supplies the HTTP adapter used by the Go backend. The scientific implementation lives in the external INT-4 checkout, located by `SKYLINE_SCIENCE_ROOT`, and has a pinned physical-source manifest.
 
 ## Start locally
 
@@ -10,7 +10,7 @@ Run the scientific service from this directory.
 ./run.ps1
 ```
 
-The launcher uses the relocated scientific environment in the `Nasa-learning/.venv-learning` checkout next to the Nasa-int4 worktree. `SCIENTIFIC_ENGINE_PYTHON` overrides the interpreter. The service warms the verified four-hour mission world before listening on `127.0.0.1:8003`. The startup replay prepares C2/C4 geometry and performs one reference evaluation.
+The launcher uses the Python interpreter named by `SCIENTIFIC_ENGINE_PYTHON`, which must have the INT-4 scientific environment installed. The service warms the verified four-hour mission world before listening on `127.0.0.1:8003`. The startup replay prepares C2/C4 geometry and performs one reference evaluation.
 
 Start the Go backend from `backend/`.
 
@@ -59,13 +59,13 @@ RF budgets are analytical assumptions. Sampled visibility, continuous availabili
 
 | Environment variable | Default |
 |---|---|
-| `SKYLINE_SCIENCE_ROOT` | `../../Nasa/scenariosandstuffs/Nasa-int4` (relative to this repo's parent workspace) |
+| `SKYLINE_SCIENCE_ROOT` | none; set it to the INT-4 checkout |
 | `SKYLINE_ASSET_ROOT` | `../../Nasa/data/raw` (relative to this repo's parent workspace) |
 | `SKYLINE_CACHE_ROOT` | `scientificengine/data/cache` |
-| `SCIENTIFIC_ENGINE_PYTHON` | Relocated tested Python environment |
+| `SCIENTIFIC_ENGINE_PYTHON` | Python interpreter with the INT-4 scientific environment |
 | `SCIENTIFIC_ENGINE_URL` | Set on the Go backend to the service URL |
 
-The source checkout and raw assets remain required dependencies. The manifest pins the inherited physical implementation. Source modifications during a worker's lifetime invalidate evaluations. Keep raw assets immutable while a service instance is running and restart after any asset update. A worker timeout terminates that worker and returns an explicit unavailable result. Mission readiness becomes false after a worker failure or timeout, and restarting with the default warm-up restores the prepared mission context.
+The source checkout and raw assets remain required dependencies. The manifest pins the physical implementation. Source modifications during a worker's lifetime invalidate evaluations. Keep raw assets immutable while a service instance is running and restart after any asset update. A worker timeout terminates that worker and returns an explicit unavailable result. Mission readiness becomes false after a worker failure or timeout, and restarting with the default warm-up restores the prepared mission context.
 
 The source checkout's raw-data junctions must resolve to the same asset root for the `mission` profile. Missing kernels, missing DEMs, NoData and unsupported terrain remain explicit unavailable results. Physical slope and siting rejections remain computed infeasible designs.
 
@@ -79,9 +79,9 @@ From the repository root, run the complete stack.
 docker compose up --build -d
 ```
 
-The scientific image uses Python 3.13 and the pinned packages in `requirements.txt`. Default bind mounts use the existing sibling directories `../Nasa/scenariosandstuffs/Nasa-int4` and `../Nasa/data/raw`. Set `SKYLINE_SCIENCE_ROOT` and `SKYLINE_ASSET_ROOT` in the shell or Compose `.env` to override their host paths. Both directories must exist. Compose mounts them read-only, with the asset directory nested at `/science/data/raw` so the inherited mission evaluator resolves the same dataset mapping on Linux.
+The scientific image uses Python 3.13 and the pinned packages in `requirements.txt`. Set `SKYLINE_SCIENCE_ROOT` (the INT-4 checkout) and `SKYLINE_ASSET_ROOT` (the raw data) in the shell or Compose `.env` to give their host paths. Both directories must exist. Compose mounts them read-only, with the asset directory nested at `/science/data/raw` so the mission evaluator resolves the same dataset mapping on Linux.
 
-Two named volumes retain the interface horizon cache and the inherited mission horizon cache. The service runs as UID/GID 10001. Raw data and scientific source files remain on their read-only mounts. Cache deletion is explicit through `docker compose down --volumes`.
+Two named volumes retain the interface horizon cache and the mission horizon cache. The service runs as UID/GID 10001. Raw data and scientific source files remain on their read-only mounts. Cache deletion is explicit through `docker compose down --volumes`.
 
 Mission warm-up finishes before the listener starts. The health check requires `missionReady`, allows a five-minute startup period and gates backend startup. Initial startup includes source and asset hashing, DOP853 propagation and terrain evaluation. Inspect progress with `docker compose logs -f scientificengine`.
 
@@ -110,4 +110,4 @@ The live Go test starts a real HTTP bridge and calls the real Python service for
 & $env:SCIENTIFIC_ENGINE_PYTHON -m pytest -c scientificengine/pytest.ini scientificengine/tests
 ```
 
-Run that command from the repository root with `SCIENTIFIC_ENGINE_PYTHON` set. The unified scientific parity suite is `tests/science/testScientificEngine.py` in the INT-4 worktree. Existing scientific experiments and their pre-relocation reports retain their original bytes. The INT-4 relocation report maps historical absolute paths to the current layout. Use the relocated interpreter with `python -m` commands for historical entry points whose PowerShell scripts embed the old paths.
+Run that command from the repository root with `SCIENTIFIC_ENGINE_PYTHON` set. The unified scientific parity suite is `tests/science/testScientificEngine.py` in the INT-4 checkout. Run INT-4 entry points with `python -m` using the interpreter in `SCIENTIFIC_ENGINE_PYTHON`.

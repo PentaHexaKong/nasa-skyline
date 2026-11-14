@@ -1,6 +1,6 @@
 # Mast-height science
 
-Implemented in the independent mission-science engine for R1–R4, O2/O3/O5 and C2/C8/C9. The original orbital engine and frozen mission definitions receive no source edits.
+Implemented in the independent mission-science engine for R1–R4, O2/O3/O5 and C2/C8/C9. The pinned INT-4 engine and its mission definitions are not modified by this engine.
 
 ## Height and position
 

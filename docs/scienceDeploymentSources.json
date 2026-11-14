@@ -79,7 +79,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/siteCatalog.json",
-      "sha256": "0427e764d0aab6e3ef879fa87496e8ccf3750f62dd9af81cb100813273953384"
+      "sha256": "ce81145549d1eaf8663f6d0a058c3831fd0769febd509a856275cba9c62d8a02"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/siteCatalog.py",

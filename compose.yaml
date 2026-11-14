@@ -53,7 +53,7 @@ services:
     depends_on:
       backend: { condition: service_healthy }
   scientificengine:
-    profiles: ['legacy']  # needs the external INT-4 checkout; see docs/rebuild.md
+    profiles: ['legacy']  # needs the external INT-4 checkout; see docs/setup.md
     build: ./scientificengine
     init: true
     stop_grace_period: 30s
@@ -64,13 +64,13 @@ services:
     expose: ["8003"]
     volumes:
       - type: bind
-        source: ${SKYLINE_SCIENCE_ROOT:-../Nasa/scenariosandstuffs/Nasa-int4}
+        source: ${SKYLINE_SCIENCE_ROOT:-./external/int4}
         target: /science
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: ${SKYLINE_ASSET_ROOT:-../Nasa/data/raw}
+        source: ${SKYLINE_ASSET_ROOT:-./external/int4/data/raw}
         target: /science/data/raw
         read_only: true
         bind:

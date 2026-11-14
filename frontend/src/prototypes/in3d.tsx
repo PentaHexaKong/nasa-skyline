@@ -250,7 +250,7 @@ export function Rover3D() {
 }
 
 /**
- * Planned relay orbits, copied from ds/pipeline/relay_orbits.json (retrieved 2026-11-14).
+ * Planned relay orbits, taken from ds/pipeline/relay_orbits.json (retrieved 2026-11-14).
  * Pathfinder: SSTL Lunar Pathfinder Service Guide, section 3.4.3, "indicative"; no mean anomaly is published, so 0 is used.
  * LDN-1 to 5: Brack et al., AAS 25-758, Table 2, preliminary design; its RAAN zero point is unstated.
  * ILLUSTRATIVE: the elements are propagated as plain two-body orbits about the Moon's pole, and the

@@ -1,6 +1,6 @@
 # Scientific deployment services
 
-The application repository contains the mission-science, rover and relay-adapter deployment sources. See [deployment handoff](../docs/scienceDeploymentHandoff.md) for setup, merge scope, tests and the existing frozen-engine prerequisite.
+The application repository contains the mission-science, rover and relay-adapter deployment sources. See [deployment handoff](../docs/scienceDeploymentHandoff.md) for setup, review scope, tests and the INT-4 engine prerequisite.
 
 | Directory | Role |
 | --- | --- |

@@ -13,11 +13,11 @@ app = Path(__file__).resolve().parents[3]
 
 
 def portablePath(path):
-    """Repo-relative path, or `Nasa-int4/<relative>` for the frozen scientific checkout."""
+    """Repo-relative path, or `int4/<relative>` for the pinned INT-4 engine checkout."""
     path = Path(path).resolve()
     if path.is_relative_to(app):
         return path.relative_to(app).as_posix()
-    return 'Nasa-int4/' + path.relative_to(frozenRoot.resolve()).as_posix()
+    return 'int4/' + path.relative_to(frozenRoot.resolve()).as_posix()
 
 
 registryPath = app / 'ds/pipeline/sites.py'
@@ -259,7 +259,7 @@ catalog = dict(
     ),
 )
 if 'SKYLINE_SCIENCE_ROOT' not in os.environ:
-    raise SystemExit('Set SKYLINE_SCIENCE_ROOT to the frozen Nasa-int4 checkout')
+    raise SystemExit('Set SKYLINE_SCIENCE_ROOT to the INT-4 engine checkout')
 frozenRoot = Path(os.environ['SKYLINE_SCIENCE_ROOT'])
 tradeoffPath = frozenRoot / 'configs/mission/missionTradeoffs-v1.json'
 baselinePath = frozenRoot / 'configs/mission/cr1MissionScenario-v1.json'

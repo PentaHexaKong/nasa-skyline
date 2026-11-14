@@ -1,0 +1,2251 @@
+{
+  "document_type": "ds_ml_backend_data_handoff",
+  "status": "usulan_handoff_untuk_disepakati_tim",
+  "purpose": "Membandingkan lokasi dan tanggal pendaratan Bulan berdasarkan cahaya Matahari, visibilitas langsung Bumi, dan tambahan manfaat relay.",
+  "baseline_training_required": false,
+  "baseline_ds_required": {
+    "priority": "utama",
+    "deliverables": [
+      {
+        "name": "site",
+        "description": "Identitas dan posisi titik pengamat yang benar-benar digunakan dalam perhitungan.",
+        "fields": [
+          {
+            "field": "id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID lokasi; string nonkosong.",
+            "rule": null
+          },
+          {
+            "field": "latitude_deg",
+            "symbol": "φ",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Lintang titik pengamat.",
+            "rule": "-90 deg <= phi <= 90 deg"
+          },
+          {
+            "field": "longitude_deg_east",
+            "symbol": "λ_E",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Bujur ke timur dalam frame yang dicatat.",
+            "rule": "0 deg <= lambda_E < 360 deg"
+          },
+          {
+            "field": "observer_height_m",
+            "symbol": "h_obs",
+            "unit": "m",
+            "value_type": "number",
+            "meaning": "Tinggi pengamat di atas permukaan DEM pada titik tersebut.",
+            "rule": "h_obs >= 0 m; above the documented DEM surface."
+          },
+          {
+            "field": "body_fixed_frame",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID frame Bulan ME yang kompatibel dengan DEM dan ephemeris; metode menunjuk MOON_ME_DE440_ME421.",
+            "rule": "Verifikasi frame aktual, metadata DEM dan definisi lintang."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "SITE-01",
+            "statement": "Koordinat memiliki sumber yang dapat ditelusuri.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "latitude_deg",
+                "symbol": "φ",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Lintang titik pengamat.",
+                "rule": "-90 deg <= phi <= 90 deg"
+              },
+              {
+                "field": "longitude_deg_east",
+                "symbol": "λ_E",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Bujur ke timur dalam frame yang dicatat.",
+                "rule": "0 deg <= lambda_E < 360 deg"
+              },
+              {
+                "field": "coordinate_source",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Sumber koordinat dan identitas versinya.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "-90 deg <= phi <= 90 deg; 0 deg <= lambda_E < 360 deg; sumber koordinat tercatat."
+          },
+          {
+            "id": "SITE-02",
+            "statement": "Frame koordinat disebutkan secara eksplisit.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "body_fixed_frame",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "ID frame Bulan ME yang kompatibel dengan DEM dan ephemeris; metode menunjuk MOON_ME_DE440_ME421.",
+                "rule": "Verifikasi frame aktual, metadata DEM dan definisi lintang."
+              }
+            ],
+            "acceptance_rule": "Gunakan frame lunar ME yang kompatibel dengan DEM dan ephemeris. Metode proyek menunjuk MOON_ME_DE440_ME421; verifikasi metadata sumber dan definisi lintang, bukan hanya string frame."
+          },
+          {
+            "id": "SITE-03",
+            "statement": "Acuan tinggi pengamat disebutkan.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "observer_height_m",
+                "symbol": "h_obs",
+                "unit": "m",
+                "value_type": "number",
+                "meaning": "Tinggi pengamat di atas permukaan DEM pada titik tersebut.",
+                "rule": "h_obs >= 0 m; above the documented DEM surface."
+              },
+              {
+                "field": "height_reference",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Permukaan DEM serta datum/acuan tinggi yang digunakan.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "h_obs >= 0 m; diukur di atas permukaan DEM dengan acuan tercatat."
+          },
+          {
+            "id": "SITE-04",
+            "statement": "Titik harus tercakup oleh data terrain.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "latitude_deg",
+                "symbol": "φ",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Lintang titik pengamat.",
+                "rule": "-90 deg <= phi <= 90 deg"
+              },
+              {
+                "field": "longitude_deg_east",
+                "symbol": "λ_E",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Bujur ke timur dalam frame yang dicatat.",
+                "rule": "0 deg <= lambda_E < 360 deg"
+              },
+              {
+                "field": "coverage",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Cakupan spasial, waktu dan data valid; bagian nodata tidak dianggap tersedia.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Titik berada dalam cakupan terrain valid; tidak ada hasil rekaan untuk nodata."
+          }
+        ]
+      },
+      {
+        "name": "time",
+        "description": "Periode dan langkah waktu perhitungan.",
+        "fields": [
+          {
+            "field": "start_utc",
+            "symbol": "t₀",
+            "unit": null,
+            "value_type": "UTC_timestamp",
+            "meaning": "Awal interval evaluasi.",
+            "rule": "UTC timestamp with Z."
+          },
+          {
+            "field": "end_utc",
+            "symbol": "t₁",
+            "unit": null,
+            "value_type": "UTC_timestamp",
+            "meaning": "Batas akhir interval evaluasi.",
+            "rule": "t1 > t0; end is excluded."
+          },
+          {
+            "field": "step_seconds",
+            "symbol": "Δt",
+            "unit": "s",
+            "value_type": "integer",
+            "meaning": "Langkah waktu sampling.",
+            "rule": "Delta_t > 0 s; integer."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "TIME-01",
+            "statement": "Timestamp memakai UTC dengan akhiran Z.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "start_utc",
+                "symbol": "t₀",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Awal interval evaluasi.",
+                "rule": "UTC timestamp with Z."
+              },
+              {
+                "field": "end_utc",
+                "symbol": "t₁",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Batas akhir interval evaluasi.",
+                "rule": "t1 > t0; end is excluded."
+              }
+            ],
+            "acceptance_rule": "Timestamp menggunakan UTC dan akhiran Z. UTC adalah skala waktu, bukan satuan durasi."
+          },
+          {
+            "id": "TIME-02",
+            "statement": "start_utc lebih awal daripada end_utc.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "start_utc",
+                "symbol": "t₀",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Awal interval evaluasi.",
+                "rule": "UTC timestamp with Z."
+              },
+              {
+                "field": "end_utc",
+                "symbol": "t₁",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Batas akhir interval evaluasi.",
+                "rule": "t1 > t0; end is excluded."
+              },
+              {
+                "field": "interval_duration_seconds",
+                "symbol": "D",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi fisik interval.",
+                "rule": "D = elapsed_seconds(t1,t0) > 0 s"
+              }
+            ],
+            "acceptance_rule": "t1 > t0; D = elapsed_seconds(t1,t0) > 0 s."
+          },
+          {
+            "id": "TIME-03",
+            "statement": "Interval memakai aturan [start, end).",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "start_utc",
+                "symbol": "t₀",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Awal interval evaluasi.",
+                "rule": "UTC timestamp with Z."
+              },
+              {
+                "field": "end_utc",
+                "symbol": "t₁",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Batas akhir interval evaluasi.",
+                "rule": "t1 > t0; end is excluded."
+              },
+              {
+                "field": "time_utc",
+                "symbol": "t",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Waktu sampel atau event menurut konteks.",
+                "rule": "t0 <= t < t1; samples strictly increasing."
+              }
+            ],
+            "acceptance_rule": "t0 <= t < t1; t_i = advance_seconds(t0,i*Delta_t)."
+          },
+          {
+            "id": "TIME-04",
+            "statement": "Jumlah sampel dan cakupan waktunya dibatasi.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "step_seconds",
+                "symbol": "Δt",
+                "unit": "s",
+                "value_type": "integer",
+                "meaning": "Langkah waktu sampling.",
+                "rule": "Delta_t > 0 s; integer."
+              },
+              {
+                "field": "sample_count",
+                "symbol": "N",
+                "unit": "1",
+                "value_type": "integer",
+                "meaning": "Jumlah sampel awal langkah pada interval reguler [t0,t1).",
+                "rule": "N = ceil(D / Delta_t), before event refinement."
+              },
+              {
+                "field": "coverage",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Cakupan spasial, waktu dan data valid; bagian nodata tidak dianggap tersedia.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Delta_t integer > 0 s; N=ceil(D/Delta_t). Batas N/interval harus disepakati; tidak ditetapkan angka fiktif di sini."
+          }
+        ]
+      },
+      {
+        "name": "conventions",
+        "description": "Aturan agar backend dan frontend membaca hasil dengan makna yang sama.",
+        "required_information": [
+          {
+            "id": "CONV-01",
+            "statement": "Satuan sudut dalam derajat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "azimuth_deg",
+                "symbol": "A",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Arah mendatar dari utara lokal searah jarum jam.",
+                "rule": "0 deg <= A < 360 deg; define local direction at the pole."
+              },
+              {
+                "field": "elevation_deg",
+                "symbol": "H(A)",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Sudut skyline medan pada arah A terhadap horizontal lokal.",
+                "rule": "-90 deg <= H(A) <= 90 deg"
+              }
+            ],
+            "acceptance_rule": "Satuan sudut dalam derajat."
+          },
+          {
+            "id": "CONV-02",
+            "statement": "Konvensi azimuth dan definisi arah lokal.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "azimuth_deg",
+                "symbol": "A",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Arah mendatar dari utara lokal searah jarum jam.",
+                "rule": "0 deg <= A < 360 deg; define local direction at the pole."
+              },
+              {
+                "field": "pole_direction_definition",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Definisi azimuth lokal pada/dekat kutub.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Konvensi azimuth dan definisi arah lokal."
+          },
+          {
+            "id": "CONV-03",
+            "statement": "Elevasi terhadap horizontal lokal.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "sun_elevation_deg",
+                "symbol": "e☉",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Elevasi pusat Matahari terhadap horizontal lokal.",
+                "rule": "-90 deg <= e_sun <= 90 deg"
+              },
+              {
+                "field": "earth_elevation_deg",
+                "symbol": "e⊕",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Elevasi pusat Bumi terhadap horizontal lokal.",
+                "rule": "-90 deg <= e_earth <= 90 deg"
+              }
+            ],
+            "acceptance_rule": "Elevasi terhadap horizontal lokal."
+          },
+          {
+            "id": "CONV-04",
+            "statement": "Acuan tinggi pengamat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "observer_height_m",
+                "symbol": "h_obs",
+                "unit": "m",
+                "value_type": "number",
+                "meaning": "Tinggi pengamat di atas permukaan DEM pada titik tersebut.",
+                "rule": "h_obs >= 0 m; above the documented DEM surface."
+              },
+              {
+                "field": "height_reference",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Permukaan DEM serta datum/acuan tinggi yang digunakan.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Acuan tinggi pengamat."
+          },
+          {
+            "id": "CONV-05",
+            "statement": "Aturan visibilitas Matahari.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "sun_visibility_rule",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Aturan fraksi disk, penghalang, dan batas numerik yang dipakai.",
+                "rule": null
+              },
+              {
+                "field": "sun_visible_disk_fraction",
+                "symbol": "f☉(t)",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Fraksi luas disk Matahari yang terlihat pada satu waktu.",
+                "rule": "0 <= f_sun(t) <= 1"
+              }
+            ],
+            "acceptance_rule": "Aturan visibilitas Matahari."
+          },
+          {
+            "id": "CONV-06",
+            "statement": "Aturan visibilitas Bumi.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "earth_visibility_rule",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum center, any_sliver, full_disk; pemilihannya harus dicatat.",
+                "rule": null
+              },
+              {
+                "field": "direct_earth_visible",
+                "symbol": "V_D(t)",
+                "unit": null,
+                "value_type": "boolean",
+                "meaning": "Visibilitas geometris langsung Bumi di waktu t.",
+                "rule": "Boolean under the selected Earth visibility rule."
+              }
+            ],
+            "acceptance_rule": "Aturan visibilitas Bumi."
+          },
+          {
+            "id": "CONV-07",
+            "statement": "Margin elevasi Bumi yang digunakan.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "earth_elevation_margin_deg",
+                "symbol": "m⊕",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Margin clearance untuk aturan pusat Bumi.",
+                "rule": "Rule center: c_earth >= m_earth. Margin is not accuracy tolerance."
+              }
+            ],
+            "acceptance_rule": "Margin elevasi Bumi yang digunakan."
+          },
+          {
+            "id": "CONV-08",
+            "statement": "Metode sampling dan pembobotan durasi.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "step_seconds",
+                "symbol": "Δt",
+                "unit": "s",
+                "value_type": "integer",
+                "meaning": "Langkah waktu sampling.",
+                "rule": "Delta_t > 0 s; integer."
+              },
+              {
+                "field": "sample_weight_seconds",
+                "symbol": "wᵢ",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi yang diwakili sampel dalam pendekatan piecewise-constant.",
+                "rule": "0 < w_i <= Delta_t; sum(w_i) = D."
+              }
+            ],
+            "acceptance_rule": "Metode sampling dan pembobotan durasi."
+          }
+        ]
+      },
+      {
+        "name": "skyline",
+        "description": "Profil medan penghalang di sekeliling titik pengamat.",
+        "fields_per_point": [
+          {
+            "field": "azimuth_deg",
+            "symbol": "A",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Arah mendatar dari utara lokal searah jarum jam.",
+            "rule": "0 deg <= A < 360 deg; define local direction at the pole."
+          },
+          {
+            "field": "elevation_deg",
+            "symbol": "H(A)",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Sudut skyline medan pada arah A terhadap horizontal lokal.",
+            "rule": "-90 deg <= H(A) <= 90 deg"
+          }
+        ],
+        "requirements": [
+          {
+            "id": "SKY-01",
+            "statement": "Meliputi arah sekeliling pengamat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "azimuth_deg",
+                "symbol": "A",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Arah mendatar dari utara lokal searah jarum jam.",
+                "rule": "0 deg <= A < 360 deg; define local direction at the pole."
+              },
+              {
+                "field": "elevation_deg",
+                "symbol": "H(A)",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Sudut skyline medan pada arah A terhadap horizontal lokal.",
+                "rule": "-90 deg <= H(A) <= 90 deg"
+              }
+            ],
+            "acceptance_rule": "0 deg <= A < 360 deg; cakupan melingkar dan wrap-around dinyatakan; H(A) dalam deg."
+          },
+          {
+            "id": "SKY-02",
+            "statement": "Resolusi arah dan jangkauan terrain dicatat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "azimuth_step_deg",
+                "symbol": "ΔA",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Resolusi arah profil skyline.",
+                "rule": "Delta_A > 0 deg; document circular interpolation."
+              },
+              {
+                "field": "max_range_km",
+                "symbol": "R_max",
+                "unit": "km",
+                "value_type": "number",
+                "meaning": "Jangkauan terrain dari pengamat.",
+                "rule": "R_max > 0 km; record the actual value."
+              },
+              {
+                "field": "dem_resolution_m",
+                "symbol": "Δx",
+                "unit": "m",
+                "value_type": "number",
+                "meaning": "Resolusi spasial/ukuran sel terrain yang dipakai.",
+                "rule": "Delta_x > 0 m; cell size is not height error."
+              }
+            ],
+            "acceptance_rule": "Delta_A > 0 deg; R_max > 0 km; Delta_x > 0 m; catat nilai dan metode aktual."
+          },
+          {
+            "id": "SKY-03",
+            "statement": "Berasal dari pengolahan terrain yang jelas.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "algorithm_version",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Versi algoritma atau identitas commit.",
+                "rule": null
+              },
+              {
+                "field": "input_parameters",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Parameter aktual pemrosesan untuk mereproduksi run.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "H(A) berasal dari terrain/metode yang teridentifikasi dan kompatibel dengan frame pengamat."
+          },
+          {
+            "id": "SKY-04",
+            "statement": "Tidak diganti dengan kurva ilustrasi.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "data_state",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum fixture, computed, unavailable.",
+                "rule": null
+              },
+              {
+                "field": "warnings",
+                "symbol": null,
+                "unit": null,
+                "value_type": "array<string>",
+                "meaning": "Array string keterbatasan hasil.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Kurva contoh hanya boleh disertai data_state=fixture; tidak dilabel computed lunar."
+          }
+        ]
+      },
+      {
+        "name": "samples",
+        "description": "Hasil perhitungan pada setiap waktu sampel, untuk grafik dan timeline.",
+        "fields_per_sample": [
+          {
+            "field": "time_utc",
+            "symbol": "t",
+            "unit": null,
+            "value_type": "UTC_timestamp",
+            "meaning": "Waktu sampel atau event menurut konteks.",
+            "rule": "t0 <= t < t1; samples strictly increasing."
+          },
+          {
+            "field": "sun_azimuth_deg",
+            "symbol": "A☉",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Azimuth pusat Matahari dari pengamat.",
+            "rule": "0 deg <= A_sun < 360 deg"
+          },
+          {
+            "field": "sun_elevation_deg",
+            "symbol": "e☉",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi pusat Matahari terhadap horizontal lokal.",
+            "rule": "-90 deg <= e_sun <= 90 deg"
+          },
+          {
+            "field": "sun_visible_disk_fraction",
+            "symbol": "f☉(t)",
+            "unit": "1",
+            "value_type": "number",
+            "meaning": "Fraksi luas disk Matahari yang terlihat pada satu waktu.",
+            "rule": "0 <= f_sun(t) <= 1"
+          },
+          {
+            "field": "earth_azimuth_deg",
+            "symbol": "A⊕",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Azimuth pusat Bumi dari pengamat di Bulan.",
+            "rule": "0 deg <= A_earth < 360 deg"
+          },
+          {
+            "field": "earth_elevation_deg",
+            "symbol": "e⊕",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi pusat Bumi terhadap horizontal lokal.",
+            "rule": "-90 deg <= e_earth <= 90 deg"
+          },
+          {
+            "field": "direct_earth_visible",
+            "symbol": "V_D(t)",
+            "unit": null,
+            "value_type": "boolean",
+            "meaning": "Visibilitas geometris langsung Bumi di waktu t.",
+            "rule": "Boolean under the selected Earth visibility rule."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "SAMPLE-01",
+            "statement": "Sampel diurutkan berdasarkan waktu.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "time_utc",
+                "symbol": "t",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Waktu sampel atau event menurut konteks.",
+                "rule": "t0 <= t < t1; samples strictly increasing."
+              },
+              {
+                "field": "step_seconds",
+                "symbol": "Δt",
+                "unit": "s",
+                "value_type": "integer",
+                "meaning": "Langkah waktu sampling.",
+                "rule": "Delta_t > 0 s; integer."
+              }
+            ],
+            "acceptance_rule": "t_i < t_(i+1); t0 <= t_i < t1. Sampling nominal dan refinemen dibedakan."
+          },
+          {
+            "id": "SAMPLE-02",
+            "statement": "Fraksi disk Matahari berada pada rentang 0 sampai 1.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "sun_visible_disk_fraction",
+                "symbol": "f☉(t)",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Fraksi luas disk Matahari yang terlihat pada satu waktu.",
+                "rule": "0 <= f_sun(t) <= 1"
+              }
+            ],
+            "acceptance_rule": "0 <= f_sun(t) <= 1; tanpa dimensi. Tampilan persen = 100 * f_sun(t)."
+          },
+          {
+            "id": "SAMPLE-03",
+            "statement": "direct_earth_visible mengikuti aturan Bumi dan margin yang dicatat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "earth_clearance_deg",
+                "symbol": "c⊕",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Elevasi pusat Bumi relatif terhadap skyline pada arah Bumi.",
+                "rule": "c_earth = e_earth - H(A_earth)"
+              },
+              {
+                "field": "earth_angular_radius_deg",
+                "symbol": "r⊕",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Jari-jari sudut disk Bumi yang digunakan model.",
+                "rule": "r_earth > 0 deg; record the geometry or approximation."
+              },
+              {
+                "field": "earth_elevation_margin_deg",
+                "symbol": "m⊕",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Margin clearance untuk aturan pusat Bumi.",
+                "rule": "Rule center: c_earth >= m_earth. Margin is not accuracy tolerance."
+              },
+              {
+                "field": "earth_visibility_rule",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum center, any_sliver, full_disk; pemilihannya harus dicatat.",
+                "rule": null
+              },
+              {
+                "field": "direct_earth_visible",
+                "symbol": "V_D(t)",
+                "unit": null,
+                "value_type": "boolean",
+                "meaning": "Visibilitas geometris langsung Bumi di waktu t.",
+                "rule": "Boolean under the selected Earth visibility rule."
+              }
+            ],
+            "acceptance_rule": "center: V_D=(c_earth >= m_earth); any_sliver: V_D=(c_earth > -r_earth); full_disk: V_D=(c_earth >= r_earth). Sesuai metrics.md, margin diterapkan pada center; perubahan perlu kesepakatan."
+          },
+          {
+            "id": "SAMPLE-04",
+            "statement": "Nilai yang tidak tersedia dinyatakan dengan null dan penjelasan.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "data_state",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum fixture, computed, unavailable.",
+                "rule": null
+              },
+              {
+                "field": "warnings",
+                "symbol": null,
+                "unit": null,
+                "value_type": "array<string>",
+                "meaning": "Array string keterbatasan hasil.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "null berarti nilai tidak tersedia; bukan 0, false, string null, atau hasil pengganti diam-diam. Warnings/status menjelaskan alasannya."
+          }
+        ]
+      },
+      {
+        "name": "summary",
+        "description": "Ringkasan seluruh interval untuk membandingkan skenario.",
+        "fields": [
+          {
+            "field": "mean_visible_solar_disk_fraction",
+            "symbol": "f̄☉",
+            "unit": "1",
+            "value_type": "number",
+            "meaning": "Rata-rata berbobot durasi dari fraksi disk terlihat.",
+            "rule": "mean_f_sun = integral(f_sun(t) dt, [t0,t1)) / D; range [0,1].",
+            "description": "Rata-rata berbobot waktu dari bagian disk Matahari yang terlihat."
+          },
+          {
+            "field": "sunlit_time_fraction",
+            "symbol": "P☉",
+            "unit": "1",
+            "value_type": "number",
+            "meaning": "Fraksi durasi ketika ada bagian disk Matahari terlihat.",
+            "rule": "P_sun = integral(I[f_sun(t)>0] dt, [t0,t1)) / D; range [0,1].",
+            "description": "Fraksi waktu ketika ada bagian disk Matahari yang terlihat."
+          },
+          {
+            "field": "longest_dark_interval_seconds",
+            "symbol": "G_dark",
+            "unit": "s",
+            "value_type": "number",
+            "meaning": "Durasi terpanjang dengan f_sun(t)=0 di dalam interval.",
+            "rule": "0 s <= G_dark <= D",
+            "description": "Durasi gelap terpanjang dalam interval."
+          },
+          {
+            "field": "direct_earth_visible_fraction",
+            "symbol": "P_D",
+            "unit": "1",
+            "value_type": "number",
+            "meaning": "Fraksi durasi direct Earth terlihat.",
+            "rule": "P_D = integral(I[V_D(t)] dt, [t0,t1)) / D; range [0,1].",
+            "description": "Fraksi waktu ketika Bumi terlihat langsung menurut aturan yang digunakan."
+          },
+          {
+            "field": "longest_direct_gap_seconds",
+            "symbol": "G_D",
+            "unit": "s",
+            "value_type": "number",
+            "meaning": "Durasi terpanjang ketika V_D(t)=false dalam interval.",
+            "rule": "0 s <= G_D <= D",
+            "description": "Durasi terpanjang tanpa visibilitas langsung Bumi dalam interval."
+          }
+        ],
+        "requirements": [
+          {
+            "id": "SUMMARY-01",
+            "statement": "Fraksi menggunakan rentang 0 sampai 1.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "mean_visible_solar_disk_fraction",
+                "symbol": "f̄☉",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Rata-rata berbobot durasi dari fraksi disk terlihat.",
+                "rule": "mean_f_sun = integral(f_sun(t) dt, [t0,t1)) / D; range [0,1]."
+              },
+              {
+                "field": "sunlit_time_fraction",
+                "symbol": "P☉",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Fraksi durasi ketika ada bagian disk Matahari terlihat.",
+                "rule": "P_sun = integral(I[f_sun(t)>0] dt, [t0,t1)) / D; range [0,1]."
+              },
+              {
+                "field": "direct_earth_visible_fraction",
+                "symbol": "P_D",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Fraksi durasi direct Earth terlihat.",
+                "rule": "P_D = integral(I[V_D(t)] dt, [t0,t1)) / D; range [0,1]."
+              }
+            ],
+            "acceptance_rule": "0 <= fraksi <= 1; tampilan persen = 100 * fraksi."
+          },
+          {
+            "id": "SUMMARY-02",
+            "statement": "Durasi menggunakan detik.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "longest_dark_interval_seconds",
+                "symbol": "G_dark",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi terpanjang dengan f_sun(t)=0 di dalam interval.",
+                "rule": "0 s <= G_dark <= D"
+              },
+              {
+                "field": "longest_direct_gap_seconds",
+                "symbol": "G_D",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi terpanjang ketika V_D(t)=false dalam interval.",
+                "rule": "0 s <= G_D <= D"
+              }
+            ],
+            "acceptance_rule": "0 s <= durasi <= D; satuan API s."
+          },
+          {
+            "id": "SUMMARY-03",
+            "statement": "Rata-rata fraksi disk dibedakan dari fraksi waktu bercahaya.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "mean_visible_solar_disk_fraction",
+                "symbol": "f̄☉",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Rata-rata berbobot durasi dari fraksi disk terlihat.",
+                "rule": "mean_f_sun = integral(f_sun(t) dt, [t0,t1)) / D; range [0,1]."
+              },
+              {
+                "field": "sunlit_time_fraction",
+                "symbol": "P☉",
+                "unit": "1",
+                "value_type": "number",
+                "meaning": "Fraksi durasi ketika ada bagian disk Matahari terlihat.",
+                "rule": "P_sun = integral(I[f_sun(t)>0] dt, [t0,t1)) / D; range [0,1]."
+              },
+              {
+                "field": "sample_weight_seconds",
+                "symbol": "wᵢ",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi yang diwakili sampel dalam pendekatan piecewise-constant.",
+                "rule": "0 < w_i <= Delta_t; sum(w_i) = D."
+              }
+            ],
+            "acceptance_rule": "mean_f_sun menghitung rata-rata luas disk terlihat; P_sun menghitung durasi f_sun>0. Pendekatan piecewise-constant: mean_f_sun = sum(f_i*w_i)/D. Metode integrasi aktual dicatat."
+          },
+          {
+            "id": "SUMMARY-04",
+            "statement": "Gap yang terpotong batas awal atau akhir interval harus diberi penjelasan.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "longest_dark_truncated",
+                "symbol": null,
+                "unit": null,
+                "value_type": "boolean",
+                "meaning": "Gap gelap mencapai batas data sehingga durasi penuh di luar interval tidak diketahui.",
+                "rule": "true atau false; catat sisi awal/akhir bila diperlukan."
+              },
+              {
+                "field": "longest_gap_truncated",
+                "symbol": null,
+                "unit": null,
+                "value_type": "boolean",
+                "meaning": "Gap kontak mencapai batas data sehingga durasi penuh di luar interval tidak diketahui.",
+                "rule": "true atau false; bukan satuan waktu."
+              },
+              {
+                "field": "warnings",
+                "symbol": null,
+                "unit": null,
+                "value_type": "array<string>",
+                "meaning": "Array string keterbatasan hasil.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Laporkan keterpotongan awal/akhir. Field boolean truncation merupakan tambahan kontrak yang belum ada pada v1; sementara dokumentasikan pada warnings."
+          }
+        ]
+      },
+      {
+        "name": "events",
+        "description": "Kejadian untuk menampilkan waktu menuju sunset dan Earthset.",
+        "event_names": [
+          "sunset",
+          "earthset"
+        ],
+        "fields_per_event": [
+          {
+            "field": "status",
+            "symbol": null,
+            "unit": null,
+            "value_type": "enum",
+            "meaning": "Enum predicted, not_within_interval, not_computed, unavailable untuk event.",
+            "rule": null
+          },
+          {
+            "field": "time_utc",
+            "symbol": "t",
+            "unit": null,
+            "value_type": "UTC_timestamp",
+            "meaning": "Waktu sampel atau event menurut konteks.",
+            "rule": "t0 <= t < t1; samples strictly increasing."
+          },
+          {
+            "field": "seconds_from_start",
+            "symbol": "τ_event",
+            "unit": "s",
+            "value_type": "number",
+            "meaning": "Durasi event dari awal interval, bukan jam komputer pengguna.",
+            "rule": "tau_event = elapsed_seconds(t_event,t0); 0 <= tau_event < D."
+          }
+        ],
+        "allowed_statuses": [
+          "predicted",
+          "not_within_interval",
+          "not_computed",
+          "unavailable"
+        ],
+        "requirements": [
+          {
+            "id": "EVENT-01",
+            "statement": "Kejadian mengikuti aturan visibilitas yang sama dengan sampel.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "sun_visibility_rule",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Aturan fraksi disk, penghalang, dan batas numerik yang dipakai.",
+                "rule": null
+              },
+              {
+                "field": "earth_visibility_rule",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum center, any_sliver, full_disk; pemilihannya harus dicatat.",
+                "rule": null
+              },
+              {
+                "field": "status",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum predicted, not_within_interval, not_computed, unavailable untuk event.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "sunset: f_sun>0 -> f_sun=0; earthset: V_D=true -> false. Baseline memakai awal interval; landing_time terpisah masih usulan."
+          },
+          {
+            "id": "EVENT-02",
+            "statement": "seconds_from_start dihitung dari start_utc.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "event_time_utc",
+                "symbol": "t_event",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Waktu event yang berhasil diprediksi di interval evaluasi.",
+                "rule": "For predicted: t0 <= t_event < t1."
+              },
+              {
+                "field": "start_utc",
+                "symbol": "t₀",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Awal interval evaluasi.",
+                "rule": "UTC timestamp with Z."
+              },
+              {
+                "field": "seconds_from_start",
+                "symbol": "τ_event",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Durasi event dari awal interval, bukan jam komputer pengguna.",
+                "rule": "tau_event = elapsed_seconds(t_event,t0); 0 <= tau_event < D."
+              }
+            ],
+            "acceptance_rule": "predicted: tau_event=elapsed_seconds(t_event,t0); 0 <= tau_event < D. Status lainnya: time_utc=null dan seconds_from_start=null."
+          },
+          {
+            "id": "EVENT-03",
+            "statement": "Tidak menemukan kejadian dalam interval tidak boleh diartikan sebagai tidak pernah terjadi.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "status",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum predicted, not_within_interval, not_computed, unavailable untuk event.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "not_within_interval berarti tidak ditemukan dalam [t0,t1), bukan never."
+          },
+          {
+            "id": "EVENT-04",
+            "statement": "Ketelitian pencarian waktu kejadian dicatat.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "event_refinement_seconds",
+                "symbol": "ε_t",
+                "unit": "s",
+                "value_type": "number",
+                "meaning": "Resolusi/batas pencarian numerik waktu event yang dilaporkan.",
+                "rule": "epsilon_t > 0 s; numerical refinement is not guaranteed physical error."
+              },
+              {
+                "field": "validation_tolerances",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Batas penerimaan per metrik, termasuk satuannya, yang harus disepakati tim.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Catat epsilon_t dalam s dan metode refinemen. Resolusi numerik bukan jaminan galat fisik; toleransi validasi perlu disepakati dan dibuktikan."
+          }
+        ]
+      },
+      {
+        "name": "provenance",
+        "description": "Jejak asal data dan metode penghasil hasil.",
+        "required_information": [
+          {
+            "id": "PROV-01",
+            "statement": "Versi algoritma atau identitas commit.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "algorithm_version",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Versi algoritma atau identitas commit.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Versi algoritma atau identitas commit."
+          },
+          {
+            "id": "PROV-02",
+            "statement": "Nama berkas terrain dan kernel yang digunakan.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "filename",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Nama berkas masukan yang benar-benar dipakai.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Nama berkas terrain dan kernel yang digunakan."
+          },
+          {
+            "id": "PROV-03",
+            "statement": "Versi atau checksum berkas sumber.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "version_or_sha256",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Versi sumber atau SHA-256 berkas; checksum bukan jaminan akurasi.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Versi atau checksum berkas sumber."
+          },
+          {
+            "id": "PROV-04",
+            "statement": "Sumber dataset.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "source_url",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Alamat sumber dataset.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Sumber dataset."
+          },
+          {
+            "id": "PROV-05",
+            "statement": "Parameter pengolahan terrain.",
+            "unit_applicability": "lihat_unit_per_quantity",
+            "quantities": [
+              {
+                "field": "input_parameters",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Parameter aktual pemrosesan untuk mereproduksi run.",
+                "rule": null
+              },
+              {
+                "field": "azimuth_step_deg",
+                "symbol": "ΔA",
+                "unit": "deg",
+                "value_type": "number",
+                "meaning": "Resolusi arah profil skyline.",
+                "rule": "Delta_A > 0 deg; document circular interpolation."
+              },
+              {
+                "field": "max_range_km",
+                "symbol": "R_max",
+                "unit": "km",
+                "value_type": "number",
+                "meaning": "Jangkauan terrain dari pengamat.",
+                "rule": "R_max > 0 km; record the actual value."
+              },
+              {
+                "field": "dem_resolution_m",
+                "symbol": "Δx",
+                "unit": "m",
+                "value_type": "number",
+                "meaning": "Resolusi spasial/ukuran sel terrain yang dipakai.",
+                "rule": "Delta_x > 0 m; cell size is not height error."
+              }
+            ],
+            "acceptance_rule": "Parameter pengolahan terrain."
+          },
+          {
+            "id": "PROV-06",
+            "statement": "Frame dan konversi waktu yang digunakan.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "body_fixed_frame",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "ID frame Bulan ME yang kompatibel dengan DEM dan ephemeris; metode menunjuk MOON_ME_DE440_ME421.",
+                "rule": "Verifikasi frame aktual, metadata DEM dan definisi lintang."
+              },
+              {
+                "field": "start_utc",
+                "symbol": "t₀",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Awal interval evaluasi.",
+                "rule": "UTC timestamp with Z."
+              },
+              {
+                "field": "end_utc",
+                "symbol": "t₁",
+                "unit": null,
+                "value_type": "UTC_timestamp",
+                "meaning": "Batas akhir interval evaluasi.",
+                "rule": "t1 > t0; end is excluded."
+              }
+            ],
+            "acceptance_rule": "Frame dan konversi waktu yang digunakan."
+          }
+        ]
+      },
+      {
+        "name": "data_state_and_warnings",
+        "description": "Status dan keterbatasan hasil agar tidak disalahartikan.",
+        "fields": [
+          {
+            "field": "schema_version",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID versi bentuk data.",
+            "rule": null
+          },
+          {
+            "field": "analysis_id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID run/hasil analisis.",
+            "rule": null
+          },
+          {
+            "field": "data_state",
+            "symbol": null,
+            "unit": null,
+            "value_type": "enum",
+            "meaning": "Enum fixture, computed, unavailable.",
+            "rule": null
+          },
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "allowed_data_states": [
+          "fixture",
+          "computed",
+          "unavailable"
+        ],
+        "requirements": [
+          {
+            "id": "STATE-01",
+            "statement": "Fixture tidak ditampilkan sebagai hasil lunar nyata.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "data_state",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum fixture, computed, unavailable.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Fixture tidak ditampilkan sebagai hasil lunar nyata."
+          },
+          {
+            "id": "STATE-02",
+            "statement": "Computed berarti sudah dihitung, bukan otomatis tervalidasi.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "data_state",
+                "symbol": null,
+                "unit": null,
+                "value_type": "enum",
+                "meaning": "Enum fixture, computed, unavailable.",
+                "rule": null
+              },
+              {
+                "field": "validation_report",
+                "symbol": null,
+                "unit": null,
+                "value_type": "metadata",
+                "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Computed berarti sudah dihitung, bukan otomatis tervalidasi."
+          },
+          {
+            "id": "STATE-03",
+            "statement": "Ketiadaan data tidak diubah menjadi nol.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "warnings",
+                "symbol": null,
+                "unit": null,
+                "value_type": "array<string>",
+                "meaning": "Array string keterbatasan hasil.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Ketiadaan data tidak diubah menjadi nol."
+          },
+          {
+            "id": "STATE-04",
+            "statement": "Hasil geometri tidak diklaim sebagai daya listrik atau sambungan radio yang terjamin.",
+            "unit_applicability": "tidak_ada_satuan_fisik",
+            "quantities": [
+              {
+                "field": "direct_earth_visible",
+                "symbol": "V_D(t)",
+                "unit": null,
+                "value_type": "boolean",
+                "meaning": "Visibilitas geometris langsung Bumi di waktu t.",
+                "rule": "Boolean under the selected Earth visibility rule."
+              },
+              {
+                "field": "warnings",
+                "symbol": null,
+                "unit": null,
+                "value_type": "array<string>",
+                "meaning": "Array string keterbatasan hasil.",
+                "rule": null
+              }
+            ],
+            "acceptance_rule": "Hasil geometri tidak diklaim sebagai daya listrik atau sambungan radio yang terjamin."
+          }
+        ]
+      }
+    ]
+  },
+  "raw_inputs_managed_by_ds": {
+    "description": "Bahan yang diolah DS; tidak dikirim mentah melalui endpoint analisis Go.",
+    "items": [
+      "Model elevasi terrain beserta metadata frame dan acuannya.",
+      "Data ephemeris serta orientasi Bulan yang kompatibel.",
+      "Informasi frame, konstanta benda langit, dan konversi waktu.",
+      "Daftar titik pengamat yang bersumber.",
+      "Data acuan untuk validasi hasil."
+    ]
+  },
+  "proposed_contract_additions": {
+    "status": "belum_tersedia_dalam_schema_v1",
+    "agree_before_implementation": [
+      {
+        "fields": [
+          {
+            "field": "sun_clearance_deg",
+            "symbol": "c☉",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi pusat Matahari relatif terhadap skyline pada arah Matahari.",
+            "rule": "c_sun = e_sun - H(A_sun)"
+          },
+          {
+            "field": "earth_clearance_deg",
+            "symbol": "c⊕",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi pusat Bumi relatif terhadap skyline pada arah Bumi.",
+            "rule": "c_earth = e_earth - H(A_earth)"
+          }
+        ],
+        "purpose": "Menunjukkan seberapa jauh pusat target berada di atas atau di bawah skyline."
+      },
+      {
+        "fields": [
+          {
+            "field": "sunrise",
+            "symbol": null,
+            "unit": null,
+            "value_type": "event",
+            "meaning": "Sinar Matahari kembali terlihat.",
+            "rule": "f_sun=0 -> f_sun>0"
+          },
+          {
+            "field": "earthrise",
+            "symbol": null,
+            "unit": null,
+            "value_type": "event",
+            "meaning": "Bumi kembali terlihat langsung.",
+            "rule": "V_D=false -> true"
+          }
+        ],
+        "purpose": "Menampilkan kapan cahaya atau jalur langsung tersedia kembali."
+      },
+      {
+        "fields": [
+          {
+            "field": "windows.sun",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<UTC_interval>",
+            "meaning": "Daftar jendela dengan start_utc dan end_utc.",
+            "rule": "Intervals [a_j,b_j) with f_sun>0"
+          },
+          {
+            "field": "windows.earth",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<UTC_interval>",
+            "meaning": "Daftar jendela dengan start_utc dan end_utc.",
+            "rule": "Intervals [a_j,b_j) with V_D=true"
+          }
+        ],
+        "purpose": "Daftar interval mulai dan selesai untuk timeline serta jendela operasional."
+      },
+      {
+        "fields": [
+          {
+            "field": "longest_dark_truncated",
+            "symbol": null,
+            "unit": null,
+            "value_type": "boolean",
+            "meaning": "Gap gelap mencapai batas data sehingga durasi penuh di luar interval tidak diketahui.",
+            "rule": "true atau false; catat sisi awal/akhir bila diperlukan."
+          },
+          {
+            "field": "longest_gap_truncated",
+            "symbol": null,
+            "unit": null,
+            "value_type": "boolean",
+            "meaning": "Gap kontak mencapai batas data sehingga durasi penuh di luar interval tidak diketahui.",
+            "rule": "true atau false; bukan satuan waktu."
+          }
+        ],
+        "purpose": "Menandai durasi yang terpotong batas periode pengamatan."
+      },
+      {
+        "fields": [
+          {
+            "field": "sun_elevation_min_deg",
+            "symbol": "e☉,min",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi Matahari minimum dalam interval.",
+            "rule": "-90 deg <= e_sun_min <= 90 deg"
+          },
+          {
+            "field": "sun_elevation_max_deg",
+            "symbol": "e☉,max",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Elevasi Matahari maksimum dalam interval.",
+            "rule": "e_sun_min <= e_sun_max <= 90 deg"
+          }
+        ],
+        "purpose": "Ringkasan sudut elevasi Matahari sepanjang interval."
+      }
+    ]
+  },
+  "relay_extension": {
+    "priority": "setelah_baseline_tervalidasi",
+    "first_scope": "Satu konfigurasi relay yang didefinisikan dengan jelas.",
+    "required_configuration": [
+      {
+        "id": "RELAY_CONFIG-01",
+        "statement": "scenario_id",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "scenario_id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID skenario relay.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "scenario_id"
+      },
+      {
+        "id": "RELAY_CONFIG-02",
+        "statement": "configuration_id",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "configuration_id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID versi konfigurasi orbit/node/aturan relay.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "configuration_id"
+      },
+      {
+        "id": "RELAY_CONFIG-03",
+        "statement": "Sumber serta versi model orbit atau ephemeris relay.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "orbit_model",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Parameter/ephemeris orbit dengan frame, epoch, sumber dan satuan masing-masing.",
+            "rule": null
+          },
+          {
+            "field": "source_url",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Alamat sumber dataset.",
+            "rule": null
+          },
+          {
+            "field": "version_or_sha256",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Versi sumber atau SHA-256 berkas; checksum bukan jaminan akurasi.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Sumber serta versi model orbit atau ephemeris relay."
+      },
+      {
+        "id": "RELAY_CONFIG-04",
+        "statement": "Epoch dan frame orbit.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "orbit_model",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Parameter/ephemeris orbit dengan frame, epoch, sumber dan satuan masing-masing.",
+            "rule": null
+          },
+          {
+            "field": "body_fixed_frame",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID frame Bulan ME yang kompatibel dengan DEM dan ephemeris; metode menunjuk MOON_ME_DE440_ME421.",
+            "rule": "Verifikasi frame aktual, metadata DEM dan definisi lintang."
+          }
+        ],
+        "acceptance_rule": "Epoch dan frame orbit."
+      },
+      {
+        "id": "RELAY_CONFIG-05",
+        "statement": "Posisi node permukaan jika digunakan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "node_positions",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Posisi node permukaan dengan frame dan satuan koordinat yang eksplisit.",
+            "rule": null
+          },
+          {
+            "field": "body_fixed_frame",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID frame Bulan ME yang kompatibel dengan DEM dan ephemeris; metode menunjuk MOON_ME_DE440_ME421.",
+            "rule": "Verifikasi frame aktual, metadata DEM dan definisi lintang."
+          }
+        ],
+        "acceptance_rule": "Posisi node permukaan jika digunakan."
+      },
+      {
+        "id": "RELAY_CONFIG-06",
+        "statement": "Aturan penghalang serta kelayakan geometris setiap sambungan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "input_parameters",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Parameter aktual pemrosesan untuk mereproduksi run.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Aturan penghalang serta kelayakan geometris setiap sambungan."
+      }
+    ],
+    "required_results": [
+      {
+        "id": "RELAY_RESULT-01",
+        "statement": "Ketersediaan jalur relay pada setiap waktu sampel.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "relay_path_visible",
+            "symbol": "V_R(t)",
+            "unit": null,
+            "value_type": "boolean",
+            "meaning": "Ada setidaknya satu jalur relay yang seluruh hop-nya lolos model pada waktu t.",
+            "rule": "V_R(t) = OR_path(AND_hop L_hop(t)); evaluate all hops at the same t."
+          }
+        ],
+        "acceptance_rule": "Ketersediaan jalur relay pada setiap waktu sampel."
+      },
+      {
+        "id": "RELAY_RESULT-02",
+        "statement": "Fraksi waktu jalur direct atau relay tersedia.",
+        "unit_applicability": "lihat_unit_per_quantity",
+        "quantities": [
+          {
+            "field": "relay_assisted_visible_fraction",
+            "symbol": "P_C",
+            "unit": "1",
+            "value_type": "number",
+            "meaning": "Fraksi durasi direct ATAU jalur relay tersedia.",
+            "rule": "P_C = integral(I[V_C(t)] dt, [t0,t1)) / D; range [0,1]."
+          }
+        ],
+        "acceptance_rule": "Fraksi waktu jalur direct atau relay tersedia."
+      },
+      {
+        "id": "RELAY_RESULT-03",
+        "statement": "Gap terpanjang yang masih tersisa setelah direct dan relay digabung.",
+        "unit_applicability": "lihat_unit_per_quantity",
+        "quantities": [
+          {
+            "field": "longest_remaining_gap_seconds",
+            "symbol": "G_C",
+            "unit": "s",
+            "value_type": "number",
+            "meaning": "Durasi terpanjang ketika V_C(t)=false dalam interval.",
+            "rule": "0 s <= G_C <= D; G_C <= G_D only for matched baseline and additive relay paths."
+          }
+        ],
+        "acceptance_rule": "Gap terpanjang yang masih tersisa setelah direct dan relay digabung."
+      },
+      {
+        "id": "RELAY_RESULT-04",
+        "statement": "Asumsi dan keterbatasan setiap konfigurasi.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          },
+          {
+            "field": "configuration_id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID versi konfigurasi orbit/node/aturan relay.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Asumsi dan keterbatasan setiap konfigurasi."
+      }
+    ],
+    "rules": [
+      {
+        "id": "RELAY_RULE-01",
+        "statement": "Semua sambungan sepanjang jalur kontak langsung harus tersedia pada waktu yang sama.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "relay_path_visible",
+            "symbol": "V_R(t)",
+            "unit": null,
+            "value_type": "boolean",
+            "meaning": "Ada setidaknya satu jalur relay yang seluruh hop-nya lolos model pada waktu t.",
+            "rule": "V_R(t) = OR_path(AND_hop L_hop(t)); evaluate all hops at the same t."
+          }
+        ],
+        "acceptance_rule": "V_R(t)=OR_path(AND_hop L_hop(t)); semua hop dievaluasi pada waktu t yang sama."
+      },
+      {
+        "id": "RELAY_RULE-02",
+        "statement": "Store-and-forward memerlukan model dan label terpisah.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "scenario_id",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "ID skenario relay.",
+            "rule": null
+          },
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Store-and-forward tidak dihitung oleh predicate jalur serentak; harus model/label berbeda."
+      },
+      {
+        "id": "RELAY_RULE-03",
+        "statement": "Orbit ilustratif diberi label ilustratif.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "data_state",
+            "symbol": null,
+            "unit": null,
+            "value_type": "enum",
+            "meaning": "Enum fixture, computed, unavailable.",
+            "rule": null
+          },
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Orbit ilustratif diberi penanda fixture/illustrative pada metadata; jangan dianggap orbit operasional tervalidasi."
+      },
+      {
+        "id": "RELAY_RULE-04",
+        "statement": "Hasil tidak diklaim sebagai link budget atau kapasitas radio.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Output adalah peluang geometris; tidak mengklaim link budget dB, data rate bit/s, atau kontinuitas layanan."
+      }
+    ]
+  },
+  "ml_optional": {
+    "required_for_baseline": false,
+    "training_target": null,
+    "status": "belum_ada_target_yang_disepakati",
+    "before_training_agree": [
+      {
+        "id": "ML_AGREE-01",
+        "statement": "Apa tepatnya yang diprediksi.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "prediction_schema",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Target/output ML beserta tipe, satuan dan maknanya.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Apa tepatnya yang diprediksi."
+      },
+      {
+        "id": "ML_AGREE-02",
+        "statement": "Manfaatnya dibandingkan perhitungan geometri baseline.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Manfaatnya dibandingkan perhitungan geometri baseline."
+      },
+      {
+        "id": "ML_AGREE-03",
+        "statement": "Fitur masukan dan label target.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "feature_schema",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Daftar fitur ML beserta tipe, satuan dan aturan preprocessing.",
+            "rule": null
+          },
+          {
+            "field": "prediction_schema",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Target/output ML beserta tipe, satuan dan maknanya.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Fitur masukan dan label target."
+      },
+      {
+        "id": "ML_AGREE-04",
+        "statement": "Sumber serta provenance data pelatihan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "source_url",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Alamat sumber dataset.",
+            "rule": null
+          },
+          {
+            "field": "version_or_sha256",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Versi sumber atau SHA-256 berkas; checksum bukan jaminan akurasi.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Sumber serta provenance data pelatihan."
+      },
+      {
+        "id": "ML_AGREE-05",
+        "statement": "Pembagian data latih, validasi, dan uji yang mencegah kebocoran data.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Pembagian data latih, validasi, dan uji yang mencegah kebocoran data."
+      },
+      {
+        "id": "ML_AGREE-06",
+        "statement": "Metrik evaluasi dan batas penerimaan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_tolerances",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Batas penerimaan per metrik, termasuk satuannya, yang harus disepakati tim.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Metrik evaluasi dan batas penerimaan."
+      },
+      {
+        "id": "ML_AGREE-07",
+        "statement": "Cakupan penggunaan, ketidakpastian, serta kondisi model harus menolak prediksi.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "coverage",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Cakupan spasial, waktu dan data valid; bagian nodata tidak dianggap tersedia.",
+            "rule": null
+          },
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Cakupan penggunaan, ketidakpastian, serta kondisi model harus menolak prediksi."
+      }
+    ],
+    "if_a_model_is_approved_provide": [
+      {
+        "id": "ML_DELIVERY-01",
+        "statement": "model_version",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "model_version",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Versi model ML jika kelak disetujui.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "model_version"
+      },
+      {
+        "id": "ML_DELIVERY-02",
+        "statement": "Definisi fitur dan satuannya.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "feature_schema",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Daftar fitur ML beserta tipe, satuan dan aturan preprocessing.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Definisi fitur dan satuannya."
+      },
+      {
+        "id": "ML_DELIVERY-03",
+        "statement": "Definisi output dan satuannya.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "prediction_schema",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Target/output ML beserta tipe, satuan dan maknanya.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Definisi output dan satuannya."
+      },
+      {
+        "id": "ML_DELIVERY-04",
+        "statement": "Ringkasan evaluasi pada data uji.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Ringkasan evaluasi pada data uji."
+      },
+      {
+        "id": "ML_DELIVERY-05",
+        "statement": "Batas cakupan model.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "coverage",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Cakupan spasial, waktu dan data valid; bagian nodata tidak dianggap tersedia.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Batas cakupan model."
+      },
+      {
+        "id": "ML_DELIVERY-06",
+        "statement": "Cara menjalankan inferensi dan kebutuhan dependensinya.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "input_parameters",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Parameter aktual pemrosesan untuk mereproduksi run.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Cara menjalankan inferensi dan kebutuhan dependensinya."
+      }
+    ]
+  },
+  "backend_integration": {
+    "current_ds_route": "POST /analyze",
+    "current_ds_request_fields": [
+      "input"
+    ],
+    "current_ml_route": "POST /predict",
+    "current_ml_request_fields": [
+      "input",
+      "ds_result"
+    ],
+    "baseline_request_flag": {
+      "run_ml": false
+    },
+    "delivery_options": [
+      "JSON hasil prahitung per lokasi dan interval.",
+      "JSON hasil layanan DS untuk permintaan yang didukung."
+    ],
+    "current_limits": {
+      "maximum_each_downstream_response_bytes": 1048576,
+      "default_shared_ds_ml_deadline_seconds": 20
+    },
+    "remaining_integration_work": [
+      "Menghubungkan server DS ke pipeline yang sebenarnya.",
+      "Menyepakati kontrak lunar final dengan backend dan frontend.",
+      "Menyelaraskan format hasil pipeline dengan format konsumsi frontend.",
+      "Memilih berkas hasil prahitung atau desain job terpisah untuk proses yang melampaui batas sinkron."
+    ],
+    "current_limits_definition": [
+      {
+        "field": "maximum_each_downstream_response_bytes",
+        "symbol": "B_max",
+        "unit": "byte",
+        "value_type": "integer",
+        "meaning": "Batas respons tiap downstream pada Go saat ini.",
+        "rule": "B_max = 1048576 byte = 1 MiB"
+      },
+      {
+        "field": "default_shared_ds_ml_deadline_seconds",
+        "symbol": "τ_api",
+        "unit": "s",
+        "value_type": "number",
+        "meaning": "Default deadline gabungan pemanggilan DS/ML saat ini.",
+        "rule": "Default tau_api = 20 s; configurable."
+      }
+    ]
+  },
+  "validation_handoff": {
+    "provide": [
+      {
+        "id": "VALIDATION-01",
+        "statement": "Minimal satu kasus validasi dengan input dan sumber acuan yang jelas.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          },
+          {
+            "field": "source_url",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Alamat sumber dataset.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Minimal satu kasus validasi dengan input dan sumber acuan yang jelas."
+      },
+      {
+        "id": "VALIDATION-02",
+        "statement": "Hasil pembandingan serta selisih yang ditemukan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          },
+          {
+            "field": "validation_tolerances",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Batas penerimaan per metrik, termasuk satuannya, yang harus disepakati tim.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Hasil pembandingan serta selisih yang ditemukan."
+      },
+      {
+        "id": "VALIDATION-03",
+        "statement": "Pemeriksaan perubahan hasil ketika langkah waktu atau arah diperhalus.",
+        "unit_applicability": "lihat_unit_per_quantity",
+        "quantities": [
+          {
+            "field": "step_seconds",
+            "symbol": "Δt",
+            "unit": "s",
+            "value_type": "integer",
+            "meaning": "Langkah waktu sampling.",
+            "rule": "Delta_t > 0 s; integer."
+          },
+          {
+            "field": "azimuth_step_deg",
+            "symbol": "ΔA",
+            "unit": "deg",
+            "value_type": "number",
+            "meaning": "Resolusi arah profil skyline.",
+            "rule": "Delta_A > 0 deg; document circular interpolation."
+          },
+          {
+            "field": "validation_report",
+            "symbol": null,
+            "unit": null,
+            "value_type": "metadata",
+            "meaning": "Input, referensi, metode evaluasi, hasil dan keterbatasan.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Pemeriksaan perubahan hasil ketika langkah waktu atau arah diperhalus."
+      },
+      {
+        "id": "VALIDATION-04",
+        "statement": "Daftar keterbatasan yang belum terselesaikan.",
+        "unit_applicability": "tidak_ada_satuan_fisik",
+        "quantities": [
+          {
+            "field": "warnings",
+            "symbol": null,
+            "unit": null,
+            "value_type": "array<string>",
+            "meaning": "Array string keterbatasan hasil.",
+            "rule": null
+          }
+        ],
+        "acceptance_rule": "Daftar keterbatasan yang belum terselesaikan."
+      }
+    ],
+    "important": "Hasil latihan Bumi dan target komunikasi penggantinya tidak boleh diberi label sebagai hasil visibilitas Bumi dari permukaan Bulan."
+  },
+  "document_revision": "units-and-symbols-v1.1",
+  "document_usage": {
+    "kind": "Dokumen handoff, bukan contoh hasil komputasi atau payload endpoint siap kirim.",
+    "schema_status": "Metadata simbol/satuan di dokumen ini belum ditambahkan ke schema runtime; tidak mengubah format API yang ada.",
+    "field_naming": "Nama field tetap mengikuti handoff sebelumnya. Quantity turunan/refinemen diberi definisi dokumentasi; jangan menganggap seluruhnya field schema v1.",
+    "references": [
+      "docs/science/metrics.md",
+      "docs/science/method.md",
+      "docs/architecture/contracts.md",
+      "backend/main.go"
+    ],
+    "unit_policy": {
+      "1": "Tak berdimensi: fraksi atau hitungan. Bukan persen pada payload.",
+      "deg": "Derajat, simbol °; angka JSON tidak berisi simbol °.",
+      "m": "Meter.",
+      "km": "Kilometer. 1 km=1000 m.",
+      "s": "Detik untuk durasi.",
+      "byte": "Byte untuk ukuran payload.",
+      "null_unit": "Timestamp, boolean, ID, enum dan metadata tidak ditempeli satuan fisik pada representasi ini; lihat value_type. unit:null berbeda dari nilai hasil null.",
+      "percent": "Tampilan persen = 100 * fraksi; angka payload tetap fraksi 0 sampai 1."
+    },
+    "time_policy": "Timestamp UTC bukan angka detik. elapsed_seconds/advance_seconds harus memakai konversi waktu DS yang konsisten dengan kebijakan leap second; jangan langsung mengurangkan string tanggal.",
+    "symbols": {
+      "☉": "Matahari",
+      "⊕": "Bumi",
+      "φ": "Lintang; phi pada formula ASCII",
+      "λ_E": "Bujur timur; lambda_E pada formula ASCII",
+      "Δ": "Langkah atau selisih; Delta pada formula ASCII",
+      "τ": "Durasi; tau pada formula ASCII",
+      "ε": "Resolusi numerik; epsilon pada formula ASCII",
+      "I[condition]": "1 jika benar, 0 jika salah",
+      "integral": "Integrasi berbobot durasi",
+      "sum": "Penjumlahan",
+      "OR": "Setidaknya satu kondisi benar",
+      "AND": "Semua kondisi benar",
+      ">=": "Lebih besar atau sama dengan",
+      "<=": "Lebih kecil atau sama dengan",
+      "->": "Transisi kondisi",
+      "null": "Nilai hasil kosong. unit:null menandai satuan fisik tidak berlaku pada representasi itu; bukan hasil kosong."
+    },
+    "numeric_accuracy": "Tidak ada angka akurasi lunar baru yang diasumsikan. Toleransi dan hasil validasi aktual harus disepakati serta dilaporkan.",
+    "ml_policy": "Tidak ada simbol/satuan prediksi ML universal sebelum target dipilih. feature_schema dan prediction_schema wajib menetapkan tipe serta satuan tiap variabel ketika model disetujui.",
+    "formula_notation": "Simbol pada field symbol memakai Unicode UTF-8. Formula memakai alias ASCII yang ekuivalen untuk kompatibilitas editor/terminal; referensi simbol ada di symbols."
+  },
+  "planetary_context": {
+    "target_body": "Moon",
+    "observer_location": "lunar_surface",
+    "geometry_targets": [
+      "Sun",
+      "Earth"
+    ],
+    "body_fixed_frame_reference": "MOON_ME_DE440_ME421",
+    "frame_status": "Mengikuti docs/science/method.md; metadata DEM, konvensi lintang dan transformasi aktual tetap diverifikasi.",
+    "horizon_method": "Terrain lunar dan kelengkungan benda sesuai model DS; elevasi target dibandingkan skyline.",
+    "atmospheric_refraction": "Tidak memakai koreksi pembiasan atmosfer Bumi untuk horizon lunar.",
+    "earth_rehearsal_scope": "Hasil latihan Bumi dan target GEO pengganti bukan hasil lunar; tidak otomatis memenuhi handoff ini.",
+    "scientific_status": "Dokumen kebutuhan/definisi, bukan hasil lunar tervalidasi."
+  }
+}

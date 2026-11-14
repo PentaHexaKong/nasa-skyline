@@ -4,7 +4,7 @@ Implements curated-location provenance and capability reporting for R1, R2, R4, 
 
 ## Registry and API
 
-The authoritative reconciliation inventory is `src/skyline_mission_science/siteCatalog.json` in the independent mission-science engine. It contains 11 distinct locations. `scripts/buildSiteCatalog.py` regenerates it from the existing DS registry, all eight frontend exports, the three published ROI centers and the actual independent-engine rasters and kernels. DS coordinates and observer heights must exactly match each corresponding frontend export during generation. Source-artifact, DS-registry, DEM and kernel SHA-256 identities accompany the records. The original engine revision is pinned in `sourceEvidence`.
+The authoritative reconciliation inventory is `src/skyline_mission_science/siteCatalog.json` in the independent mission-science engine. It contains 11 distinct locations. `scripts/buildSiteCatalog.py` regenerates it from the existing DS registry, all eight frontend exports, the three published ROI centers and the actual independent-engine rasters and kernels. DS coordinates and observer heights must exactly match each corresponding frontend export during generation. Source-artifact, DS-registry, DEM and kernel SHA-256 identities accompany the records. The INT-4 engine revision is pinned in `sourceEvidence`.
 
 `GET /v1/site-catalog` returns `schemaVersion` equal to `site-catalog/1.0.0`. The existing Go bridge exposes it at `GET /api/mission-science/v1/site-catalog`. JSON Schema is published as `siteCatalog.schema.json`. The application also includes a real registry snapshot in `examples/siteCatalog.json`. Existing `/v1/sites` consumers continue receiving their three-item list with the existing field names. The existing capabilities and evaluation response contracts retain their versions.
 
@@ -33,7 +33,7 @@ Frontend lunar observers add 2 m to exported ground elevations, which are rounde
 - `shackleton-ridge`. Algorithm-selected PGDA 69 maximum within a ridge search. CR1 has different latitude, longitude, additional observer height and frame declaration. Mapping remains unresolved.
 - `viganella`. Earth rehearsal location. Lunar evaluation and relay replay are unsupported.
 
-Required coordinate mappings stop at this unresolved state. Admitting any frontend ID to scientific evaluation requires authoritative frame and observer evidence, sufficient registered DEM coverage and a verified engine profile. Coordinate-source strings copied from DS are retained as reported claims. The uncertainty claim for Apollo 11 is isolated in `reportedCoordinateUncertaintyM` with an independently-unverified status.
+Required coordinate mappings stop at this unresolved state. Admitting any frontend ID to scientific evaluation requires authoritative frame and observer evidence, sufficient registered DEM coverage and a verified engine profile. Coordinate-source strings taken from DS are retained as reported claims. The uncertainty claim for Apollo 11 is isolated in `reportedCoordinateUncertaintyM` with an independently-unverified status.
 
 ## Equivalence tolerances
 
@@ -55,21 +55,18 @@ Apollo 11 is rejected by the polar DEM interpolation coverage check. Missing loc
 
 From the independent mission-science repository, use its Python environment to run `python scripts/buildSiteCatalog.py`, followed by `python -m pytest -q -p no:cacheprovider`. Run `go test -count=1 ./...` and `go vet ./...` from the application's `backend` directory. Catalog schemas derive from `CatalogResponse.model_json_schema()`.
 
-The original orbital engine and frozen INT-4 are preserved. The independent relay adapter retains its verified trajectory and coordinate registry. No aliases are introduced in either existing engine.
+The pinned INT-4 engine is not modified. The independent relay adapter retains its verified trajectory and coordinate registry. No aliases are introduced in either existing engine.
 
-## Frozen INT-4 scope inventory
+## INT-4 scope inventory
 
-The `externalRegistries` field retains all three configured mission scopes, their waypoint coordinates and ground-elevation declarations, the configured antenna-height set, scientific profiles and source-file hashes. This inventory is read directly from frozen configuration. Its scenario identifiers retain their existing API meaning. They cannot resolve through the independent point-site catalog.
+The `externalRegistries` field retains all three configured mission scopes, their waypoint coordinates and ground-elevation declarations, the configured antenna-height set, scientific profiles and source-file hashes. This inventory is read directly from the pinned INT-4 configuration. Its scenario identifiers retain their existing API meaning. They cannot resolve through the independent point-site catalog.
 
 `S1_CR1_CONNECTING_RIDGE` places its mast at latitude -89.462 and signed east longitude -137.1, with configured ground elevation 1949.4 m. Its rover follows five waypoints and uses a 1.8 m antenna. The named ROI reference is CR1. Its mast and moving rover have their own positions. `S2_SR1_SHACKLETON_RIM` and `S3_GR1_DE_GERLACHE_RIM` start at the quoted ROI latitude/longitude, with rounded ground elevations and changing traverses. Equivalence of their full observers to the independent zero-height, interpolated-DEM point observers remains unverified. The catalog creates no scope aliases.
 
 ## Verification results
 
-- Independent mission-science Python suite: 35 tests, including 12 catalog tests (direct three-coordinate assertions and the frozen-source generation guard).
-- DS Python suite: 57 tests, with one network test deselected by configuration. On Windows, set `PROJ_DATA` and `PROJ_LIB` to the scientific environment's Rasterio `proj_data` directory, which avoids an incompatible PostgreSQL system PROJ database.
-- Independent relay-adapter Python suite: 18 tests, zero skipped, with `LUNAR_DATA_ROOT` set to its real seven-kernel directory.
-- The full Go suite: 23 top-level tests and 20 subtests, zero failed and zero skipped, with the live mission-science, relay comparison and frozen scientific-engine integrations enabled. It runs in the `golang:1.24-alpine` image in the Compose network with the entire application repository mounted read-only, which preserves access to the contract fixtures. Host `go vet ./...` is clean.
-- All seven Compose services report healthy. The deployed catalog exactly matches the packaged JSON, with 11 point entries, three frozen scope inventories and an empty alias map. The legacy site endpoint returns CR1, GR1 and SR1.
-- The browser form lists 11 location options, with the eight unsupported or unresolved entries disabled and CR1 selected. A one-hour geometric CR1 evaluation from 2025-01-01T00:00:00Z completes and carries its requested site in scientific provenance.
-
-The test suites emit dependency deprecation warnings. One DS network test is deselected. Authoritative source realization and registered terrain for the unmatched frontend sites remain unresolved.
+- Mission-science Python suite: 85 passed, including the catalog tests (direct three-coordinate assertions and the pinned-source generation guard).
+- DS Python suite: 55 passed, 1 deselected.
+- Relay-adapter Python suite: 14 passed, 6 skipped (live-service tests skip without running services).
+- Go suite: `go test ./...` passes. Run live Go tests with the services running: start the stack with `docker compose up --build`, then run `cd backend && go test -count=1 ./...` with the scientific service URLs set.
+- The catalog contains 11 point entries, three INT-4 scope inventories and an empty alias map. The legacy site endpoint returns CR1, GR1 and SR1.

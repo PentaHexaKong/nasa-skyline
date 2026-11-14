@@ -2,24 +2,22 @@
 
 Executed against the independent mission-science implementation and the existing application.
 
-## Actual suite results
+## Current suite results
 
 | Check | Result |
 | --- | --- |
-| Mission-science Python suite | 61 passed, zero failures or skips, 59.685 s |
-| Relay regression suite | 18 passed, zero failures or skips, 20.165 s |
-| Frontend suite | 46 passed, zero failures or pending tests |
-| Go suite with live integrations | 57 passing cases comprising 30 top-level tests and 27 subtests, zero failures or skips, 182.879 s |
-| TypeScript | `pnpm --dir frontend exec tsc --noEmit` passed |
-| Go static checks | `go vet ./...` passed |
+| Mission-science Python suite | 85 passed |
+| Relay-adapter Python suite | 14 passed, 6 skipped (live-service tests skip without running services) |
+| Frontend Vitest suite | 100 passed |
+| Go suite (`go test ./...`) | passes |
+
+Run live Go tests with the services running: start the stack with `docker compose up --build`, then run `cd backend && go test -count=1 ./...` with the scientific service URLs set.
 
 The new scientific tests cover exact zero-height regression, observer radius and height-specific cache identities, multiple real heights, raw-skyline monotonicity, analytical spherical flat-terrain dip, independent panel-normal dot products, numerical panel quadrature, apparent-profile heights, typed route errors, missing DEM data, unsupported radial heights and immutable scenario publication.
 
-The real-data response was requested through the Go proxy and validated against the generated mast response schema. Its PowerFeed and lookup manifest passed their JSON Schemas. The deployed Python package hashes match the local source package. Running the actual feed-export CLI twice retained identical immutable feed content. The frontend regression loads both Windows and deployed Linux source-version scenarios explicitly.
+The real-data response was requested through the Go proxy and validated against the generated mast response schema. Its PowerFeed and lookup manifest passed their JSON Schemas. Running the actual feed-export CLI twice retained identical immutable feed content. The frontend regression loads source-version scenarios explicitly.
 
 Frontend scenario-file selection enumerates the discovered entries into a Map, and the full suite covers it. Legacy feed loading is covered by the existing fixture tests.
-
-All seven Compose services report healthy and the mission page returns HTTP 200.
 
 ## Measured scientific comparisons
 
@@ -27,11 +25,11 @@ The benchmark uses 2025-01-06T00:00:00Z, 86400 ET seconds, geometric profile, an
 
 | Site | Cold terrain/result evaluation s | Memoized repeat s |
 | --- | --- | --- |
-| CR1 | 74.329 | 8.598 |
-| GR1 | 67.376 | 7.137 |
-| SR1 | 66.177 | 8.620 |
+| CR1 | 18.589 | 2.401 |
+| GR1 | 17.715 | 2.397 |
+| SR1 | 17.134 | 2.334 |
 
-Cold runs used empty temporary terrain/result caches. OS file caching was uncontrolled. Measurements exclude HTTP transfer and file export. Regenerate full requests, identities, metrics and convergence samples with `python scripts/benchmarkMastPower.py` in the mission-science environment.
+Cold runs use empty temporary terrain/result caches. OS file caching is uncontrolled. Runtime is macOS arm64, Python 3.12. Measurements exclude HTTP transfer and file export. Regenerate full requests, identities, metrics and convergence samples with `python scripts/benchmarkMastPower.py` in the mission-science environment.
 
 All height comparisons passed the raw-horizon nonincrease check at 1e-9 degree numerical tolerance. At CR1 the ground any-disk availability was 1.0 while mean visible solar fraction was about 0.505122. At 2 m the mean fraction was 1.0. Center-based Earth availability changed from approximately 0.362571 at ground to 0.752560 at 2 m. Changes between elevated heights retain their signed values and include sub-second differences over the day.
 
@@ -39,7 +37,7 @@ CR1 at 10 m was evaluated at 3600, 1800 and 900 s track cadence. Earth availabil
 
 ## Scope and limitations
 
-The original orbital engine and frozen mission definitions are unmodified. The implementation extends the independent environment evaluator, adds an additive versioned mast/power route, and provides compatible typed frontend data and scenario-keyed feeds. Mast placement optimization remains outside this work.
+The implementation does not modify the pinned INT-4 engine or its mission definitions. It extends the independent environment evaluator, adds an additive versioned mast/power route, and provides compatible typed frontend data and scenario-keyed feeds. Mast placement optimization remains outside this work.
 
 Mast height is radial metres above interpolated local terrain. Every height rebuilds its skyline and recomputes SPICE observer tracks, intervals and blackout metrics. The existing effective zero-degree horizon floor remains part of the scientific profile.
 

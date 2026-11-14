@@ -1,48 +1,48 @@
 [
   {
-    "path": "Nasa/src/geometry/spiceGeometry.py",
+    "path": "int4/src/geometry/spiceGeometry.py",
     "sha256": "2e64b3b840b2e34b7064ada50bd4da9886c21cc53a1d576de714a13ce5645759",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "adapted"
   },
   {
-    "path": "Nasa/src/geometry/lunarSites.py",
+    "path": "int4/src/geometry/lunarSites.py",
     "sha256": "b17edb9017d848211d5788a703d34f65550b3737d64ae69c5e630b1386eb5808",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "adapted"
   },
   {
-    "path": "Nasa/src/geometry/terrainHorizon.py",
+    "path": "int4/src/geometry/terrainHorizon.py",
     "sha256": "a6dec40c554afc0f203db37670f1fbfda5c37dd31ca1207373d5025d28187adb",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "adapted"
   },
   {
-    "path": "Nasa/src/geometry/visibility.py",
+    "path": "int4/src/geometry/visibility.py",
     "sha256": "48fa5a104e9ee72596e84b8568d96f54ffd677cbdb3d0fdd00ffcae67e0d970e",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "reference only"
   },
   {
-    "path": "Nasa/src/communication/coverageMetrics.py",
+    "path": "int4/src/communication/coverageMetrics.py",
     "sha256": "48de806c4f6ab91ac80a36e54361f9c777afa3539d87e2402944f4e25f2a105e",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "reference only"
   },
   {
-    "path": "Nasa/src/validation/verifyCoverage.py",
+    "path": "int4/src/validation/verifyCoverage.py",
     "sha256": "dc76ff978f74ccb4616c6099605e6fcb119f0bc71e112a4ed49ed45c41be0f76",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "reference only"
   },
   {
-    "path": "Nasa/src/optimization/problemDefinition.py",
+    "path": "int4/src/optimization/problemDefinition.py",
     "sha256": "998bbac0ca77749ce1a8bbfa8de9e392021c0976471ff5a9a2dbd9bb0cda2d27",
     "revision": "827d9af913c95f8701c8fe4fb2480c6078019279",
     "reuse": "reference only"
   },
   {
-    "path": "Nasa-int4/src/science/engine.py",
+    "path": "int4/src/science/engine.py",
     "sha256": "dabd0265b905536544a7dbfd516b6f19f496242adb23ed2bb37263e7e5a067ab",
     "revision": "331f43afdaa0a543e665a59a940d3e5ddca8eded",
     "reuse": "reference only"
