@@ -1,0 +1,88 @@
+{
+  "kind": "relay_orbits",
+  "synthetic": false,
+  "retrieved": "2026-11-14",
+  "status_as_of": "2026-11-14",
+  "conventions": {
+    "distances": "km; velocities km/s; angles degrees; time UTC",
+    "use": "Geometric line of sight only. Planned orbits, not flown ones: not a radio link, capacity or guaranteed contact."
+  },
+  "relays": [
+    {
+      "id": "lunar-pathfinder",
+      "name": "Lunar Pathfinder",
+      "operator": "ESA/SSTL",
+      "status": "Not launched; \"due 2027\" on Blue Ghost Mission 2",
+      "label": "indicative",
+      "source": {
+        "title": "SSTL Lunar Pathfinder Service Guide, section 3.4.3 (footer V004, file V2-2)",
+        "url": "https://www.sstl.co.uk/getmedia/edaaa697-405c-458d-8394-97f83130d54a/Lunar-Pathfinder-Service-Guide-V2-2.pdf",
+        "sha256": "f80f064cc4b3292e9243e64f11cd6d806cf874811f3b9e84074f02c71b74a39f",
+        "quote": "these parameters are indicative and may be subject to change as the design progresses and when the launch date is set"
+      },
+      "elements": {
+        "a_km": 5740,
+        "periselene_alt_km": 673,
+        "aposelene_alt_km": 7331,
+        "e": 0.58,
+        "i_deg": 54.856,
+        "raan_deg": 0,
+        "argp_deg": 86.322
+      },
+      "not_published": ["epoch", "mean_anomaly", "reference_frame"],
+      "assumptions": "The frame is assumed to be Earth-Moon axes, as in AAS 25-758. RAAN and mean anomaly are swept because the guide fixes no epoch or frame for them. Operational ephemeris goes to customers only (Kiteworks)."
+    },
+    {
+      "id": "im-lunar-data-network",
+      "name": "Intuitive Machines Lunar Data Network",
+      "operator": "Intuitive Machines",
+      "status": "Not launched; first satellite (Altus-1) on IM-3, early 2027",
+      "label": "preliminary design",
+      "source": {
+        "title": "Brack et al., AAS 25-758, Preliminary Design of the Lunar Data Network Constellation, Tables 2 and 3",
+        "url": "https://ntrs.nasa.gov/api/citations/20250006883/downloads/AAS_25_758_LDN_design_v7.pdf",
+        "sha256": "157268dff34def1b9521c54f7416f8114e2cd6bc3666e4118a32949f9a2db326"
+      },
+      "epoch_utc": "2027-03-01T00:01:09.2",
+      "state_frame": "Moon-centred ICRF (Table 3); treated as SPICE J2000",
+      "elements_frame": "Moon-centred Earth-Moon axes at the epoch, inertial velocity (Table 2; established by comparison with Table 3, see validation/relay-orbits.md)",
+      "satellites": [
+        {
+          "id": "LDN-1",
+          "r_km": [-498.38, 406.4, 3574.46],
+          "v_km_s": [-1.5057, 0.0321, -0.1559],
+          "elements": { "a_km": 12002.3, "i_deg": 56.24, "e": 0.678, "raan_deg": 40.1, "argp_deg": 90.03, "m_deg": 0.62 }
+        },
+        {
+          "id": "LDN-2",
+          "r_km": [1399.33, -2297.64, -20301.43],
+          "v_km_s": [0.264, -0.0014, 0.0279],
+          "elements": { "a_km": 12005.1, "i_deg": 56.14, "e": 0.706, "raan_deg": 41.18, "argp_deg": 89.64, "m_deg": 183.51 }
+        },
+        {
+          "id": "LDN-3",
+          "r_km": [9755.11, -11.22, -9165.94],
+          "v_km_s": [0.2545, 0.4087, -0.3031],
+          "elements": { "a_km": 11988.1, "i_deg": 56.71, "e": 0.695, "raan_deg": 161.41, "argp_deg": 90.32, "m_deg": 60.37 }
+        },
+        {
+          "id": "LDN-4",
+          "r_km": [6942.65, 15259.4, -8474.55],
+          "v_km_s": [-0.2483, 0.0439, 0.2244],
+          "elements": { "a_km": 12013.8, "i_deg": 55.84, "e": 0.683, "raan_deg": 160.82, "argp_deg": 90.69, "m_deg": 236.41 }
+        },
+        {
+          "id": "LDN-5",
+          "r_km": [-4569.24, 15449.53, -8975.25],
+          "v_km_s": [-0.2257, -0.0017, -0.2686],
+          "elements": { "a_km": 11997.3, "i_deg": 57.24, "e": 0.698, "raan_deg": 279.93, "argp_deg": 89.84, "m_deg": 114.83 }
+        }
+      ],
+      "known_issues": [
+        "LDN-1 disagrees between the paper's tables: Table 3 gives radius 3631.8 km, Table 2 gives 3869.3 km. The other four agree within 5 km. Table 3 is used.",
+        "Table 2 RAAN differs from Table 3 by a constant 241.49 deg for all five, so its zero point is unstated. Table 3 is used for absolute placement.",
+        "The paper says LDN-1's plane and phase are unconstrained, so LDN-1 alone is illustrative."
+      ]
+    }
+  ]
+}
