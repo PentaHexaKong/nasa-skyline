@@ -26,6 +26,7 @@ export default defineConfig({
       prerender: { enabled: true, crawlLinks: true, failOnError: true },
       // The full 3D view is linked only from client-rendered UI, so the crawler cannot find it: list one page per site.
       pages: [
+        { path: '/explore' },
         ...sites.flatMap(({ id }) => [{ path: `/explore/${id}` }, { path: `/analyze/${id}` }]),
         ...['mast', 'relay', 'rover'].map((piece) => ({ path: `/analyze/scenario/${piece}` })),
       ],

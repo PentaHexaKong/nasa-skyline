@@ -32,7 +32,7 @@ function ExplorePage() {
   const { hydrated, current, track, minute, m } = view
   const comms = earthTarget(data, track, current.date, minute)
   const ref = comms?.reference
-  const back = `/?from=${data.site.id}&day=${current.date}&t=${minute}#space`
+  const back = `/explore?from=${data.site.id}&day=${current.date}&t=${minute}#space`
 
   return (
     <Shell>

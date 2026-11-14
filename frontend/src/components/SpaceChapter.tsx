@@ -201,7 +201,7 @@ export function SpaceChapter({
         className={`pointer-events-none absolute inset-x-4 flex flex-col gap-3 sm:right-(--page-edge) sm:left-(--page-edge) sm:flex-row sm:items-start sm:justify-between ${full ? 'top-4' : 'top-(--sky-fade)'}`}
       >
         <div className="scene-text grid max-w-[30rem] gap-3">
-          <Eyebrow pip>06 · The whole system, at true scale</Eyebrow>
+          <Eyebrow pip>The whole system, at true scale</Eyebrow>
           <h2 id="space-title" className="text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] leading-[1.05] font-medium text-balance">
             Pick a place on the Moon.
           </h2>
