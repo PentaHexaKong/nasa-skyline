@@ -241,6 +241,9 @@ export function Landscape({
   const root = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const pinRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const siteRef = useRef<HTMLSpanElement>(null)
+  const sunRef = useRef<HTMLSpanElement>(null)
+  const sunArrowRef = useRef<SVGSVGElement>(null)
   const modeRef = useRef(mode)
   modeRef.current = mode
   const moment = useMemo(() => (tracks ? pickMoment(tracks) : null), [tracks])
@@ -362,11 +365,53 @@ export function Landscape({
       return false
     }
 
+    const sunFar = toward(moment.sun.az, moment.sun.el).multiplyScalar(60)
     const placePins = () => {
       const list = pinsRef.current
       const cell = (2 * r) / (inner.meta.n - 1)
       const wide = w >= 1024
       const placed: [number, number][] = []
+
+      // The landing site, always: every other pin and the Sun are read against it.
+      const site = siteRef.current
+      if (site) {
+        point.set(0, 0, 0).project(camera)
+        const x = ((point.x + 1) / 2) * w
+        const y = ((1 - point.y) / 2) * h
+        const off = point.z > 1 || x < 0 || x > w || y < 0 || y > h
+        if (!off) placed.push([x, y])
+        site.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`
+        site.style.visibility = off ? 'hidden' : 'visible'
+      }
+
+      // Where the Sun is, in the Sunlight look: on screen at its true direction, else at the edge, pointing to it.
+      const sun = sunRef.current
+      const arrow = sunArrowRef.current
+      if (sun && arrow) {
+        point.copy(sunFar).project(camera)
+        const behind = point.z > 1
+        let dx = behind ? -point.x : point.x
+        let dy = behind ? point.y : -point.y
+        const inside = !behind && Math.abs(dx) <= 0.9 && Math.abs(dy) <= 0.85
+        if (!inside) {
+          const k = 1 / Math.max(Math.abs(dx) / 0.9, Math.abs(dy) / 0.85, 1e-6)
+          dx *= k
+          dy *= k
+        }
+        let x = ((dx + 1) / 2) * w
+        let y = ((dy + 1) / 2) * h
+        // Off screen, the pointer stays on the landscape's side, clear of the reading column (left on wide screens,
+        // top on narrow ones); its arrow still turns toward the Sun.
+        if (!inside) {
+          if (wide) x = Math.max(w * 0.5, x)
+          else y = Math.max(h * 0.55, y)
+        }
+        sun.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`
+        sun.style.visibility = modeRef.current === 'sun' ? 'visible' : 'hidden'
+        arrow.style.display = inside ? 'none' : 'block'
+        arrow.style.rotate = `${Math.atan2(dy, dx)}rad`
+      }
+
       list.forEach((pin, i) => {
         const node = pinRefs.current[i]
         if (!node) return
@@ -463,6 +508,21 @@ export function Landscape({
   return (
     <div ref={root} aria-hidden className="absolute inset-0 overflow-hidden bg-black">
       <canvas ref={canvas} className={`size-full transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`} />
+      <span ref={siteRef} className="landscape-pin invisible absolute top-0 left-0">
+        <span className="absolute bottom-0 left-0 flex -translate-x-1/2 flex-col items-center gap-1">
+          <span className="rounded-full bg-white px-3 py-1 text-sm font-medium whitespace-nowrap text-black">Landing site</span>
+          <span className="h-5 w-px bg-white" />
+          <span className="size-3 translate-y-[6px] rounded-full border-2 border-white bg-black" />
+        </span>
+      </span>
+      <span ref={sunRef} className="landscape-pin invisible absolute top-0 left-0">
+        <span className="absolute flex -translate-1/2 items-center gap-1.5 rounded-full border border-sun/60 bg-black/80 px-3 py-1 text-sm whitespace-nowrap text-sun">
+          <svg ref={sunArrowRef} viewBox="0 0 12 12" aria-hidden className="size-3 fill-current">
+            <path d="M2 2 L10 6 L2 10 Z" />
+          </svg>
+          Sun
+        </span>
+      </span>
       {pins.map((p, i) => (
         <span
           key={p.label}

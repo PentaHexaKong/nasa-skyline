@@ -174,6 +174,8 @@ const MODES: {
   question: string
   body: string
   says: string
+  /** The guide's "Tell me more": the same idea in plain words, a step further, for whoever wants it. */
+  more: string
   pose: 'explorer-pointing' | 'explorer-happy' | 'explorer-wondering'
 }[] = [
   {
@@ -182,6 +184,7 @@ const MODES: {
     question: 'Could we land and move here?',
     body: 'Look for steep slopes and crater edges. They can make landing and moving harder. The view shows terrain reconstructed from NASA elevation data.',
     says: 'Looks flat… until you get closer.',
+    more: 'Every point here is a real height, measured by a laser on NASA’s Lunar Reconnaissance Orbiter, about one every 40 metres. The bowl is Shackleton crater, kilometres deep. The gentler rim around it is where a lander would aim.',
     pose: 'explorer-pointing',
   },
   {
@@ -190,6 +193,7 @@ const MODES: {
     question: 'Will sunlight reach our equipment?',
     body: 'Near the south pole, the Sun stays low. A ridge can catch light while a nearby crater floor stays in shadow.',
     says: 'Higher ground can see the Sun, while the lower ground next to it may not.',
+    more: 'At the pole the Sun never climbs high. It circles round the horizon, only a degree or two up, so a ridge can hide it for days. A spot counts as sunlit as soon as any sliver of the Sun clears the ridge.',
     pose: 'explorer-happy',
   },
   {
@@ -198,6 +202,7 @@ const MODES: {
     question: 'Can we send a signal directly to Earth?',
     body: 'Earth sits low near the south pole. Terrain can interrupt the direct view. A relay spacecraft can offer another route for communication.',
     says: 'Can we still see home from here?',
+    more: 'From the Moon, Earth hardly moves across the sky: it wobbles a few degrees over a month. Near the pole it sits right on the horizon, so a hill can hide it. When it does, a relay satellite has to pass the message on.',
     pose: 'explorer-wondering',
   },
 ]
@@ -272,7 +277,7 @@ function Discovery({ site }: { site: Summary }) {
   const reading =
     moment &&
     (mode.id === 'sun'
-      ? `At ${momentLabel(moment.m)} the Sun is ${moment.m.sun.el.toFixed(1)}° up: ${Math.round(moment.sunShare * 100)} % of this ground is in sunlight.`
+      ? `Shown at ${momentLabel(moment.m)}, the month's lowest Sun that still reaches the site, picked for its long shadows. The Sun is ${moment.m.sun.el.toFixed(1)}° up: ${Math.round(moment.sunShare * 100)} % of this ground is in sunlight.`
       : mode.id === 'earth' && moment.m.earth && moment.earthShare != null
         ? `At the same moment Earth is ${moment.m.earth.el.toFixed(1)}° up: ${Math.round(moment.earthShare * 100)} % of this ground has it in direct view.`
         : mode.id === 'ground'
@@ -309,7 +314,7 @@ function Discovery({ site }: { site: Summary }) {
                   aria-selected={i === index}
                   onClick={() => go(i)}
                   className={`cursor-pointer rounded-full px-4 py-1.5 text-sm transition-colors duration-200 ${
-                    i === index ? 'bg-story text-white' : 'text-ink-muted hover:text-ink'
+                    i === index ? 'bg-brand text-bg' : 'text-ink-muted hover:text-ink'
                   }`}
                 >
                   {m.tab}
@@ -325,9 +330,17 @@ function Discovery({ site }: { site: Summary }) {
           <div className="flex items-end justify-between gap-4">
             <div key={mode.pose} className="rise flex items-end gap-3">
               <Mascot pose={mode.pose} className="size-24 shrink-0 sm:size-28" />
-              <Bubble className="mb-6">{mode.says}</Bubble>
+              <Bubble
+                className="mb-6"
+                more={{
+                  text: mode.more,
+                  link: { href: `/analyze/${site.site.id}`, label: 'See the full horizon chart' },
+                }}
+              >
+                {mode.says}
+              </Bubble>
             </div>
-            <p className="eyebrow hidden max-w-[22rem] text-right text-ink-faint lg:block">
+            <p className="eyebrow hidden max-w-[22rem] rounded bg-black/70 px-2 py-1 text-right text-ink-muted lg:block">
               {shortName(site)} · LOLA terrain{moment ? `, ${moment.km} km square` : ''} · shadows traced inside this square only
             </p>
           </div>
@@ -371,7 +384,7 @@ function PickPlace({ summaries }: { summaries: Summary[] }) {
                     aria-pressed={on}
                     onClick={() => setChosen(s.site.id)}
                     className={`grid h-full w-full cursor-pointer content-start gap-4 rounded-xl border p-5 text-left transition-[border-color,background-color] duration-200 ${
-                      on ? 'border-story bg-story/10' : 'border-line bg-surface/40 hover:border-line-strong'
+                      on ? 'border-brand bg-white/[0.04]' : 'border-line bg-surface/40 hover:border-line-strong'
                     }`}
                   >
                     <span className="eyebrow text-ink-faint">
@@ -431,8 +444,7 @@ function Ending() {
         <div className="grid gap-5">
           <p className="eyebrow text-story-ink">Your next discovery</p>
           <h2 id="ending-title" className="text-[clamp(2rem,1.3rem+3vw,3.75rem)] leading-[1.02] font-medium text-balance">
-            You’ve seen the place.
-            <br />
+            You’ve seen the place. <br />
             Now change the conditions.
           </h2>
           <ul className="grid gap-1 text-lg text-ink-muted">

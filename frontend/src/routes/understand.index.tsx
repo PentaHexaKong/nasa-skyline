@@ -35,6 +35,9 @@ export const Route = createFileRoute('/understand/')({
   component: UnderstandPage,
 })
 
+/** The scientist's pose beside each chapter, in chapter order. */
+const POSES = ['scientist-sun', 'scientist-question', 'scientist-globe', 'scientist-earth'] as const
+
 type Chapter = { id: string; short: string; pose: MoonPose }
 
 /** One per `[data-moon-chapter]` section, in page order. The Moon swaps sides; the text takes the other side. */
@@ -128,8 +131,7 @@ function Landing() {
   return (
     <Column id="top" label="understand-title">
       <h1 id="understand-title" className="rise text-[clamp(2.5rem,1.6rem+4vw,4.75rem)] leading-[0.98] font-medium text-balance">
-        A different place.
-        <br />A different <span className="text-flare">perspective.</span>
+        A different place. <br />A different <span className="text-flare">perspective.</span>
       </h1>
       <p className="rise max-w-[40ch] text-lg leading-relaxed text-ink-muted text-pretty [--i:1]">
         Follow the light around the Moon. Change the time, explore the landscape, and discover when the Sun and Earth can come into view.
@@ -188,7 +190,19 @@ function LessonChapter({
       </header>
       <See data={data} />
       {extra}
-      {!dropWhy && <p className="max-w-[60ch] leading-relaxed text-ink-muted text-pretty">{l.why}</p>}
+      {/* The scientist asks the class the lesson's question; the why stays one tap away for whoever wants it. */}
+      <div className="flex items-end gap-3">
+        <Mascot pose={POSES[n - 1] ?? 'scientist-question'} className="size-24 shrink-0" />
+        <Bubble
+          className="mb-6"
+          more={{
+            text: dropWhy ? l.teacher.goal : l.why,
+            link: { href: `/understand/${l.id}`, label: 'Open the full lesson' },
+          }}
+        >
+          {l.teacher.ask}
+        </Bubble>
+      </div>
       {stand.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {stand.map((t) => (
