@@ -2,6 +2,7 @@ import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { type Moment, moment } from '~/components/Moment'
+import { useReducedMotion } from '~/lib/motion'
 import type { Summary, Track } from './data'
 import { minutes, peakMinute } from './time'
 import { useTracks } from './useTracks'
@@ -70,6 +71,7 @@ export function useSiteView(data: Summary, { day, t }: SiteSearch, go: (s: SiteS
 /** Sweeps the time from now to the last sample of the day in about 6 s; with reduced motion it steps 10 min at a time. */
 function usePlayDay(track: Track | undefined, minute: number, setLive: (v: number | undefined) => void, commit: (v: number) => void) {
   const [playing, setPlaying] = useState(false)
+  const reduced = useReducedMotion()
   const at = useRef(minute)
   at.current = minute
   const out = useRef({ setLive, commit })
@@ -79,7 +81,6 @@ function usePlayDay(track: Track | undefined, minute: number, setLive: (v: numbe
     const first = track.t_min[0] ?? 0
     const last = track.t_min.at(-1) ?? 1439
     let t = at.current >= last - 5 ? first : at.current
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const rate = (last - first) / 6000 // minutes per ms
     let prev = performance.now()
     let frame = 0
@@ -111,7 +112,7 @@ function usePlayDay(track: Track | undefined, minute: number, setLive: (v: numbe
       cancelAnimationFrame(frame)
       clearInterval(timer)
     }
-  }, [playing, track])
+  }, [playing, track, reduced])
   const toggle = () => {
     if (playing) {
       setPlaying(false)

@@ -27,6 +27,7 @@ import {
   sunWords,
 } from '~/lib/investigation'
 import { shortName } from '~/lib/mission'
+import { reducedMotion } from '~/lib/motion'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'
@@ -493,7 +494,7 @@ function Try({
             type="button"
             onClick={() =>
               document.getElementById('observe-title')?.scrollIntoView({
-                behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+                behavior: reducedMotion().matches ? 'auto' : 'smooth',
                 block: 'start',
               })
             }

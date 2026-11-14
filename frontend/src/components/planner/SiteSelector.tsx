@@ -6,7 +6,7 @@ import { type LandingStatus, type SitePlan, shortName, siteResult } from '~/lib/
 import { longDate, shortDate } from '~/lib/time'
 
 /** One status per site and day, from the runs the plan already holds: the same rule as Result's Works. */
-const statusAt = (s: SitePlan, i: number): LandingStatus => s.runs.find((r) => i >= r.from && i < r.to)?.status ?? 'outside'
+export const statusAt = (s: SitePlan, i: number): LandingStatus => s.runs.find((r) => i >= r.from && i < r.to)?.status ?? 'outside'
 
 /** Why a previewed day fails, from its status alone. The chosen day uses `siteResult`, which names the missed limit. */
 const WHY: Record<LandingStatus, string> = {
@@ -158,13 +158,33 @@ type YearProps = {
   onScrub: (i: number) => void
   onDrag: (on: boolean) => void
   onCommit: (i: number) => void
+  /** `large`: taller rows for a page of its own (Dates). */
+  size?: 'compact' | 'large'
+  /** Name each site's status on the day in view under the strip. */
+  readout?: boolean
+  /** The one line of help under the title. */
+  hint?: string
 }
 
 /**
  * The year as a strip, one row per site: a full bar where the landing works, a half bar where both are in view at
  * touchdown but the stay misses a limit, an empty track otherwise, so the status reads from shape as well as colour.
  */
-export function Year({ plan, day, playing, nextGood, onPlay, onNext, onHover, onScrub, onDrag, onCommit }: YearProps) {
+export function Year({
+  plan,
+  day,
+  playing,
+  nextGood,
+  onPlay,
+  onNext,
+  onHover,
+  onScrub,
+  onDrag,
+  onCommit,
+  size = 'compact',
+  readout = false,
+  hint = 'Hover to preview on the Moon. Drag, play or click to choose a day.',
+}: YearProps) {
   const n = plan.dates.length
   const strip = useRef<HTMLDivElement>(null)
   const drag = useRef(false)
@@ -174,8 +194,8 @@ export function Year({ plan, day, playing, nextGood, onPlay, onNext, onHover, on
     return Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n)))
   }
   const W = 1000
-  const ROW = 10
-  const GAP = 6
+  const ROW = size === 'large' ? 18 : 10
+  const GAP = size === 'large' ? 10 : 6
   const H = plan.sites.length * (ROW + GAP) - GAP
   const x = (i: number) => (i / n) * W
   const months = plan.dates.flatMap((d, i) =>
@@ -200,7 +220,7 @@ export function Year({ plan, day, playing, nextGood, onPlay, onNext, onHover, on
       <div className="flex items-start justify-between gap-4">
         <div className="grid gap-0.5">
           <p className="font-medium">Landing days across the year</p>
-          <p className="text-xs text-ink-muted">Hover to preview on the Moon. Drag, play or click to choose a day.</p>
+          <p className="text-xs text-ink-muted">{hint}</p>
         </div>
         <div className="flex shrink-0 gap-2">
           <button
@@ -327,6 +347,29 @@ export function Year({ plan, day, playing, nextGood, onPlay, onNext, onHover, on
           </div>
         </div>
       </div>
+      {readout && (
+        <p aria-live="polite" className="flex flex-wrap items-baseline gap-x-5 gap-y-1 border-t border-line pt-3 text-sm">
+          <span className="readout text-ink-muted">
+            {longDate(date)}
+            {day === plan.index ? ' · chosen' : ''}
+          </span>
+          {plan.sites.map((s) => {
+            const st = statusAt(s, day)
+            return (
+              <span key={s.data.site.id} className="inline-flex items-baseline gap-1.5">
+                <span className="text-ink-muted">{shortName(s.data)}</span>
+                {st === 'go' ? (
+                  <span className="text-go">✓ Works</span>
+                ) : st === 'outside' ? (
+                  <span className="text-ink-faint">Not computed</span>
+                ) : (
+                  <span className="text-miss">× {st === 'arrive' ? 'Stay misses a limit' : 'Hidden at touchdown'}</span>
+                )}
+              </span>
+            )
+          })}
+        </p>
+      )}
     </div>
   )
 }

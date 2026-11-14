@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { reducedMotion } from '~/lib/motion'
 
 /** Native modal focus, Escape handling and inert background, with a short entrance and exit. */
 export function SmoothDialog({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
@@ -25,7 +26,7 @@ export function SmoothDialog({ open, onClose, children }: { open: boolean; onClo
           dialog.close()
           setPresent(false)
         },
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 180,
+        reducedMotion().matches ? 0 : 180,
       )
       return () => window.clearTimeout(timer)
     }

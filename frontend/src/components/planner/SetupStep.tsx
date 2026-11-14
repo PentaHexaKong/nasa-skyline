@@ -1,6 +1,7 @@
-import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowLeftIcon, ArrowRightIcon, XIcon } from '@phosphor-icons/react'
 import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DayField, NumberField, TimeSlider } from '~/components/Controls'
+import { Deck } from '~/components/planner/Deck'
 import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import { ProfileCards } from '~/components/planner/ProfilePicker'
 import type { Plan, PlanActions } from '~/components/planner/plan'
@@ -10,75 +11,33 @@ import { SiteList, siteAnswer, useDayPreview, Year } from '~/components/planner/
 import { Eyebrow } from '~/components/Shell'
 import { Mascot, type MascotPose } from '~/components/story'
 import { REQUIREMENTS, shortName, siteResult, verdict } from '~/lib/mission'
+import { useReducedMotion } from '~/lib/motion'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
 
 type OptionId = 'mission' | 'sites' | 'when' | 'limits'
-type Corner = 'tl' | 'tr' | 'bl' | 'br'
 
-/**
- * The four choices, at uneven corners around the Moon. `pos` places each one per breakpoint; `depth` is how far it follows
- * the pointer, `drift` sets its own float, `tilt` turns it toward the Moon.
- */
-const OPTIONS: {
-  id: OptionId
-  label: string
-  title: string
-  desc: string
-  corner: Corner
-  pos: string
-  /** Its zero-gravity drift: speed in px/s and the starting heading in radians. */
-  drift: { speed: number; angle: number }
-  style: Record<string, string | number>
-}[] = [
+/** The four questions, in deck order. */
+const OPTIONS: { id: OptionId; label: string; title: string; desc: string }[] = [
   {
     id: 'mission',
     label: 'Mission',
-    title: 'Start from a mission',
-    desc: 'An example mission sets the sites, day, stay and limits in one tap.',
-    corner: 'tl',
-    pos: 'top-[19%] left-[4%] sm:top-[20%] sm:left-[8%] lg:top-[21%] lg:left-[11%]',
-    drift: { speed: 11, angle: 0.6 },
-    style: { '--depth': 18, '--tilt': '16deg', '--tilt-x': '6deg' },
+    title: 'What kind of mission?',
+    desc: 'Pick an example mission. It fills in the other three answers, and you can still change them.',
   },
-  {
-    id: 'sites',
-    label: 'Sites',
-    title: 'Choose where to land',
-    desc: 'Pick which south-polar sites to compare, and see which one works.',
-    corner: 'tr',
-    pos: 'top-[26%] right-[4%] sm:top-[24%] sm:right-[7%] lg:top-[15%] lg:right-[13%]',
-    drift: { speed: 14, angle: 2.4 },
-    style: { '--depth': 26, '--tilt': '-18deg', '--tilt-x': '5deg' },
-  },
+  { id: 'sites', label: 'Where', title: 'Where do you land?', desc: 'Pick which south-pole sites to compare.' },
   {
     id: 'when',
     label: 'When',
-    title: 'Choose when, and for how long',
-    desc: 'The landing day, time and stay. Play through the year to find a day that works.',
-    corner: 'bl',
-    pos: 'bottom-[29%] left-[5%] sm:bottom-[27%] sm:left-[10%] lg:bottom-[22%] lg:left-[15%]',
-    drift: { speed: 12, angle: 4.1 },
-    style: { '--depth': 22, '--tilt': '14deg', '--tilt-x': '-6deg' },
+    title: 'When do you land, and for how long?',
+    desc: 'Pick the landing day, the time and the stay. Play through the year to find a day that works.',
   },
   {
     id: 'limits',
     label: 'Limits',
-    title: 'Set what the site must give you',
+    title: 'What must the site give you?',
     desc: 'How much Sun and Earth the stay needs, and the longest gap without them.',
-    corner: 'br',
-    pos: 'bottom-[22%] right-[5%] sm:bottom-[21%] sm:right-[8%] lg:bottom-[27%] lg:right-[9%]',
-    drift: { speed: 10, angle: 5.5 },
-    style: { '--depth': 15, '--tilt': '-15deg', '--tilt-x': '-5deg' },
   },
 ]
-
-/** Where a panel grows from, per corner, so it seems to come out of the option that opened it. */
-const ORIGIN: Record<Corner, { origin: string; x: string; y: string }> = {
-  tl: { origin: 'top left', x: '-2rem', y: '-1rem' },
-  tr: { origin: 'top right', x: '2rem', y: '-1rem' },
-  bl: { origin: 'bottom left', x: '-2rem', y: '1rem' },
-  br: { origin: 'bottom right', x: '2rem', y: '1rem' },
-}
 
 type Key = (typeof REQUIREMENTS)[number]['key']
 const MEANS: Record<Key, string> = {
@@ -91,6 +50,16 @@ const GROUPS = [
   { title: 'Sunlight', dot: 'rounded-full bg-sun', keys: ['minSun', 'maxNoSun'] },
   { title: 'Contact with Earth', dot: 'rotate-45 bg-comms', keys: ['minEarth', 'maxNoEarth'] },
 ] as const
+
+/** Renders its children a little after it mounts, to split a heavy panel's first build into smaller pieces. */
+function Later({ ms, children }: { ms: number; children: ReactNode }) {
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const id = window.setTimeout(() => setShown(true), ms)
+    return () => window.clearTimeout(id)
+  }, [ms])
+  return shown ? children : null
+}
 
 function useWide() {
   const [wide, setWide] = useState(true)
@@ -105,26 +74,36 @@ function useWide() {
 }
 
 /**
- * Set up as one screen with no scrolling: the Moon in the middle, lit by the SPICE Sun at the landing time, and four
- * choices floating around it. Pointing at a choice wobbles it and says what it is for; choosing it zooms the camera in and
- * opens its panel beside the Moon. The answer stays at the bottom the whole time. Every status is Result's own.
+ * Set up as one screen with no scrolling: the Moon, lit by the SPICE Sun at the landing time, and the four questions as a
+ * deck of cards in front of it. Pointing at a card lifts it and says what it is for; choosing it lifts it toward its side
+ * and grows its panel out of it while the camera moves in on the Moon. The answer stays at the bottom the whole time.
+ * Every status is Result's own.
  */
 export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions }) {
   const stage = useRef<HTMLElement>(null)
-  const buttons = useRef<Record<string, HTMLButtonElement | null>>({})
+  const cards = useRef<Record<string, HTMLButtonElement | null>>({})
   const [open, setOpen] = useState<OptionId | null>(null)
   const [closing, setClosing] = useState<OptionId | null>(null)
-  const [emerging, setEmerging] = useState(false)
-  // Each Next or Back turns the Moon once around; `entry` says how the panel arrives (out of the Moon, or with the turn).
+  // Each move through the questions while one is open turns the Moon once around.
   const [spin, setSpin] = useState(0)
-  const [entry, setEntry] = useState<'hole' | 'turn'>('hole')
-  const holders = useRef<Record<string, HTMLDivElement | null>>({})
-  const floats = useRef<Record<string, HTMLDivElement | null>>({})
+  // The question in front of the deck, and whether a panel is changing over to the next one.
+  const [front, setFront] = useState(0)
+  const [size, setSize] = useState({ w: 1280, h: 720 })
+  const deckRef = useRef<HTMLDivElement>(null)
+  const [deckBox, setDeckBox] = useState(0)
   const wide = useWide()
+  const reduced = useReducedMotion()
   const preview = useDayPreview(plan, actions)
   const v = verdict(verdictRows(plan), plan.slip)
 
-  // Exactly the space under the header and step bar, so this step never scrolls.
+  // Exactly the space under the header and step bar, so this step never scrolls. It is measured again after every render,
+  // since a note above it (MotionNotice) can come and go.
+  useLayoutEffect(() => {
+    const el = stage.current
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY
+    el.style.height = `calc(100svh - ${Math.round(top)}px)`
+  })
   useLayoutEffect(() => {
     const el = stage.current
     if (!el) return
@@ -134,90 +113,27 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
     }
     fit()
     window.addEventListener('resize', fit)
-    return () => window.removeEventListener('resize', fit)
-  }, [])
-
-  // The options follow the pointer a little, once per frame, without re-rendering.
-  useEffect(() => {
-    const el = stage.current
-    if (!el || !window.matchMedia('(hover: hover) and (prefers-reduced-motion: no-preference)').matches) return
-    let raf = 0
-    let mx = 0
-    let my = 0
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect()
-      mx = ((e.clientX - r.left) / r.width) * 2 - 1
-      my = ((e.clientY - r.top) / r.height) * 2 - 1
-      if (!raf)
-        raf = requestAnimationFrame(() => {
-          raf = 0
-          el.style.setProperty('--mx', mx.toFixed(3))
-          el.style.setProperty('--my', my.toFixed(3))
-        })
-    }
-    el.addEventListener('pointermove', move)
+    // Anything above the stage changing height (the motion note coming or going) changes the page's height and moves the
+    // stage's top, so watching the page's frame catches it.
+    const frame = el.parentElement?.parentElement
+    const ro = frame ? new ResizeObserver(fit) : null
+    if (frame) ro?.observe(frame)
     return () => {
-      el.removeEventListener('pointermove', move)
-      cancelAnimationFrame(raf)
+      window.removeEventListener('resize', fit)
+      ro?.disconnect()
     }
   }, [])
 
-  /*
-   * Zero gravity: each option drifts inside a small circle, bouncing off its edge, with a faint pull back toward its place
-   * so the paths curve; it leans with its motion. One loop for all four, written straight to the elements, paused while a
-   * panel is open, off screen or in a hidden tab. Reduced motion holds them still.
-   */
   useEffect(() => {
     const el = stage.current
-    if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-    const bodies = OPTIONS.map((o) => ({
-      id: o.id,
-      speed: o.drift.speed,
-      x: 0,
-      y: 0,
-      vx: Math.cos(o.drift.angle) * o.drift.speed,
-      vy: Math.sin(o.drift.angle) * o.drift.speed,
-    }))
-    let raf = 0
-    let last = performance.now()
-    const tick = (now: number) => {
-      raf = requestAnimationFrame(tick)
-      const dt = Math.min(0.05, (now - last) / 1000)
-      last = now
-      if (document.hidden || el.dataset.open != null) return
-      const range = el.clientWidth < 640 ? 9 : 16
-      for (const b of bodies) {
-        b.vx -= b.x * 0.5 * dt
-        b.vy -= b.y * 0.5 * dt
-        b.x += b.vx * dt
-        b.y += b.vy * dt
-        const d = Math.hypot(b.x, b.y)
-        if (d > range) {
-          // Bounce: reflect the velocity off the edge of its range.
-          const nx = b.x / d
-          const ny = b.y / d
-          const dot = b.vx * nx + b.vy * ny
-          if (dot > 0) {
-            b.vx -= 2 * dot * nx
-            b.vy -= 2 * dot * ny
-          }
-          b.x = nx * range
-          b.y = ny * range
-        }
-        // Keep each one at its own lively speed.
-        const sp = Math.hypot(b.vx, b.vy) || 1
-        const k = 1 + ((b.speed - sp) / sp) * Math.min(1, dt * 2)
-        b.vx *= k
-        b.vy *= k
-        const node = floats.current[b.id]
-        if (node) {
-          node.style.translate = `${b.x.toFixed(2)}px ${b.y.toFixed(2)}px`
-          node.style.rotate = `${(b.vx * 0.22).toFixed(2)}deg`
-        }
-      }
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    if (!el) return
+    const ro = new ResizeObserver(() => {
+      setSize({ w: el.clientWidth, h: el.clientHeight })
+      if (deckRef.current) setDeckBox(deckRef.current.offsetHeight)
+    })
+    ro.observe(el)
+    if (deckRef.current) ro.observe(deckRef.current)
+    return () => ro.disconnect()
   }, [])
 
   const timer = useRef(0)
@@ -227,53 +143,43 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
     const was = open
     setClosing(was)
     setOpen(null)
-    // The options come back out of the Moon along the same spiral.
-    setEmerging(true)
     window.clearTimeout(timer.current)
-    timer.current = window.setTimeout(() => {
-      setClosing(null)
-      buttons.current[was]?.focus({ preventScroll: true })
-    }, 260)
-    window.setTimeout(() => setEmerging(false), 1100)
+    // The panel shrinks back into its card first, then leaves.
+    timer.current = window.setTimeout(
+      () => {
+        setClosing(null)
+        cards.current[was]?.focus({ preventScroll: true })
+      },
+      reduced ? 0 : 320,
+    )
   }
-  /** From the stage: every option falls into the middle of the Moon, the chosen one first, then its panel opens. */
   const choose = (id: OptionId) => {
-    const el = stage.current
-    if (el) {
-      const r = el.getBoundingClientRect()
-      const hx = r.left + r.width / 2
-      const hy = r.top + r.height * 0.535
-      const order = [id, ...OPTIONS.map((o) => o.id).filter((x) => x !== id)]
-      for (const o of OPTIONS) {
-        const node = holders.current[o.id]
-        if (!node) continue
-        const b = node.getBoundingClientRect()
-        const dx = hx - (b.left + b.width / 2)
-        const dy = hy - (b.top + b.height / 2)
-        // The path bends a quarter turn on the way in, so it spirals rather than runs straight.
-        node.style.setProperty('--hole-x', `${dx.toFixed(1)}px`)
-        node.style.setProperty('--hole-y', `${dy.toFixed(1)}px`)
-        node.style.setProperty('--mid-x', `${(dx * 0.5 - dy * 0.3).toFixed(1)}px`)
-        node.style.setProperty('--mid-y', `${(dy * 0.5 + dx * 0.3).toFixed(1)}px`)
-        node.style.setProperty('--stagger', `${order.indexOf(o.id) * 70}ms`)
-      }
-    }
     window.clearTimeout(timer.current)
-    setEmerging(false)
     setClosing(null)
-    setEntry('hole')
     setOpen(id)
   }
-  /** From a panel to the next or previous one: the Moon turns once around while the panel changes. */
-  const step = (id: OptionId) => {
-    setEntry('turn')
-    setSpin((n) => n + 1)
-    setOpen(id)
+  /**
+   * To another question. With none open the deck moves. With one open, the row of cards on the Moon slides: the next
+   * question's card swings into the middle and becomes its form, and the Moon turns once around.
+   */
+  const toQuestion = (i: number) => {
+    const target = OPTIONS[i]?.id
+    if (!target || i === front) return
+    setFront(i)
+    if (!open) return
+    setSpin((k) => k + 1)
+    setOpen(target)
   }
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
+      // Left and right move between questions, unless the reader is typing or moving a slider.
+      const t = e.target as HTMLElement | null
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !t?.closest('input, textarea, select, [role="slider"]')) {
+        e.preventDefault()
+        toQuestion(front + (e.key === 'ArrowLeft' ? -1 : 1))
+      }
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
@@ -281,20 +187,12 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
 
   const shown = open ?? closing
   const option = OPTIONS.find((o) => o.id === shown)
-  const side = option && (option.corner === 'tl' || option.corner === 'bl') ? 'left' : 'right'
-  // The camera moves in on the Moon and steps aside for the panel: beside it on wide screens, above it on narrow ones.
-  // At rest the disc sits a little small and low, clear of the title; Sites lifts it so the south pole sits mid-screen.
-  const zoom = open ? (wide ? (open === 'sites' ? 0.62 : 0.72) : 0.8) : wide ? 1.15 : 1.05
-  const aim: [number, number] = !open
-    ? [0, 0.035]
-    : wide
-      ? [side === 'left' ? 0.25 : -0.25, open === 'sites' ? -0.34 : 0]
-      : [0, open === 'sites' ? -0.42 : -0.3]
+  // At rest the disc sits behind the deck. With a question open the camera moves in, the disc centred behind its form so
+  // the form sits on the Moon with the glow of the limb around it.
+  const zoom = open ? (wide ? 0.6 : 0.85) : wide ? 1.2 : 0.95
+  const aim: [number, number] = open ? [0, wide ? -0.03 : -0.06] : [0, wide ? -0.1 : -0.17]
 
   const works = plan.sites.filter((s) => siteResult(s).works).length
-  const openIndex = OPTIONS.findIndex((o) => o.id === open)
-  const prev = openIndex > 0 ? OPTIONS[openIndex - 1] : undefined
-  const next = openIndex >= 0 ? OPTIONS[openIndex + 1] : undefined
   const pose: MascotPose = open
     ? 'planner-pointing'
     : works > 0 && works === plan.sites.length
@@ -302,12 +200,26 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
       : works > 0
         ? 'planner-excited'
         : 'planner-thinking'
+  // Each option's current answer to its own question, with a second line where one is needed. Whether the plan works is
+  // the bar's job, not the answers'.
+  const detail: Partial<Record<OptionId, string>> = { when: `${plan.stay}-day stay` }
   const value: Record<OptionId, string> = {
-    mission: `${plan.profile.name}${plan.edited ? ' · edited' : ''}`,
-    sites: `${plan.sites.length} site${plan.sites.length === 1 ? '' : 's'} · ${works} work${works === 1 ? 's' : ''}`,
-    when: `${shortDate(plan.date)} · ${minuteLabel(plan.minute)} UTC · ${plan.stay} d`,
+    mission: `${plan.profile.name}${plan.edited ? ' (edited)' : ''}`,
+    sites: plan.sites.length === 1 && plan.sites[0] ? shortName(plan.sites[0].data) : `${plan.sites.length} sites to compare`,
+    when: `${shortDate(plan.date)} ${plan.date.slice(0, 4)}, ${minuteLabel(plan.minute)} UTC`,
     limits: `Sun ≥ ${plan.requirements.minSun}% · Earth ≥ ${plan.requirements.minEarth}%`,
   }
+  // The large question card sits in the centre of the stage; an open panel docks the deck beside the Moon.
+  const cardW = Math.min(wide ? 520 : 440, size.w - 32 - 56 - 12)
+  // Small enough to leave most of the Moon in view: the card sits low, just above the answer bar.
+  const cardH = wide ? Math.max(190, Math.min(230, size.h * 0.28)) : size.h < 600 ? 170 : 190
+  const deckW = cardW + 12 + 44
+  // The deck's own height (the card or the track beside it, whichever is taller), measured; the back cards peek 45 px above.
+  const deckH = Math.max(cardH, deckBox) + 3 * 15
+  // The deck sits in the middle of the stage; it steps away while a question is open on the Moon.
+  const deckX = size.w / 2 - deckW / 2
+  const deckY = size.h - (wide ? 100 : 92) - deckH + 45
+  const items = OPTIONS.map((o) => ({ id: o.id, title: o.title, desc: o.desc, value: value[o.id], detail: detail[o.id] }))
   const markers: MoonMarker[] = plan.all.map((data) => {
     const site = plan.sites.find((s) => s.data.site.id === data.site.id)
     const a = site && siteAnswer(site, plan, preview.day)
@@ -321,12 +233,111 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
     }
   })
 
+  /** What each question's panel holds. Also built once, hidden, while the page is idle, so a first opening is smooth. */
+  const content = (id: OptionId) => (
+    <>
+      {id === 'mission' && <ProfileCards plan={plan} actions={actions} compact />}
+      {id === 'sites' && (
+        <div className="grid gap-3">
+          {preview.previewing && (
+            <p className="eyebrow text-ink-muted">
+              Preview · {longDate(preview.date)}, {minuteLabel(plan.minute)} UTC
+            </p>
+          )}
+          <SiteList plan={plan} actions={actions} day={preview.day} />
+          <p className="text-2xs leading-relaxed text-ink-faint text-pretty">
+            Dots on the Moon sit on the pipeline’s coordinates (Moon ME frame, longitude °E). Sunlight is the SPICE Sun at the landing time.
+            Works means the Sun and Earth are in view at touchdown and every limit holds over the stay: a geometric opportunity, not
+            delivered power or a working radio link.
+          </p>
+        </div>
+      )}
+      {id === 'when' && (
+        <div className="grid gap-5">
+          <div className="grid items-end gap-x-6 gap-y-4 sm:grid-cols-[auto_auto]">
+            <div className="grid gap-2">
+              <span className="font-medium">Landing day</span>
+              <DayField dates={plan.dates} index={plan.index} onSelect={actions.selectDay} />
+            </div>
+            <NumberField
+              label="Stay (days)"
+              value={plan.stay}
+              min={1}
+              max={60}
+              onCommit={(value) => actions.go({ stay: Math.round(value) })}
+            />
+          </div>
+          <TimeSlider value={plan.minute} onChange={(value) => actions.go({ t: value })} />
+          <div className="min-h-[11.5rem] rounded-xl border border-line">
+            <Later ms={120}>
+              <Year {...preview.year} />
+            </Later>
+          </div>
+          <p className="text-xs text-ink-faint">
+            All times UTC. The data covers {longDate(plan.dates[0] ?? plan.date)} to {longDate(plan.dates.at(-1) ?? plan.date)}.
+          </p>
+        </div>
+      )}
+      {id === 'limits' && (
+        <div className="grid gap-4">
+          {GROUPS.map((group) => (
+            <fieldset key={group.title} className="grid content-start gap-5 rounded-xl border border-line p-4">
+              <legend className="flex items-center gap-2 px-1 font-medium">
+                <span aria-hidden className={`size-2.5 ${group.dot}`} />
+                {group.title}
+              </legend>
+              {group.keys.map((key) => {
+                const q = REQUIREMENTS.find((r) => r.key === key)
+                if (!q) return null
+                return (
+                  <div key={key} className="grid gap-1.5">
+                    <NumberField
+                      wide
+                      label={`${q.label}, ${q.bound} (${q.unit})`}
+                      value={plan.requirements[key]}
+                      min={0}
+                      max={q.unit === '%' ? 100 : 8760}
+                      onCommit={(value) => actions.go({ [key]: value })}
+                    />
+                    <p className="text-xs text-ink-faint">{MEANS[key]}</p>
+                  </div>
+                )
+              })}
+            </fieldset>
+          ))}
+          <p className="text-xs text-ink-faint">Measured over the whole stay. Mission limits are examples; change any of them.</p>
+        </div>
+      )}
+    </>
+  )
+  // Prewarm: once the page is idle, build every panel's contents once out of sight and drop them. The first real opening
+  // then costs what a second one does, instead of stalling a frame on first-time work.
+  const [warm, setWarm] = useState<'cold' | 'warming' | 'done'>('cold')
+  useEffect(() => {
+    if (warm === 'cold') {
+      const start = () => setWarm('warming')
+      const w = window as Window & {
+        requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number
+        cancelIdleCallback?: (id: number) => void
+      }
+      if (w.requestIdleCallback) {
+        const id = w.requestIdleCallback(start, { timeout: 2500 })
+        return () => w.cancelIdleCallback?.(id)
+      }
+      const id = window.setTimeout(start, 1500)
+      return () => window.clearTimeout(id)
+    }
+    if (warm === 'warming') {
+      const id = window.setTimeout(() => setWarm('done'), 50)
+      return () => window.clearTimeout(id)
+    }
+  }, [warm])
+
   return (
     <section
       ref={stage}
       aria-labelledby="stage-title"
       data-open={open ?? undefined}
-      data-emerge={emerging && !open ? '' : undefined}
       // No fill of its own: the page is black already, and the shared Moon glides in behind this box (MissionMoon `handoff`).
       className="plan-stage relative isolate h-[calc(100svh-6.5rem)] min-h-[32rem] overflow-hidden"
     >
@@ -341,203 +352,85 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         spin={spin}
         handoff
         footClassName={
-          open && wide
-            ? `bottom-[5.6rem] ${side === 'left' ? 'right-6 justify-end' : 'left-6 justify-start'}`
-            : 'inset-x-3 bottom-[5.6rem] justify-center sm:bottom-[5.2rem]'
+          wide
+            ? open
+              ? 'top-1.5 left-1/2 -translate-x-1/2 justify-center whitespace-nowrap rounded-full bg-black/75 px-3 py-0.5'
+              : size.w >= 1100
+                ? 'top-3 right-4 justify-end'
+                : 'inset-x-3 top-[8.25rem] justify-center'
+            : open
+              ? 'top-1.5 left-1/2 w-max max-w-[calc(100%-1rem)] -translate-x-1/2 justify-center rounded-xl bg-black/75 px-3 py-0.5 text-center'
+              : 'inset-x-3 top-1.5 justify-center'
         }
         className="absolute inset-0"
       />
 
       <header
-        className={`pointer-events-none absolute inset-x-0 top-0 z-10 grid justify-items-center gap-1.5 px-4 pt-4 text-center transition-opacity duration-500 sm:pt-6 ${open ? 'opacity-0' : ''}`}
+        className={`scene-text pointer-events-none absolute inset-x-0 top-0 z-10 grid justify-items-center gap-1.5 px-4 text-center transition-opacity duration-500 pt-12 sm:pt-6 ${open ? 'opacity-0' : ''}`}
       >
         <Eyebrow pip>Plan a landing</Eyebrow>
-        <h2 id="stage-title" className="text-[clamp(1.35rem,1rem+1.6vw,2.25rem)] leading-tight font-medium text-balance">
-          Where and when should you land?
+        <h2 id="stage-title" className="text-[clamp(1.2rem,0.85rem+1.7vw,2.25rem)] leading-tight font-medium text-balance">
+          Answer four questions to plan your landing
         </h2>
-        <p className="text-sm text-ink-muted">Choose one of the four around the Moon.</p>
+        <p className="text-sm text-ink/80 text-pretty">Click the card to answer it, or a number to pick another question.</p>
       </header>
 
-      {OPTIONS.map((o, i) => (
-        <div
-          key={o.id}
-          ref={(el) => {
-            holders.current[o.id] = el
+      {/* The deck: the four questions stacked in the middle, thrown aside one by one. */}
+      <div
+        ref={deckRef}
+        className={`plan-deck absolute top-0 left-0 z-20 origin-top-left ${open ? 'plan-deck-away' : ''}`}
+        style={
+          {
+            '--card-w': `${cardW}px`,
+            '--card-h': `${cardH}px`,
+            width: deckW,
+            transform: `translate(${deckX.toFixed(1)}px, ${deckY.toFixed(1)}px)`,
+          } as CSSProperties
+        }
+      >
+        <Deck
+          items={items}
+          front={front}
+          width={size.w * 0.6 + cardW}
+          hideFront={open != null}
+          reduced={reduced}
+          onFront={toQuestion}
+          onOpen={(i) => {
+            const id = OPTIONS[i]?.id
+            if (id) choose(id)
           }}
-          className={`plan-option absolute z-10 ${o.pos}`}
-          style={o.style as CSSProperties}
-        >
-          <div
-            ref={(el) => {
-              floats.current[o.id] = el
-            }}
-            className="plan-option-float relative"
-          >
-            <button
-              type="button"
-              ref={(el) => {
-                buttons.current[o.id] = el
-              }}
-              aria-expanded={open === o.id}
-              aria-controls="plan-panel"
-              aria-describedby={`plan-tip-${o.id}`}
-              tabIndex={open ? -1 : 0}
-              onClick={() => choose(o.id)}
-              className={`plan-option-body grid max-w-[10.5rem] cursor-pointer gap-1 text-left sm:max-w-[15rem] ${o.corner.endsWith('r') ? 'justify-items-end text-right' : ''}`}
-            >
-              <span className="eyebrow text-ink-muted">
-                {String(i + 1).padStart(2, '0')} · {o.label}
-              </span>
-              <span className="text-[clamp(0.95rem,0.75rem+0.9vw,1.5rem)] leading-tight font-medium text-balance">{value[o.id]}</span>
-              <span aria-hidden className="plan-bracket mt-1 w-full" />
-            </button>
-            <span
-              id={`plan-tip-${o.id}`}
-              role="tooltip"
-              className={`plan-tip absolute z-20 w-56 rounded-lg bg-white px-3 py-2 text-xs leading-snug text-black shadow-[0_8px_30px_rgb(0_0_0/0.5)] ${o.corner.startsWith('t') ? 'top-full mt-3' : 'bottom-full mb-3'} ${o.corner.endsWith('r') ? 'right-0' : 'left-0'}`}
-            >
-              {o.desc}
-            </span>
-          </div>
-        </div>
-      ))}
+          cardRef={(id, el) => {
+            cards.current[id] = el
+          }}
+        />
+      </div>
 
-      {option && (
-        <Panel
-          key={option.id}
-          option={option}
-          index={OPTIONS.indexOf(option)}
-          side={side ?? 'left'}
-          closing={!open}
-          delay={entry === 'hole' ? 380 : 120}
-          onClose={close}
-        >
-          {option.id === 'mission' && <ProfileCards plan={plan} actions={actions} compact />}
-          {option.id === 'sites' && (
-            <div className="grid gap-3">
-              {preview.previewing && (
-                <p className="eyebrow text-ink-muted">
-                  Preview · {longDate(preview.date)}, {minuteLabel(plan.minute)} UTC
-                </p>
-              )}
-              <SiteList plan={plan} actions={actions} day={preview.day} />
-              <p className="text-2xs leading-relaxed text-ink-faint text-pretty">
-                Dots on the Moon sit on the pipeline’s coordinates (Moon ME frame, longitude °E). Sunlight is the SPICE Sun at the landing
-                time. Works means the Sun and Earth are in view at touchdown and every limit holds over the stay: a geometric opportunity,
-                not delivered power or a working radio link.
-              </p>
-            </div>
-          )}
-          {option.id === 'when' && (
-            <div className="grid gap-5">
-              <div className="grid items-end gap-x-6 gap-y-4 sm:grid-cols-[auto_auto]">
-                <div className="grid gap-2">
-                  <span className="font-medium">Landing day</span>
-                  <DayField dates={plan.dates} index={plan.index} onSelect={actions.selectDay} />
-                </div>
-                <NumberField
-                  label="Stay (days)"
-                  value={plan.stay}
-                  min={1}
-                  max={60}
-                  onCommit={(value) => actions.go({ stay: Math.round(value) })}
-                />
-              </div>
-              <TimeSlider value={plan.minute} onChange={(value) => actions.go({ t: value })} />
-              <div className="rounded-xl border border-line">
-                <Year {...preview.year} />
-              </div>
-              <p className="text-xs text-ink-faint">
-                All times UTC. The data covers {longDate(plan.dates[0] ?? plan.date)} to {longDate(plan.dates.at(-1) ?? plan.date)}.
-              </p>
-            </div>
-          )}
-          {option.id === 'limits' && (
-            <div className="grid gap-4">
-              {GROUPS.map((group) => (
-                <fieldset key={group.title} className="grid content-start gap-5 rounded-xl border border-line p-4">
-                  <legend className="flex items-center gap-2 px-1 font-medium">
-                    <span aria-hidden className={`size-2.5 ${group.dot}`} />
-                    {group.title}
-                  </legend>
-                  {group.keys.map((key) => {
-                    const q = REQUIREMENTS.find((r) => r.key === key)
-                    if (!q) return null
-                    return (
-                      <div key={key} className="grid gap-1.5">
-                        <NumberField
-                          wide
-                          label={`${q.label}, ${q.bound} (${q.unit})`}
-                          value={plan.requirements[key]}
-                          min={0}
-                          max={q.unit === '%' ? 100 : 8760}
-                          onCommit={(value) => actions.go({ [key]: value })}
-                        />
-                        <p className="text-xs text-ink-faint">{MEANS[key]}</p>
-                      </div>
-                    )
-                  })}
-                </fieldset>
-              ))}
-              <p className="text-xs text-ink-faint">Measured over the whole stay. Mission limits are examples; change any of them.</p>
-            </div>
-          )}
-        </Panel>
+      {warm === 'warming' && !open && (
+        <div hidden aria-hidden inert>
+          {OPTIONS.map((o) => (
+            <div key={o.id}>{content(o.id)}</div>
+          ))}
+        </div>
       )}
 
-      {/* Next and back ride on the Moon, which turns once around with each step. */}
-      {open && (
-        <div
-          className="plan-moon-nav absolute z-20 -translate-x-1/2 -translate-y-1/2"
-          style={{ left: `${(0.5 + aim[0]) * 100}%`, top: `${(0.5 + aim[1]) * 100}%` }}
+      {option && (
+        <QuestionRow
+          items={items}
+          index={OPTIONS.indexOf(option)}
+          size={size}
+          wide={wide}
+          closing={!open}
+          reduced={reduced}
+          cardRect={() => cards.current[option.id]?.getBoundingClientRect()}
+          onGo={toQuestion}
+          onClose={close}
         >
-          <div key={open} className="flex items-center gap-2">
-            {prev && (
-              <button
-                type="button"
-                onClick={() => step(prev.id)}
-                aria-label={`Back to ${prev.label}`}
-                title={`Back to ${prev.label}`}
-                className="grid size-11 cursor-pointer place-items-center rounded-full border border-white/25 bg-black/60 backdrop-blur-md transition-[border-color,scale] hover:border-white/70 active:scale-95"
-              >
-                <ArrowLeftIcon aria-hidden weight="bold" />
-              </button>
-            )}
-            {next ? (
-              <button
-                type="button"
-                onClick={() => step(next.id)}
-                className="group inline-flex cursor-pointer items-center gap-3 rounded-full border border-white/25 bg-black/60 py-1.5 pr-1.5 pl-5 backdrop-blur-md transition-[border-color,scale] hover:border-white/70 active:scale-95"
-              >
-                <span className="grid text-left leading-tight">
-                  <span className="eyebrow text-2xs text-ink-muted">Next · {String(openIndex + 2).padStart(2, '0')}</span>
-                  <span className="font-medium">{next.label}</span>
-                </span>
-                <span className="grid size-9 place-items-center rounded-full bg-white text-black transition-transform group-hover:translate-x-0.5">
-                  <ArrowRightIcon aria-hidden weight="bold" />
-                </span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={close}
-                className="group inline-flex cursor-pointer items-center gap-3 rounded-full border border-white/25 bg-black/60 py-1.5 pr-1.5 pl-5 backdrop-blur-md transition-[border-color,scale] hover:border-white/70 active:scale-95"
-              >
-                <span className="grid text-left leading-tight">
-                  <span className="eyebrow text-2xs text-ink-muted">All four set</span>
-                  <span className="font-medium">Done</span>
-                </span>
-                <span className="grid size-9 place-items-center rounded-full bg-white text-black">
-                  <CheckIcon aria-hidden weight="bold" />
-                </span>
-              </button>
-            )}
-          </div>
-        </div>
+          {content(option.id)}
+        </QuestionRow>
       )}
 
       {/* The planner says the answer, always in view. */}
-      <div className="absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-xl border border-line-strong bg-black/85 py-2.5 pr-3 pl-2 shadow-[0_16px_40px_rgb(0_0_0/0.6)] backdrop-blur-md sm:inset-x-auto sm:left-1/2 sm:w-[min(46rem,calc(100%-2rem))] sm:-translate-x-1/2 sm:pr-4">
+      <div className="absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-xl border border-line-strong bg-black/90 py-2.5 pr-3 pl-2 shadow-[0_10px_28px_rgb(0_0_0/0.5)] sm:inset-x-auto sm:left-1/2 sm:w-[min(46rem,calc(100%-2rem))] sm:-translate-x-1/2 sm:pr-4">
         <Mascot pose={pose} className="-my-5 size-14 shrink-0 sm:size-16" />
         <div className="grid min-w-0 flex-1 gap-0.5">
           <p aria-live="polite" className="text-sm font-medium text-pretty sm:text-base">
@@ -564,59 +457,265 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   )
 }
 
-/** One option's panel: beside the Moon on wide screens, a sheet over the lower part on narrow ones. */
-function Panel({
-  option,
+/** Room above the row for the light caption: one line on wide screens, up to two on phones. */
+const rowTop = (wide: boolean) => (wide ? 28 : 48)
+const ROW_BOTTOM = 92
+const SIDE_SCALE = 0.66
+const SIDE_TURN = 26
+
+/**
+ * An open question, on the Moon: its form in the middle, the questions before and after it as cards turned toward it on
+ * either side (in perspective, like covers on a shelf). Choosing a side card, the arrows in the form's header, swiping
+ * the header or the arrow keys slide the row, and the card that reaches the middle becomes the form. Opening grows the
+ * form out of the deck's front card and fans the side cards out from behind it; closing shrinks the form back into it.
+ * Only transform and opacity move.
+ */
+function QuestionRow({
+  items,
   index,
-  side,
+  size,
+  wide,
   closing,
-  delay,
+  reduced,
+  cardRect,
+  onGo,
   onClose,
   children,
 }: {
-  option: (typeof OPTIONS)[number]
+  items: { id: string; title: string; desc: string; value: string; detail?: string }[]
   index: number
-  side: 'left' | 'right'
+  size: { w: number; h: number }
+  wide: boolean
   closing: boolean
-  /** How long the panel waits, in ms: long enough for the options to fall into the Moon, or for the turn to start. */
-  delay: number
+  reduced: boolean
+  cardRect: () => DOMRect | undefined
+  onGo: (i: number) => void
   onClose: () => void
   children: ReactNode
 }) {
+  const n = items.length
+  const W = wide ? Math.min(560, Math.max(400, size.w * 0.42)) : size.w - 48
+  const H = Math.max(320, size.h - rowTop(wide) - ROW_BOTTOM)
+  const gap = wide ? 28 : 8
+  const slots = useRef<(HTMLDivElement | null)[]>([])
+  const center = () => slots.current[index]
+  const transformOf = (o: number) => {
+    if (o === 0) return 'none'
+    const sign = Math.sign(o)
+    const x = sign * (W / 2 + gap + (W * SIDE_SCALE * 0.9) / 2) + (o - sign) * W * 0.5
+    return `translateX(${x.toFixed(1)}px) rotateY(${-sign * SIDE_TURN}deg) scale(${SIDE_SCALE})`
+  }
+  /** The transform that puts the form exactly over the deck's front card (FLIP). */
+  const overCard = () => {
+    const el = center()
+    const r = cardRect()
+    if (!el || !r || !r.width || !r.height) return null
+    const p = el.getBoundingClientRect()
+    return `translate(${(r.left - p.left).toFixed(1)}px, ${(r.top - p.top).toFixed(1)}px) scale(${(r.width / p.width).toFixed(4)}, ${(r.height / p.height).toFixed(4)})`
+  }
+  useLayoutEffect(() => {
+    if (reduced) return
+    const runs: Animation[] = []
+    const el = center()
+    const from = overCard()
+    if (el && from && typeof el.animate === 'function') {
+      el.style.transformOrigin = '0 0'
+      const a = el.animate(
+        [
+          { transform: from, opacity: 0.6 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: 620, easing: 'cubic-bezier(0.2, 0.85, 0.25, 1)', fill: 'backwards' },
+      )
+      a.finished.then(
+        () => {
+          el.style.transformOrigin = ''
+        },
+        () => {},
+      )
+      runs.push(a)
+    }
+    // The side cards fan out from behind the form.
+    slots.current.forEach((s, i) => {
+      if (!s || i === index || typeof s.animate !== 'function') return
+      runs.push(
+        s.animate(
+          [
+            { transform: 'translateX(0px) rotateY(0deg) scale(0.7)', opacity: 0 },
+            { transform: transformOf(i - index), opacity: Math.abs(i - index) === 1 ? 1 : 0 },
+          ],
+          { duration: 640, delay: 180, easing: 'cubic-bezier(0.2, 0.85, 0.25, 1)', fill: 'backwards' },
+        ),
+      )
+    })
+    return () => {
+      for (const a of runs) a.cancel()
+    }
+  }, [])
+  useLayoutEffect(() => {
+    if (!closing || reduced) return
+    const el = center()
+    const to = overCard()
+    if (el && to && typeof el.animate === 'function') {
+      el.style.transformOrigin = '0 0'
+      el.animate(
+        [
+          { transform: 'none', opacity: 1 },
+          { transform: to, opacity: 0 },
+        ],
+        { duration: 300, easing: 'cubic-bezier(0.4, 0, 0.8, 0.4)', fill: 'forwards' },
+      )
+    }
+    slots.current.forEach((s, i) => {
+      if (s && i !== index && typeof s.animate === 'function')
+        s.animate([{ opacity: 0 }], { duration: 220, easing: 'ease-in', fill: 'forwards' })
+    })
+  }, [closing])
+
+  // A horizontal swipe on the form's header moves to the next or previous question.
+  const swipe = useRef<{ x: number; id: number } | null>(null)
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-20 [perspective:1600px]" style={{ perspectiveOrigin: '50% 45%' }}>
+      {items.map((it, i) => {
+        const o = i - index
+        const isCenter = o === 0
+        return (
+          <div
+            key={it.id}
+            ref={(el) => {
+              slots.current[i] = el
+            }}
+            className="plan-slot absolute"
+            data-center={isCenter ? '' : undefined}
+            style={{
+              left: (size.w - W) / 2,
+              top: rowTop(wide),
+              width: W,
+              height: H,
+              transform: transformOf(o),
+              opacity: Math.abs(o) <= 1 ? 1 : 0,
+              zIndex: 10 - Math.abs(o),
+            }}
+          >
+            {/* The card face: what a side card shows, and what the form grows out of. */}
+            <button
+              type="button"
+              tabIndex={Math.abs(o) === 1 ? 0 : -1}
+              aria-hidden={Math.abs(o) !== 1 || undefined}
+              aria-label={`${o < 0 ? 'Previous' : 'Next'} question, ${i + 1} of ${n}: ${it.title} Current answer: ${it.value}`}
+              onClick={() => onGo(i)}
+              className={`plan-slot-face pointer-events-auto absolute inset-0 flex cursor-pointer flex-col justify-between gap-3 overflow-hidden rounded-3xl border border-white/15 bg-[#121212] p-6 text-left ${isCenter ? 'opacity-0' : ''}`}
+            >
+              <span className="flex items-baseline justify-between gap-3">
+                <span className="readout text-sm text-ink-faint">
+                  {String(i + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
+                </span>
+                <span className="eyebrow text-ink-muted">{o < 0 ? 'Back' : 'Next'}</span>
+              </span>
+              <span className="grid gap-3">
+                <span className="text-xl text-ink/80 text-balance">{it.title}</span>
+                <span className="text-[clamp(1.75rem,1.3rem+1.6vw,2.75rem)] leading-tight font-medium text-balance">{it.value}</span>
+                {it.detail && <span className="text-ink-muted">{it.detail}</span>}
+              </span>
+              <span className="text-sm text-ink-muted text-pretty">{it.desc}</span>
+            </button>
+            {isCenter && (
+              <section
+                id="plan-panel"
+                role="dialog"
+                aria-labelledby="plan-panel-title"
+                className="plan-form pointer-events-auto absolute inset-0 flex flex-col overflow-hidden rounded-3xl border border-white/20 bg-black/85 shadow-[0_30px_80px_rgb(0_0_0/0.7)]"
+              >
+                <header
+                  className="plan-panel-head flex touch-pan-y items-start justify-between gap-4 border-b border-line px-5 pt-4 pb-3.5 sm:px-6"
+                  onPointerDown={(e) => {
+                    if ((e.target as HTMLElement).closest('button')) return
+                    swipe.current = { x: e.clientX, id: e.pointerId }
+                    // Keep the swipe's release even when it ends off the header.
+                    e.currentTarget.setPointerCapture(e.pointerId)
+                  }}
+                  onPointerUp={(e) => {
+                    const sw = swipe.current
+                    swipe.current = null
+                    if (!sw || sw.id !== e.pointerId) return
+                    const dx = e.clientX - sw.x
+                    if (Math.abs(dx) > 60) onGo(index + (dx < 0 ? 1 : -1))
+                  }}
+                  onPointerCancel={() => {
+                    swipe.current = null
+                  }}
+                >
+                  <FormHeading index={index} n={n} item={it} />
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onGo(index - 1)}
+                      disabled={index === 0}
+                      aria-label="Previous question"
+                      className="grid size-9 cursor-pointer place-items-center rounded-full border border-white/15 transition-colors hover:border-white/60 disabled:cursor-default disabled:opacity-30"
+                    >
+                      <ArrowLeftIcon aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onGo(index + 1)}
+                      disabled={index === n - 1}
+                      aria-label="Next question"
+                      className="grid size-9 cursor-pointer place-items-center rounded-full border border-white/15 transition-colors hover:border-white/60 disabled:cursor-default disabled:opacity-30"
+                    >
+                      <ArrowRightIcon aria-hidden />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      aria-label="Close and go back to the Moon"
+                      className="ml-1 grid size-9 cursor-pointer place-items-center rounded-full bg-white text-black transition-opacity hover:opacity-90"
+                    >
+                      <XIcon aria-hidden weight="bold" />
+                    </button>
+                  </div>
+                </header>
+                <FormBody key={it.id} reduced={reduced}>
+                  {children}
+                </FormBody>
+              </section>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function FormHeading({ index, n, item }: { index: number; n: number; item: { title: string; desc: string } }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     heading.current?.focus({ preventScroll: true })
   }, [])
-  const from = ORIGIN[option.corner]
   return (
-    <section
-      id="plan-panel"
-      role="dialog"
-      aria-labelledby="plan-panel-title"
-      data-closing={closing ? '' : undefined}
-      className={`plan-panel absolute inset-x-2 top-[32%] bottom-[5.4rem] z-20 flex flex-col overflow-hidden rounded-2xl border border-line-strong bg-black/90 shadow-[0_24px_80px_rgb(0_0_0/0.7)] backdrop-blur-md md:top-4 md:bottom-[5.5rem] md:w-[min(34rem,46%)] ${side === 'left' ? 'md:right-auto md:left-4 lg:left-6' : 'md:right-4 md:left-auto lg:right-6'}`}
-      style={{ '--origin': from.origin, '--from-x': from.x, '--from-y': from.y, '--panel-delay': `${delay}ms` } as CSSProperties}
-    >
-      <header className="flex items-start justify-between gap-4 border-b border-line px-5 pt-4 pb-3.5">
-        <div className="grid gap-1">
-          <Eyebrow pip>
-            {String(index + 1).padStart(2, '0')} · {option.label}
-          </Eyebrow>
-          <h3 id="plan-panel-title" ref={heading} tabIndex={-1} className="text-xl leading-tight font-medium outline-none">
-            {option.title}
-          </h3>
-          <p className="text-sm text-ink-muted text-pretty">{option.desc}</p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close and go back to the Moon"
-          className="grid size-9 shrink-0 cursor-pointer place-items-center rounded-full border border-white/15 transition-colors hover:border-white/60"
-        >
-          <XIcon aria-hidden />
-        </button>
-      </header>
-      <div className="plan-panel-body grid min-h-0 flex-1 content-start gap-4 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
-    </section>
+    <div key={index} className="grid min-w-0 gap-1">
+      <Eyebrow pip>
+        {String(index + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
+      </Eyebrow>
+      <h3 id="plan-panel-title" ref={heading} tabIndex={-1} className="text-xl leading-tight font-medium outline-none sm:text-2xl">
+        {item.title}
+      </h3>
+      <p className="text-sm text-ink-muted text-pretty">{item.desc}</p>
+    </div>
+  )
+}
+
+/** The form's contents, built as the card settles in the middle so building them never holds up the slide. */
+function FormBody({ reduced, children }: { reduced: boolean; children: ReactNode }) {
+  const [filled, setFilled] = useState(reduced)
+  useEffect(() => {
+    const id = window.setTimeout(() => setFilled(true), reduced ? 0 : 300)
+    return () => window.clearTimeout(id)
+  }, [reduced])
+  return (
+    <div className="plan-panel-body grid min-h-0 flex-1 content-start gap-4 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
+      {filled && children}
+    </div>
   )
 }

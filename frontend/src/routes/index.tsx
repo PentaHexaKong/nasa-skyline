@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMemo, useRef } from 'react'
 import { useMoonScene } from '~/components/MoonStage'
+import { MotionControl } from '~/components/MotionControl'
 import { MOON_PREVIEW } from '~/components/moonTextures'
 import { Shell } from '~/components/Shell'
 import { Mascot, type MascotPose, StoryLink, useScrollProgress } from '~/components/story'
@@ -84,6 +85,7 @@ function Home() {
               How we know
             </Link>
             <span>Built by Hexakong</span>
+            <MotionControl />
           </div>
         </div>
       </main>

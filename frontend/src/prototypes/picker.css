@@ -42,9 +42,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .proto-picker[data-ready] .proto-picker-highlight {
+  html:not([data-motion="full"]) .proto-picker[data-ready] .proto-picker-highlight {
     transition: none;
   }
+}
+html[data-motion="reduced"] .proto-picker[data-ready] .proto-picker-highlight {
+  transition: none;
 }
 
 .proto-picker-item {

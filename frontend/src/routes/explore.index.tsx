@@ -11,6 +11,7 @@ import { SpaceChapter, type SpaceSearch } from '~/components/SpaceChapter'
 import { Bubble, Guide, Mascot, Orbits, StoryLink, useScrollProgress } from '~/components/story'
 import { loadMoonEphemeris, loadSummary, MOON_SITES, type Summary } from '~/lib/data'
 import { measure, shortName, siteSpans } from '~/lib/mission'
+import { reducedMotion } from '~/lib/motion'
 import { forgiving } from '~/lib/useSiteView'
 
 /**
@@ -260,7 +261,7 @@ function Discovery({ site }: { site: Summary }) {
     const el = ref.current
     if (!el) return
     const run = el.offsetHeight - window.innerHeight + 56
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reduced = reducedMotion().matches
     const x = ARRIVAL + ((1 - ARRIVAL - LEAVING) * (i + 0.5)) / MODES.length
     window.scrollTo({ top: el.offsetTop - 56 + run * x, behavior: reduced ? 'auto' : 'smooth' })
   }

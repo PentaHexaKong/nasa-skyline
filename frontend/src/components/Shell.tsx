@@ -5,6 +5,8 @@ import { TooltipProvider } from '@cloudflare/kumo/components/tooltip'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { Link, useRouter, useRouterState } from '@tanstack/react-router'
 import { forwardRef, type ReactNode } from 'react'
+import { MotionControl } from '~/components/MotionControl'
+import { MotionNotice } from '~/components/MotionNotice'
 import { Wordmark } from '~/components/Wordmark'
 
 /** The app is dark only: <html> ships with data-mode="dark" (Kumo's mode switch) and nothing removes it. */
@@ -84,6 +86,7 @@ export function Shell({ children, tools, bare = false }: { children: ReactNode; 
                 </nav>
                 <div className="-mr-2 ml-auto flex items-center gap-2 sm:-mr-3">
                   {tools}
+                  <MotionControl />
                   <Link to="/method" className={`${navLink} max-sm:hidden`}>
                     Method
                   </Link>
@@ -91,6 +94,7 @@ export function Shell({ children, tools, bare = false }: { children: ReactNode; 
               </div>
             </header>
           )}
+          <MotionNotice />
           {children}
         </div>
       </TooltipProvider>

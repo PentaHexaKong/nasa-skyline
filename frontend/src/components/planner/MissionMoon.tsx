@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { gliding, type PlannerView, plannerBridge } from '~/components/moonBridge'
 import { loadMoonEphemeris } from '~/lib/data'
 import { ephemerisHours, subPoints, whenAt } from '~/lib/moonLight'
+import { reducedMotion } from '~/lib/motion'
 import { minuteLabel, shortDate } from '~/lib/time'
 
 export type MarkerStatus = 'works' | 'fails' | 'not-computed' | 'not-selected'
@@ -146,7 +147,7 @@ export default function MissionMoon({
       renderer.toneMapping = THREE.ACESFilmicToneMapping
       renderer.toneMappingExposure = 1.15
       renderer.setClearColor(0x000000, 0)
-      const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
+      const motion = reducedMotion()
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 50)
       camera.position.copy(toVec(VIEW_LAT, 0, DIST))
@@ -499,11 +500,19 @@ export default function MissionMoon({
       resize.observe(box)
       const onMotion = () => {
         orbit.enableDamping = !motion.matches
+        if (motion.matches) {
+          spinT0 = null
+          swayGain = 0
+          if (tween) tween.t = 1
+        }
+        last = 0
+        requestDraw()
       }
       const onVisibility = () => {
         if (document.hidden) {
           cancelAnimationFrame(frame)
           frame = 0
+          last = 0
         } else requestDraw()
       }
       const onLost = (event: Event) => {

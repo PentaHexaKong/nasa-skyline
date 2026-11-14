@@ -4,6 +4,7 @@ import { PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import { scaleLinear } from 'd3-scale'
 import { type PointerEvent, useEffect, useMemo, useRef, useState } from 'react'
 import type { Terrain } from '~/lib/data'
+import { reducedMotion } from '~/lib/motion'
 import { Fig, type Rgb, rgbOf, ScaleBar, slopeDeg, TerrainMap, type Tint, useDark, useTerrain, type View } from './terrain'
 
 /**
@@ -236,7 +237,7 @@ export function RoverDays() {
   const frame = useRef(0)
 
   useEffect(() => {
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(true)
+    if (!reducedMotion().matches) setPlaying(true)
   }, [])
   useEffect(() => {
     if (!playing) return

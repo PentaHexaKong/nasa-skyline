@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { glowTexture, palette as scenePalette } from '~/components/SiteIsland'
 import type { LegacyMastData as MastData } from '~/lib/feed-schemas'
+import { reducedMotion } from '~/lib/motion'
 import { heightAt } from '~/lib/sky'
 import { loadSpace, type Space, sampleSpace } from '~/lib/space'
 import { clock as clockOf, shortDate } from '~/lib/time'
@@ -348,7 +349,7 @@ export function Relay3D() {
   useEffect(() => {
     let live = true
     loadSpace().then((sp) => live && setSpace(sp))
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(true)
+    if (!reducedMotion().matches) setPlaying(true)
     return () => {
       live = false
     }

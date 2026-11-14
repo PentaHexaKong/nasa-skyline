@@ -5,6 +5,7 @@ import { palette } from '~/components/SiteIsland'
 import type { Summary, Terrain, Track } from '~/lib/data'
 import { hasTerrain, loadTerrain } from '~/lib/data'
 import { clearShare, downsample, extremes, lineOfSight, nearest, type Spot } from '~/lib/landscape'
+import { reducedMotion } from '~/lib/motion'
 import { longDate, minuteLabel } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'
 
@@ -401,7 +402,7 @@ export function Landscape({
       const reveal =
         (Number.parseFloat(css.getPropertyValue('--reveal')) || 0) * (1 - (Number.parseFloat(css.getPropertyValue('--exit')) || 0))
       const pScroll = Number.parseFloat(css.getPropertyValue('--p')) || 0.5
-      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const reduced = reducedMotion().matches
       // The question's look crossfades rather than cuts.
       const goal = goalOf(modeRef.current)
       weights.lerp(goal, reduced ? 1 : Math.min(1, dt * 5))

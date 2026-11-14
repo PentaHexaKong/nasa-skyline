@@ -5,6 +5,7 @@ import { beginGlide, endGlide, moonBridge, plannerBridge, reaim, type SharedView
 import { halo, moonMaterial, toVec } from '~/components/moonGlobe'
 import type { MoonEphemeris } from '~/lib/data'
 import { bestHour, SYNODIC_HOURS, subPoints, whenAt } from '~/lib/moonLight'
+import { reducedMotion } from '~/lib/motion'
 import { minuteLabel, shortDate } from '~/lib/time'
 
 /**
@@ -184,7 +185,7 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.15
     renderer.setClearColor(0x000000, 0)
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const reduced = reducedMotion()
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 100)
     let dirty = true

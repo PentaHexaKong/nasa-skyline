@@ -7,6 +7,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { moonBridge, type SharedView } from '~/components/moonBridge'
 import { halo, moonMaterial, toVec } from '~/components/moonGlobe'
+import { reducedMotion } from '~/lib/motion'
 import { R_EARTH_KM, R_MOON_KM, R_SUN_KM, type Space, sampleSpace } from '~/lib/space'
 
 export type GlobeSite = { id: string; name: string; lat: number; lon: number; note: string }
@@ -83,7 +84,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
     renderer.toneMappingExposure = 1.15
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(40, 1, 1e-4, 1e7)
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const motion = reducedMotion()
     const coarse = window.matchMedia('(pointer: coarse)').matches
     let dirty = true
     const redraw = () => {
@@ -362,7 +363,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
       const p = pose(v)
       controls.enabled = v !== 'fromEarth'
       ;[controls.minDistance, controls.maxDistance] = limits[v]
-      if (animate && !reduced) tween = { from: prevTarget, fromOff: prevOff, fromFov: camera.fov, t0: performance.now(), ms: 1400 }
+      if (animate && !motion.matches) tween = { from: prevTarget, fromOff: prevOff, fromFov: camera.fov, t0: performance.now(), ms: 1400 }
       else {
         anchor(v, target)
         controls.target.copy(target)
@@ -384,7 +385,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
       const to = landing(id)
       if (!to || view !== 'moon') return
       latest.current.onFlight()
-      if (reduced) {
+      if (motion.matches) {
         latest.current.onArrive(id)
         return
       }
@@ -394,7 +395,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
     setView(view, false)
     const start = latest.current.from && landing(latest.current.from)
     if (start && view === 'moon') {
-      if (reduced) camera.position.copy(off)
+      if (motion.matches) camera.position.copy(off)
       else {
         camera.position.copy(start)
         controls.enabled = false
