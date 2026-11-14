@@ -851,6 +851,32 @@
     transparent
   );
 }
+/*
+  Explore's landing. `--reveal` (the ground fading in from black once the Moon has faded out, while the landscape's
+  own camera comes down from orbit) and `--exit` (the camera climbing back out) run 0 to 1 with the scroll, set on
+  `.discover`. The Moon and the ground never show at once.
+*/
+.discover-window {
+  /* In over the first part of the descent; out over the first half of the climb, so it has gone before the Moon
+     comes back. Nothing shows before, so no ground rides up the screen with the section. */
+  opacity: calc(min(1, var(--reveal, 0) * 2.5) * clamp(0, calc(1 - var(--exit, 0) * 2), 1));
+}
+.discover-shade {
+  opacity: clamp(0, calc((var(--reveal, 0) - 0.5) * 2), 1);
+}
+.discover .landscape-pin {
+  opacity: calc(clamp(0, calc((var(--reveal, 0) - 0.85) * 6.7), 1) * clamp(0, calc(1 - var(--exit, 0) * 3), 1));
+}
+.discover-text {
+  --shown: calc(clamp(0, calc((var(--reveal, 0) - 0.65) * 2.9), 1) * clamp(0, calc(1 - var(--exit, 0) * 2.5), 1));
+  opacity: var(--shown);
+  translate: 0 calc((1 - var(--shown)) * 12px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .discover-text {
+    translate: none;
+  }
+}
 .story-bridge {
   isolation: isolate;
   background-color: transparent;

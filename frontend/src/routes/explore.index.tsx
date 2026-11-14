@@ -47,8 +47,9 @@ export const Route = createFileRoute('/explore/')({
 const POSES: MoonPose[] = [
   // The whole Moon, centred, lit as on the moment in the corner.
   { cam: [-30, 10, 5.2], side: 'center' },
-  // Getting closer: the camera dives toward the south pole while the landscape takes over the screen.
-  { cam: [-82, 0, 1.45], look: [-89, 0, 0.9], sites: ['shackleton-rim'], opacity: 0, side: 'center' },
+  // Getting closer: the camera dives toward Shackleton Rim and the Moon fades to black on the way, so Discovery's
+  // landscape can take the dive on from orbit without the two ever showing at once.
+  { cam: [-83, 0, 1.28], look: [-89.7755, 203.552, 1], sites: ['shackleton-rim'], opacity: 0, side: 'center' },
   // The true-scale scene: this Moon carries on into the scene's Moon view (moonBridge.ts).
   { cam: [-50, 18, 6], opacity: 0, side: 'left', scene: true },
   { cam: [-20, 60, 14], opacity: 0, side: 'right' },
@@ -202,12 +203,29 @@ const MODES: {
 ]
 
 /**
- * 2. The moment of discovery: the screen fills with a real polar landscape and the text floats on the left. The section
- * is three screens tall and stays pinned; scrolling walks the three questions in turn, and the tabs jump to them.
+ * Discovery's pinned scroll, as shares of its run: arriving (the Moon dives and fades to black, then the ground fades in
+ * from orbit and the camera comes down), the three questions, then leaving (the camera climbs back out and the ground
+ * fades, before the Moon returns for the next section).
+ */
+const ARRIVAL = 0.38
+const LEAVING = 0.16
+/** Where in the run the Moon has all but faded out (measured: under 5 % by 0.12). */
+const MOON_GONE = 0.13
+const ease = (t: number) => {
+  const k = Math.max(0, Math.min(1, t))
+  return k * k * (3 - 2 * k)
+}
+
+/**
+ * 2. The moment of discovery. The section stays pinned for several screens. The shared Moon dives toward the site and
+ * fades to black; the real landscape then fades in seen from orbit and its camera comes down onto the site
+ * (`--reveal`, 0 to 1), so it reads as one dive. Scrolling then walks the three questions, and the tabs jump to them.
+ * At the end the camera climbs back out and the ground fades (`--exit`, 0 to 1) before the Moon returns.
  */
 function Discovery({ site }: { site: Summary }) {
   const ref = useScrollProgress<HTMLElement>()
-  const [index, setIndex] = useState(0)
+  // -1 while arriving, -2 while leaving, else the question shown.
+  const [index, setIndex] = useState(-1)
   const [moment, setMoment] = useState<{ m: Moment; sunShare: number; earthShare: number | null; km: number }>()
   const onMoment = useCallback((m: Moment, l: { sunShare: number; earthShare: number | null; km: number }) => setMoment({ m, ...l }), [])
 
@@ -218,9 +236,14 @@ function Discovery({ site }: { site: Summary }) {
     const read = () => {
       raf = 0
       const r = el.getBoundingClientRect()
-      const run = Math.max(1, r.height - window.innerHeight)
-      const x = Math.max(0, Math.min(0.999, -r.top / run))
-      setIndex(Math.floor(x * MODES.length))
+      const run = Math.max(1, r.height - window.innerHeight + 56)
+      // Pinned below the header, so the run starts when the top reaches it.
+      const x = Math.max(0, Math.min(0.999, (56 - r.top) / run))
+      // The ground comes in from black once the Moon has gone, and the dive carries on down into it.
+      el.style.setProperty('--reveal', ease((x - MOON_GONE) / (ARRIVAL - MOON_GONE)).toFixed(4))
+      el.style.setProperty('--exit', ease((x - (1 - LEAVING)) / LEAVING).toFixed(4))
+      const asked = (x - ARRIVAL) / (1 - ARRIVAL - LEAVING)
+      setIndex(x < ARRIVAL ? -1 : x > 1 - LEAVING * 0.5 ? -2 : Math.min(MODES.length - 1, Math.floor(asked * MODES.length)))
     }
     const on = () => {
       if (!raf) raf = requestAnimationFrame(read)
@@ -236,12 +259,15 @@ function Discovery({ site }: { site: Summary }) {
   const go = (i: number) => {
     const el = ref.current
     if (!el) return
-    const run = el.offsetHeight - window.innerHeight
+    const run = el.offsetHeight - window.innerHeight + 56
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    window.scrollTo({ top: el.offsetTop + (run * (i + 0.5)) / MODES.length, behavior: reduced ? 'auto' : 'smooth' })
+    const x = ARRIVAL + ((1 - ARRIVAL - LEAVING) * (i + 0.5)) / MODES.length
+    window.scrollTo({ top: el.offsetTop - 56 + run * x, behavior: reduced ? 'auto' : 'smooth' })
   }
 
-  const mode = MODES[index] ?? MODES[0]
+  // Arriving or leaving: the text is out of sight, so out of reach too.
+  const away = index < 0
+  const mode = MODES[index === -2 ? MODES.length - 1 : Math.max(0, index)] ?? MODES[0]
   if (!mode) return null
   const reading =
     moment &&
@@ -254,13 +280,18 @@ function Discovery({ site }: { site: Summary }) {
           : null)
 
   return (
-    <section ref={ref} id="discover" data-moon-chapter aria-labelledby="discover-title" className="relative h-[300svh]">
+    <section ref={ref} id="discover" data-moon-chapter aria-labelledby="discover-title" className="discover relative h-[460svh]">
       <div className="sticky top-14 h-[calc(100svh-3.5rem)] overflow-hidden">
-        <div className="scene-edges pointer-events-none absolute inset-0">
-          <Landscape site={site} mode={mode.id} onMoment={onMoment} />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,#000_0%,rgb(0_0_0/0.75)_32%,transparent_62%)] max-lg:bg-[linear-gradient(180deg,#000_0%,rgb(0_0_0/0.7)_45%,transparent_75%)]" />
+        <div className="pointer-events-none absolute inset-0">
+          <div className="discover-window absolute inset-0">
+            <div className="absolute inset-0">
+              {/* Arriving and leaving, the ground shows its plain shape: the question's colours belong to the question. */}
+              <Landscape site={site} mode={away ? 'ground' : mode.id} onMoment={onMoment} />
+            </div>
+            <div className="discover-shade absolute inset-0 bg-[linear-gradient(90deg,#000_0%,rgb(0_0_0/0.75)_32%,transparent_62%)] max-lg:bg-[linear-gradient(180deg,#000_0%,rgb(0_0_0/0.7)_45%,transparent_75%)]" />
+          </div>
         </div>
-        <div className="relative mx-auto grid h-full max-w-7xl grid-rows-[1fr_auto] px-4 py-8 sm:px-6">
+        <div inert={away} className="discover-text relative mx-auto grid h-full max-w-7xl grid-rows-[1fr_auto] px-4 py-8 sm:px-6">
           <div className="grid max-w-[30rem] content-start gap-5 lg:content-center">
             <p className="eyebrow text-story-ink">The lunar south pole</p>
             <h2 id="discover-title" className="text-[clamp(2rem,1.3rem+3vw,3.5rem)] leading-[1.02] font-medium text-balance">
