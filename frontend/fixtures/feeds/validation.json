@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "origin": "fixture",
+  "provenance": {
+    "algorithm_version": "fixture",
+    "sources": ["FIXTURE: hand-made values for UI development. Not derived from any dataset."],
+    "assumptions": ["FIXTURE: placeholder comparison."]
+  },
+  "rows": [
+    {
+      "site_id": "connecting-ridge",
+      "ours": {
+        "sun_share": 0.5,
+        "earth_any_share": 0.5,
+        "period": "FIXTURE period",
+        "observer_height_m": 2
+      },
+      "reference": {
+        "sun_share": 0.48,
+        "earth_any_share": 0.52,
+        "period": "FIXTURE period",
+        "product": "FIXTURE product"
+      },
+      "difference_notes": ["FIXTURE note."]
+    },
+    {
+      "site_id": "malapert-massif",
+      "ours": {
+        "sun_share": 0.55,
+        "earth_any_share": 0.5,
+        "period": "FIXTURE period",
+        "observer_height_m": 2
+      },
+      "reference": {
+        "sun_share": 0.53,
+        "earth_any_share": 0.52,
+        "period": "FIXTURE period",
+        "product": "FIXTURE product"
+      },
+      "difference_notes": ["FIXTURE note."]
+    },
+    {
+      "site_id": "im2-mons-mouton",
+      "ours": {
+        "sun_share": 0.6,
+        "earth_any_share": 0.5,
+        "period": "FIXTURE period",
+        "observer_height_m": 2
+      },
+      "reference": {
+        "sun_share": 0.58,
+        "earth_any_share": 0.52,
+        "period": "FIXTURE period",
+        "product": "FIXTURE product"
+      },
+      "difference_notes": ["FIXTURE note."]
+    },
+    {
+      "site_id": "im1-malapert",
+      "ours": {
+        "sun_share": 0.65,
+        "earth_any_share": 0.5,
+        "period": "FIXTURE period",
+        "observer_height_m": 2
+      },
+      "reference": {
+        "sun_share": 0.63,
+        "earth_any_share": 0.52,
+        "period": "FIXTURE period",
+        "product": "FIXTURE product"
+      },
+      "difference_notes": ["FIXTURE note."]
+    },
+    {
+      "site_id": "apollo11",
+      "ours": {
+        "sun_share": 0.7,
+        "earth_any_share": 0.5,
+        "period": "FIXTURE period",
+        "observer_height_m": 2
+      },
+      "reference": {
+        "sun_share": 0.6799999999999999,
+        "earth_any_share": 0.52,
+        "period": "FIXTURE period",
+        "product": "FIXTURE product"
+      },
+      "difference_notes": ["FIXTURE note."]
+    }
+  ]
+}

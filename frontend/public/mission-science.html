@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SKYLINE Mission Science</title><link rel="icon" href="data:,">
+<style>body{font:18px Barlow,Arial,sans-serif;background:#101820;color:#eaf1ed;margin:0}main{max-width:850px;margin:4rem auto;padding:1.5rem}a{color:#abd9c1}form{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:1.4rem;margin:2rem 0}label{display:grid;gap:.5rem;min-width:0}input,select,button{box-sizing:border-box;min-width:0;max-width:100%;font:inherit;padding:.7rem;border-radius:4px;border:1px solid #638277}button{background:#b8e5bc;color:#10251c;cursor:pointer}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:1rem;border-bottom:1px solid #638277}#status{line-height:1.6}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style>
+<main><a href="/planner">Back to planner</a><h1>Mission science</h1>
+<form id="query"><label>Verified site<select id="site" required></select></label><label>Start time (UTC)<input id="start" type="datetime-local" value="2025-01-01T00:00" required></label><label>Duration (hours)<input id="duration" type="number" min="1" max="48" value="24" required></label><label>Ephemeris profile<select id="profile"><option value="geometric">Geometric</option><option value="apparent">Apparent</option></select></label><label>Solar visibility<select id="solar"><option value="anyDisk">Any part of disk</option><option value="fullDisk">Full disk</option><option value="center">Disk center</option></select></label><button id="submit">Evaluate</button></form>
+<p id="status" role="status">Loading supported sites…</p><section id="result"></section><section id="relay" hidden>
+<h2>Relay Engineering</h2>
+<p id="relaySupport" role="status"></p>
+<button id="relayCompare" type="button" disabled>Compare direct and relay-assisted availability</button>
+<section id="relayResult"></section>
+<details id="relayDetails" hidden><summary>Relay scientific provenance</summary><pre id="relayProvenance"></pre></details>
+</section>
+<details hidden id="details"><summary>Scientific provenance</summary><pre id="provenance"></pre></details></main>
+<script type="module" src="/missionScience.js"></script></html>
+

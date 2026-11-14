@@ -1,17 +1,660 @@
-
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
+@import "@cloudflare/kumo/styles";
 @import "tailwindcss";
+@import "@fontsource/barlow/400.css";
+@import "@fontsource/barlow/500.css";
+@import "@fontsource/barlow/600.css";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
 
-* {
-  box-sizing: border-box;
+/*
+  Kumo is the base design system: its semantic tokens (kumo-canvas, kumo-line,
+  text-kumo-subtle...), its 14px type scale and its components. Mode is Kumo's:
+  `data-mode="dark"` on <html> (our default), removed for light.
+
+  Our own layer sits on top, two kinds of token:
+  1. App aliases (bg, surface, line, ink...) that point at Kumo tokens. App code
+     uses these; to restyle the neutrals later, override the Kumo tokens in the
+     `[data-theme="skyline"]` block below, not here.
+  2. Chart tokens Kumo has no word for: the Sun (amber), the comms target (cyan),
+     terrain. In the data, colour means only those two subjects.
+
+  Brand (see DESIGN.md): black and white carry the interface, and colour only ever means
+  something. Actions and the active page are ink on canvas. Amber is the Sun, cyan is Earth,
+  red is the current moment and alerts. Barlow for text, DM Mono for numbers and small labels.
+  No NASA insignia, worm or seal anywhere: third parties may not use them (14 CFR 1221).
+*/
+:root {
+  --amber-200: oklch(0.9 0.08 80);
+  --amber-400: oklch(0.82 0.15 75);
+  --amber-600: oklch(0.6 0.16 58);
+  --amber-850: oklch(0.36 0.08 65);
+
+  /* The current moment on time charts, and alerts. Deeper in light mode to hold 4.5:1 on white. */
+  --now: light-dark(#d93216, #fc3d21);
+
+  --cyan-400: oklch(0.8 0.11 215);
+  --cyan-600: oklch(0.5 0.12 230);
+  --cyan-850: oklch(0.33 0.06 225);
+
+  /* Light-mode Sun leans yellow (hue 72) so it never reads as the red current-moment marker. */
+  --sun: light-dark(oklch(0.56 0.13 72), var(--amber-400));
+  --sun-fill: light-dark(var(--amber-200), var(--amber-850));
+  --comms: light-dark(var(--cyan-600), var(--cyan-400));
+  --comms-fill: light-dark(oklch(0.92 0.04 220), var(--cyan-850));
+  --relay: light-dark(oklch(0.52 0.18 330), oklch(0.76 0.16 330));
+  --terrain: light-dark(oklch(0.9 0 0), oklch(0.235 0 0));
+  --terrain-edge: light-dark(oklch(0.4 0 0), oklch(0.68 0 0));
+  --shade: light-dark(oklch(0.6 0 0), oklch(0.5 0 0));
+  --daylight: light-dark(oklch(0.965 0.02 85), oklch(0.19 0.014 75));
+  /* Axis labels and footnotes: one step quieter than kumo-subtle, still 4.5:1 on canvas. */
+  --faint: light-dark(oklch(0.54 0 0), oklch(0.58 0 0));
+  --grid: light-dark(oklch(0.955 0 0), oklch(0.22 0 0));
 }
 
-html,
-body,
-#app {
-  min-height: 100%;
+/*
+  Our theme over Kumo. Unlayered, so it beats Kumo's @layer base tokens in both modes.
+  Kumo's blue brand becomes ink on canvas; links read as ink with an underline.
+  Repeated on [data-mode], so a region forced dark inside a light page (the landing tour, the 3D scenes) keeps it.
+*/
+:root,
+[data-mode] {
+  --brand: light-dark(#000, #fff);
+  --color-kumo-brand: var(--brand);
+  --color-kumo-brand-hover: light-dark(oklch(0.3 0 0), oklch(0.88 0 0));
+  --text-color-kumo-link: var(--text-color-kumo-default);
+  --color-kumo-canvas: light-dark(#fff, #000);
 }
 
-body {
-  margin: 0;
+/* Kumo hard-codes white text on primary buttons. On our ink fill the text has to flip with the theme. */
+[data-kumo-component][style*="--kumo-button-emphasis"] {
+  --color-white: light-dark(#fff, #000);
 }
 
+/*
+  Regions forced dark inside a light page (the 3D scenes). Custom CSS that reads these app aliases would otherwise get
+  the root's light values (a white halo behind white text), so they are set here for the region.
+*/
+[data-mode="dark"] {
+  --color-bg: #000;
+  --color-brand: #fff;
+  --color-ink: oklch(0.97 0 0);
+}
+
+/* Press feedback on buttons and popover triggers; links and text triggers stay still. */
+@media (prefers-reduced-motion: no-preference) {
+  :is(
+    [data-kumo-component="Button"],
+    [data-kumo-component="LinkButton"],
+    [data-kumo-part="trigger"]:not([data-kumo-component="Collapsible"])
+  ):not(:disabled) {
+    transition: scale 160ms var(--ease-out-quart);
+  }
+  :is(
+    [data-kumo-component="Button"],
+    [data-kumo-component="LinkButton"],
+    [data-kumo-part="trigger"]:not([data-kumo-component="Collapsible"])
+  ):not(:disabled):active {
+    scale: 0.96;
+  }
+}
+
+/* Kumo marks today in its blue, which means nothing here. */
+:root .rdp-root {
+  --rdp-today-color: var(--text-color-kumo-default);
+}
+[data-today]:not([data-selected]) button {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Touch: iOS zooms any field under 16 px, and small controls get a larger hit area without moving. */
+@media (pointer: coarse) {
+  input[type="number"] {
+    font-size: 16px;
+  }
+  :is(
+    [data-kumo-component="Button"],
+    [data-kumo-component="LinkButton"],
+    [data-kumo-part="trigger"]:not([data-kumo-component="Collapsible"])
+  )::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: var(--hit-height, 44px);
+    translate: 0 -50%;
+  }
+  /* Rows in the dock wrap 6 px apart on phones; a 44 px target would reach into the next row. */
+  .dock {
+    --hit-height: calc(100% + 6px);
+  }
+  /* Stacked disclosure triggers sit 12 px apart, so each may claim 6 px of that gap. */
+  [data-kumo-part="default-trigger"] {
+    position: relative;
+  }
+  [data-kumo-part="default-trigger"]::after {
+    content: "";
+    position: absolute;
+    inset: -6px 0;
+  }
+  .globe-site::before {
+    content: "";
+    position: absolute;
+    inset: calc(var(--hit, 0px) * -1);
+  }
+}
+
+/* Kumo draws focus with a brand-coloured ring; now that brand is neutral, keep a high-contrast outline too. */
+[data-kumo-component]:focus-visible {
+  outline: 2px solid var(--color-kumo-focus);
+  outline-offset: 2px;
+}
+
+@theme inline {
+  --color-bg: var(--color-kumo-canvas);
+  --color-surface: var(--color-kumo-elevated);
+  --color-surface-raised: var(--color-kumo-base);
+  --color-surface-hover: var(--color-kumo-tint);
+  --color-line: var(--color-kumo-hairline);
+  --color-line-strong: var(--color-kumo-line);
+  --color-grid: var(--grid);
+  --color-ink: var(--text-color-kumo-default);
+  --color-ink-muted: var(--text-color-kumo-subtle);
+  --color-ink-faint: var(--faint);
+  --color-accent: var(--color-kumo-contrast);
+  --color-accent-ink: var(--text-color-kumo-inverse);
+  --color-danger: var(--text-color-kumo-danger);
+  --color-brand: var(--brand);
+  --color-now: var(--now);
+  --color-relay: var(--relay);
+
+  --color-sun: var(--sun);
+  --color-sun-fill: var(--sun-fill);
+  --color-comms: var(--comms);
+  --color-comms-fill: var(--comms-fill);
+  --color-terrain: var(--terrain);
+  --color-terrain-edge: var(--terrain-edge);
+  --color-shade: var(--shade);
+  --color-daylight: var(--daylight);
+}
+
+@theme {
+  --font-sans: "Barlow", system-ui, sans-serif;
+  --font-display: "Barlow", system-ui, sans-serif;
+  --font-mono: "DM Mono", ui-monospace, monospace;
+
+  /* Crisper than Kumo's defaults: an instrument, not a consumer app. */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+
+  /* Kumo owns xs 12 / sm 13 / base 14 (content) / lg 16. We add the small chart size and the large ones. */
+  --text-2xs: 11px;
+  --text-2xs--line-height: 1rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  /* Headline readouts. */
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 2.5rem;
+  /* Landing page only. */
+  --text-display: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  --text-display--line-height: 1.08;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+:root {
+  /* The header's content edge, for overlays that float over a full-bleed scene. */
+  --page-edge: max(1.5rem, calc((100vw - 80rem) / 2 + 1.5rem));
+  --z-sticky: 10;
+  --z-popover: 20;
+  --z-tooltip: 30;
+}
+
+@layer base {
+  html {
+    /* Focused controls stop clear of the sticky header and dock (WCAG 2.4.11). */
+    scroll-padding: 4.5rem 0 6.5rem;
+    background: var(--color-kumo-canvas);
+    color: var(--text-color-kumo-default);
+    font-family: var(--font-sans);
+    font-size: 100%;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  html:has(nav[aria-label="Planning steps"]) {
+    scroll-padding: 11rem 0 1rem;
+  }
+  @media (width < 40rem) {
+    html:has(nav[aria-label="Planning steps"]) {
+      scroll-padding: 7.5rem 0 4.5rem;
+    }
+  }
+  body {
+    @apply text-base;
+    margin: 0;
+  }
+  a,
+  button,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+  :is(
+    [data-kumo-component="Button"],
+    [data-kumo-component="LinkButton"],
+    [data-kumo-part="trigger"]:not([data-kumo-component="Collapsible"])
+  ) {
+    position: relative;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-kumo-focus);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+  }
+}
+
+/* Relay contact is always dashed: pink and Earth cyan merge under deuteranopia (DESIGN.md). */
+.lane-relay {
+  background: repeating-linear-gradient(90deg, var(--relay) 0 6px, transparent 6px 9px);
+}
+
+/* Scenario identifiers and quiet, inward-facing navigation brackets. */
+.scenario-choice-link {
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-out-quart);
+}
+.scenario-choice-link:hover {
+  background: var(--color-surface);
+}
+.scenario-choice-link:focus-visible {
+  outline-offset: -3px;
+}
+.scenario-choice-icon {
+  position: relative;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  color: var(--sun);
+  pointer-events: none;
+}
+.scenario-choice-icon[data-piece="relay"] {
+  color: var(--relay);
+}
+.scenario-choice-icon[data-piece="rover"] {
+  color: var(--comms);
+}
+.scenario-choice-brackets {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  stroke: var(--color-ink-faint);
+  stroke-width: 1;
+  opacity: 0.45;
+  transform-origin: center;
+  transition:
+    transform var(--duration-fast) var(--ease-out-quart),
+    opacity var(--duration-fast) var(--ease-out-quart);
+}
+.scenario-choice-arrow {
+  transition: transform var(--duration-fast) var(--ease-out-quart);
+}
+.scenario-choice-link:is(:hover, :focus-visible) .scenario-choice-brackets {
+  transform: scale(0.9);
+  opacity: 0.9;
+}
+.scenario-choice-link:is(:hover, :focus-visible) .scenario-choice-arrow {
+  transform: translateX(2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scenario-choice-link:is(:hover, :focus-visible) .scenario-choice-brackets,
+  .scenario-choice-link:is(:hover, :focus-visible) .scenario-choice-arrow {
+    transform: none;
+  }
+}
+
+/* Numbers inside sentences: tabular figures in the body face. */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Readouts: stand-alone values in DM Mono, as Horizon sets "numbers and large numbers". */
+@utility readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+/* Small uppercase labels in DM Mono. Uppercase needs a little open tracking to stay legible. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/*
+  Landing entrance only (seen once per visit, so it may take its time). Each piece rises 8px
+  and fades, staggered by --i. Reduced motion keeps the fade and drops the movement.
+*/
+@keyframes rise {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@utility rise {
+  animation: rise 520ms var(--ease-out-strong) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  @media (prefers-reduced-motion: reduce) {
+    animation-name: fade-in;
+    animation-duration: 200ms;
+  }
+}
+
+/* Text floating over the 3D scene keeps a halo of the canvas colour. */
+.scene-text {
+  text-shadow:
+    0 0 4px var(--color-bg),
+    0 0 12px var(--color-bg);
+}
+
+/* 3D island labels: positioned each frame from projected scene points. */
+.island-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 200ms var(--ease-out-quart);
+  text-shadow:
+    0 0 3px var(--color-bg),
+    0 0 6px var(--color-bg),
+    0 0 10px var(--color-bg);
+  will-change: transform;
+}
+
+/* Moon globe site markers: the button sits on the site; its label floats beside it, placed each frame. */
+.globe-site {
+  width: 10px;
+  height: 10px;
+  transition: opacity 200ms var(--ease-out-quart);
+  will-change: transform;
+}
+.globe-site-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--color-brand);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-brand) 30%, transparent);
+  transition: scale 160ms var(--ease-out-quart);
+}
+/* Body names in the space scene: a ring on the body's centre and its name beside it. */
+.space-body {
+  will-change: transform;
+  transition: opacity 200ms var(--ease-out-quart);
+}
+.space-body::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid currentColor;
+  border-radius: 9999px;
+}
+.space-body[data-big="on"]::before {
+  display: none;
+}
+.space-body::after {
+  content: attr(data-text);
+  position: absolute;
+  left: calc(max(11px, var(--r, 0px) * 0.72 + 10px));
+  top: calc(-8px - var(--r, 0px) * 0.72);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.space-body[data-flip="on"]::after {
+  left: auto;
+  right: calc(max(11px, var(--r, 0px) * 0.72 + 10px));
+}
+.space-body[data-body="earth"] {
+  color: var(--cyan-400);
+}
+.space-body[data-body="sun"] {
+  color: var(--amber-400);
+}
+.space-body[data-body="moon"] {
+  color: oklch(0.95 0 0);
+}
+.readouts {
+  grid-template-columns: auto 1fr;
+}
+.readouts dt {
+  color: var(--text-color-kumo-subtle);
+}
+.globe-site-lead {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  width: var(--lead, 0);
+  height: 1px;
+  transform-origin: 0 50%;
+  rotate: var(--lead-a, 0rad);
+  background: color-mix(in oklab, var(--color-ink) 45%, transparent);
+  opacity: 0;
+}
+.globe-site[data-lead="on"] .globe-site-lead {
+  opacity: 1;
+}
+.globe-site:hover .globe-site-dot,
+.globe-site:focus-visible .globe-site-dot {
+  scale: 1.35;
+}
+.globe-site-label {
+  position: absolute;
+  top: calc(5px + var(--dy, -8px));
+  left: calc(5px + var(--dx, 11px));
+  display: grid;
+  gap: 2px;
+  padding: 3px 6px;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-bg) 72%, transparent);
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.globe-site[data-side="left"] .globe-site-label {
+  text-align: right;
+}
+@media (width < 40rem) {
+  .globe-site-label > :last-child {
+    display: none;
+  }
+}
+
+/*
+  Landing page tour: the Moon stays fixed behind the chapters (ParallaxMoon.tsx). The scrim spans the viewport, so its
+  stops are viewport shares: solid under the text column (which ends near 47% at 1440 px), clear over the Moon. Site dots and the Earth marker are
+  placed each frame from projected points. Text sits on solid canvas: a fade from the left on wide screens, a panel
+  that rises over the Moon on narrow ones.
+*/
+.tour-site {
+  width: 8px;
+  height: 8px;
+  transition: opacity 200ms var(--ease-out-quart);
+  will-change: transform;
+}
+.tour-site-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  /* On the Moon's imagery in either theme: white with a dark rim, visible on the lit and the night side. */
+  background: #fff;
+  box-shadow:
+    0 0 0 1.5px rgb(0 0 0 / 0.6),
+    0 0 0 4px rgb(255 255 255 / 0.22);
+}
+.tour-site-label {
+  position: absolute;
+  top: calc(4px + var(--dy, -8px));
+  left: 14px;
+  padding: 2px 6px;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-bg) 72%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-color-kumo-default);
+  opacity: 0;
+  transition: opacity 200ms var(--ease-out-quart);
+}
+.tour-site[data-side="left"] .tour-site-label {
+  left: auto;
+  right: 14px;
+}
+.tour-site[data-named="on"] .tour-site-label {
+  opacity: 1;
+}
+/*
+  The point under Earth: the label for the cyan ring on the ground. A pill like the site labels, set to the left so it
+  never sits on a site label to the right, with a short tick toward the ring.
+*/
+.tour-earth {
+  will-change: transform;
+  transition: opacity 200ms var(--ease-out-quart);
+}
+.tour-earth-label {
+  position: absolute;
+  top: 0;
+  right: 16px;
+  translate: 0 -50%;
+  padding: 2px 6px;
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--color-bg) 78%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--comms) 45%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--comms);
+}
+.tour-earth-label::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 8px;
+  height: 1px;
+  background: color-mix(in oklab, var(--comms) 70%, transparent);
+}
+/*
+  The sky behind the true-scale scene (06) fades into the page at its top and bottom edges. The page Moon draws the same
+  linear fade for its share of the sky (ParallaxMoon.tsx reads --sky-fade).
+*/
+:root {
+  --sky-fade: 3rem;
+}
+.sky-edges {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 var(--sky-fade), #000 calc(100% - var(--sky-fade)), transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 var(--sky-fade), #000 calc(100% - var(--sky-fade)), transparent);
+}
+.tour-scrim {
+  background: linear-gradient(
+    to right,
+    var(--color-bg) 0%,
+    var(--color-bg) 48%,
+    color-mix(in oklab, var(--color-bg) 70%, transparent) 53%,
+    transparent 61%
+  );
+}
+/* The mirror, for chapters whose text sits on the right while the Moon is on the left. */
+.tour-scrim-right {
+  background: linear-gradient(
+    to left,
+    var(--color-bg) 0%,
+    var(--color-bg) 48%,
+    color-mix(in oklab, var(--color-bg) 70%, transparent) 53%,
+    transparent 61%
+  );
+}
+/* The moment the sunlight shows, in the bottom corner on the Moon's side. */
+.tour-caption {
+  right: var(--page-edge);
+}
+.tour-caption[data-side="left"] {
+  right: auto;
+  left: var(--page-edge);
+}
+/*
+  The panel's ground runs edge to edge; the page clips it (overflow-x: clip), so it never scrolls sideways. It is black
+  fog at both ends: it thickens over the Moon at the top and thins out again over the panel's empty bottom padding
+  (at least 4rem in every chapter), so the Moon of the next chapter, or the scene's sky, comes up through it instead of
+  starting at a hard edge. Eased stops, so neither end shows a band.
+*/
+@media (width < 64rem) {
+  .tour-panel {
+    position: relative;
+    padding-top: 6rem;
+  }
+  .tour-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0 -100vmax;
+    z-index: -1;
+    background: linear-gradient(
+      to bottom,
+      transparent 0,
+      color-mix(in oklab, var(--color-bg) 30%, transparent) 2rem,
+      color-mix(in oklab, var(--color-bg) 72%, transparent) 4rem,
+      var(--color-bg) 6rem,
+      var(--color-bg) calc(100% - 4rem),
+      color-mix(in oklab, var(--color-bg) 72%, transparent) calc(100% - 2.5rem),
+      color-mix(in oklab, var(--color-bg) 30%, transparent) calc(100% - 1.25rem),
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+}

@@ -1,0 +1,759 @@
+{
+  "schema_version": 1,
+  "origin": "fixture",
+  "provenance": {
+    "algorithm_version": "fixture",
+    "sources": ["FIXTURE: hand-made values for UI development. Not derived from any dataset."],
+    "assumptions": ["FIXTURE: placeholder candidates."]
+  },
+  "site_id": "apollo11",
+  "period": {
+    "start_utc": "2026-11-14T00:00:00Z",
+    "end_utc": "2026-12-14T00:00:00Z"
+  },
+  "rule": "FIXTURE: placeholder selection rule.",
+  "candidates": [
+    {
+      "id": "S01",
+      "east_m": -1215,
+      "north_m": -565,
+      "ground_m": 1900,
+      "slope_deg": 10.7,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.627,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.548,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.688,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.526,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.586,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.337,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.553,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.881,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "east_m": 559,
+      "north_m": 565,
+      "ground_m": 1901,
+      "slope_deg": 9.2,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.875,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.43,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.549,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.449,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.62,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.568,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.925,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.809,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "east_m": 77,
+      "north_m": -80,
+      "ground_m": 1902,
+      "slope_deg": 1.4,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.79,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.837,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.66,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.652,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.4,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.535,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.91,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.795,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "east_m": 895,
+      "north_m": -1154,
+      "ground_m": 1903,
+      "slope_deg": 4.2,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.46,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.393,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.687,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.709,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.918,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.733,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.756,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.759,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "east_m": -832,
+      "north_m": 230,
+      "ground_m": 1904,
+      "slope_deg": 1.5,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.83,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.44,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.906,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.687,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.567,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.377,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.538,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.682,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "east_m": -76,
+      "north_m": -227,
+      "ground_m": 1905,
+      "slope_deg": 1.9,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.688,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.65,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.613,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.434,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.731,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.306,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.566,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.576,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "east_m": 962,
+      "north_m": -257,
+      "ground_m": 1906,
+      "slope_deg": 12.5,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.661,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.441,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.536,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.876,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.788,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.484,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.412,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.599,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "east_m": -310,
+      "north_m": -601,
+      "ground_m": 1907,
+      "slope_deg": 4.3,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.767,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.855,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.525,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.32,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.586,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.552,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.775,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.419,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "east_m": 326,
+      "north_m": -1081,
+      "ground_m": 1908,
+      "slope_deg": 7.6,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.513,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.882,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.571,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.792,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.527,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.433,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.818,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.477,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "east_m": 748,
+      "north_m": -235,
+      "ground_m": 1909,
+      "slope_deg": 3.4,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.523,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.55,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.766,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.869,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.481,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.536,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.517,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.884,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "east_m": 97,
+      "north_m": 119,
+      "ground_m": 1910,
+      "slope_deg": 1.8,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.616,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.839,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.886,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.74,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.949,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.859,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.581,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.411,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "east_m": 1047,
+      "north_m": -450,
+      "ground_m": 1911,
+      "slope_deg": 1.4,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.765,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.527,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.606,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.499,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.493,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.302,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.554,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.511,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "east_m": 246,
+      "north_m": -71,
+      "ground_m": 1912,
+      "slope_deg": 13.5,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.514,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.514,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.852,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.793,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.638,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.33,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.66,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.524,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "east_m": 309,
+      "north_m": -172,
+      "ground_m": 1913,
+      "slope_deg": 5.7,
+      "outcomes": [
+        {
+          "mast_m": 2,
+          "sun_share": 0.893,
+          "longest_no_sun_h": 200,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.318,
+          "longest_no_earth_h": 300,
+          "longest_no_earth_truncated": true,
+          "potential_vertical": 0.58,
+          "potential_horizontal": 0.01
+        },
+        {
+          "mast_m": 10,
+          "sun_share": 0.626,
+          "longest_no_sun_h": 155,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.787,
+          "longest_no_earth_h": 270,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.61,
+          "potential_horizontal": 0.011
+        },
+        {
+          "mast_m": 20,
+          "sun_share": 0.822,
+          "longest_no_sun_h": 110,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.324,
+          "longest_no_earth_h": 240,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.64,
+          "potential_horizontal": 0.012
+        },
+        {
+          "mast_m": 30,
+          "sun_share": 0.419,
+          "longest_no_sun_h": 65,
+          "longest_no_sun_truncated": false,
+          "earth_center_share": 0.338,
+          "longest_no_earth_h": 210,
+          "longest_no_earth_truncated": false,
+          "potential_vertical": 0.67,
+          "potential_horizontal": 0.013
+        }
+      ]
+    }
+  ]
+}

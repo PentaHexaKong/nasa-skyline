@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "origin": "fixture",
+  "provenance": {
+    "algorithm_version": "fixture",
+    "sources": ["FIXTURE: hand-made values for UI development. Not derived from any dataset."],
+    "assumptions": ["FIXTURE: placeholder power rows."]
+  },
+  "site_id": "apollo11",
+  "period": {
+    "start_utc": "2026-11-14T00:00:00Z",
+    "end_utc": "2026-12-14T00:00:00Z"
+  },
+  "outcomes": [
+    {
+      "mast_m": 2,
+      "sun_share": 0.76,
+      "longest_no_sun_h": 200,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.4,
+      "longest_no_earth_h": 300,
+      "longest_no_earth_truncated": true,
+      "potential_vertical": 0.74,
+      "potential_horizontal": 0.01
+    },
+    {
+      "mast_m": 10,
+      "sun_share": 0.79,
+      "longest_no_sun_h": 155,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.45,
+      "longest_no_earth_h": 270,
+      "longest_no_earth_truncated": false,
+      "potential_vertical": 0.77,
+      "potential_horizontal": 0.011
+    },
+    {
+      "mast_m": 20,
+      "sun_share": 0.82,
+      "longest_no_sun_h": 110,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.5,
+      "longest_no_earth_h": 240,
+      "longest_no_earth_truncated": false,
+      "potential_vertical": 0.8,
+      "potential_horizontal": 0.012
+    },
+    {
+      "mast_m": 30,
+      "sun_share": 0.85,
+      "longest_no_sun_h": 65,
+      "longest_no_sun_truncated": false,
+      "earth_center_share": 0.55,
+      "longest_no_earth_h": 210,
+      "longest_no_earth_truncated": false,
+      "potential_vertical": 0.83,
+      "potential_horizontal": 0.013
+    }
+  ]
+}
