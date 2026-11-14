@@ -82,7 +82,10 @@ function UnderstandPage() {
     () => summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east })),
     [summaries],
   )
-  const moon = useMemo<MoonScene>(() => ({ kind: 'tour', poses: CHAPTERS.map((c) => c.pose), sites, textPanels: true }), [sites])
+  const moon = useMemo<MoonScene>(
+    () => ({ kind: 'tour', poses: CHAPTERS.map((c) => c.pose), sites, textPanels: true, spin: true }),
+    [sites],
+  )
   useMoonScene(moon, eph)
   return (
     <Shell>

@@ -86,6 +86,7 @@ function ExplorePage() {
       kind: 'tour',
       poses: POSES,
       sites: summaries.map((s) => ({ id: s.site.id, name: shortName(s), lat: s.site.lat_deg, lon: s.site.lon_deg_east })),
+      spin: true,
     }),
     [summaries],
   )

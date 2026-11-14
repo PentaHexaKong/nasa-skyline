@@ -58,7 +58,18 @@ export type MoonScene =
       /** The content the disc must stay below. */
       clearOf: RefObject<HTMLElement | null>
     }
-  | { kind: 'tour'; poses: MoonPose[]; sites: TourSite[]; textPanels?: boolean }
+  | {
+      kind: 'tour'
+      poses: MoonPose[]
+      sites: TourSite[]
+      textPanels?: boolean
+      /**
+       * The Moon turns slowly on its axis under a still Sun, as on the front door: the view and the light keep the
+       * chapter's framing while the ground turns beneath them. Chapters showing the point under Earth hold the near
+       * side (see `tourSpin`).
+       */
+      spin?: boolean
+    }
 
 const FOV = 30
 /** The site header's height on the tour pages, in CSS px (h-14): the tour frames the Moon in the screen below it. */
@@ -454,6 +465,10 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       return { opGoal, earthGoal, sideGoal, nextHours, sceneShare }
     }
 
+    // ---- the tour's slow turn, in degrees: the camera circles the Moon's axis westward, so the Moon turns eastward
+    let tourSpin = 0
+    // The turn applied this frame, in radians; the Sun swings with the camera so the light keeps its side of the view.
+    let tourTurn = 0
     // ---- the front door's frame: the disc rises from the bottom of `frame`, clear of `clearOf`, turning on its axis
     let spin = 0
     const horizonSun = new THREE.Vector3()
@@ -649,6 +664,17 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
         earthGoal = g.earthGoal
         sideGoal = g.sideGoal
         sceneShare = g.sceneShare
+        if (sc.spin) {
+          // It turns only while no chapter needs the near side, so the turn waits there instead of swinging past.
+          if (!reduced.matches && earthGoal < 0.001) tourSpin = (tourSpin + SPIN_DEG_S * dt) % 360
+          // The point under Earth stays near the near side, so a chapter showing it brings the turn back to zero,
+          // the short way round, blended by the scroll like the rest of the pose.
+          const wrapped = ((((tourSpin + 180) % 360) + 360) % 360) - 180
+          const turn = (-wrapped * (1 - earthGoal) * Math.PI) / 180
+          camGoal.applyAxisAngle(yAxis, turn)
+          lookGoal.applyAxisAngle(yAxis, turn)
+          tourTurn = turn
+        } else tourTurn = 0
         // Time follows the scroll directly: the scroll is already smooth, and a sweep ends one synodic month on, where
         // the light matches the start, so stepping back to the chapter's moment is invisible.
         hours = g.nextHours
@@ -731,6 +757,8 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       if (tour) tourLens()
       else horizonLens(centreY)
       sunDir.value.copy(poseSun)
+      // The camera circles the Moon's axis to turn it; the Sun circles with it, so the Moon turns under a still Sun.
+      if (tour && tourTurn !== 0) sunDir.value.applyAxisAngle(yAxis, tourTurn)
       // Toward the scene's camera by its share.
       if (view && mapped) toward(view, mapped, shared)
       // Toward the previous page's frame by what is left of the glide. Same canvas, so its lens applies as it was.
