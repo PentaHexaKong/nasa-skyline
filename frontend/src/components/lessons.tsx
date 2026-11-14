@@ -249,7 +249,7 @@ export const LESSONS: Lesson[] = [
     },
     tryIt: [
       { label: 'See Shackleton Rim through the year', href: '/analyze/shackleton-rim' },
-      { label: 'Watch the Moon turn', href: '/?view=orbit#space' },
+      { label: 'Watch the Moon turn', href: '/explore?view=orbit#space' },
     ],
   },
   {

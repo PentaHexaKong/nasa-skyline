@@ -27,9 +27,10 @@ export type MoonPose = {
   opacity?: number
   /**
    * Which side of the screen the Moon sits on (default right). The chapter's text takes the other side on wide screens;
-   * on narrow ones the Moon stays above the text and only sways a little toward this side.
+   * on narrow ones the Moon stays above the text and only sways a little toward this side. `center` puts it in the
+   * middle with no fade beside it, for an opening screen whose text sits above and below the Moon.
    */
-  side?: 'left' | 'right'
+  side?: 'left' | 'right' | 'center'
   /**
    * The true-scale scene's chapter. While the scene hands its Moon view over (moonBridge.ts), this pose is the scene's
    * own camera, so the Moon carries on into the scene instead of a second Moon being drawn there.
@@ -44,8 +45,8 @@ const FOV = 30
 const SHIFT_WIDE = 0.2
 const SHIFT_NARROW = 0.08
 
-/** A pose's side as a number: +1 right, -1 left, so two poses blend through the middle. */
-export const sideOf = (p: MoonPose) => (p.side === 'left' ? -1 : 1)
+/** A pose's side as a number: +1 right, -1 left, 0 centre, so two poses blend through the middle. */
+export const sideOf = (p: MoonPose) => (p.side === 'left' ? -1 : p.side === 'center' ? 0 : 1)
 const EARTH_HEX = 0x5cd0ea // --cyan-400, the Earth colour (docs/design.md)
 
 const smooth = (a: number, b: number, x: number) => {
@@ -71,7 +72,17 @@ export function scrollState(boxes: { top: number; height: number }[], mid: numbe
   return { index, progress, from, to: Math.min(boxes.length - 1, from + 1), blend: smooth(0.25, 0.75, x - from) }
 }
 
-export default function ParallaxMoon({ poses, sites, eph }: { poses: MoonPose[]; sites: TourSite[]; eph: MoonEphemeris }) {
+export default function ParallaxMoon({
+  poses,
+  sites,
+  eph,
+  textPanels = false,
+}: {
+  poses: MoonPose[]
+  sites: TourSite[]
+  eph: MoonEphemeris
+  textPanels?: boolean
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dots = useRef<Record<string, HTMLDivElement | null>>({})
   const earthTag = useRef<HTMLDivElement>(null)
@@ -207,7 +218,7 @@ export default function ParallaxMoon({ poses, sites, eph }: { poses: MoonPose[];
           // skyBox: the scene's box in drawing-buffer pixels, x and y from the bottom left, then width and height.
           float inX = step(skyBox.x, gl_FragCoord.x) * step(gl_FragCoord.x, skyBox.x + skyBox.z);
           float edge = min(gl_FragCoord.y - skyBox.y, skyBox.y + skyBox.w - gl_FragCoord.y);
-          float m = inX * clamp(edge / skyFade, 0.0, 1.0);
+          float m = inX * smoothstep(0.0, skyFade, edge);
           gl_FragColor = vec4(gl_FragColor.rgb * skyStars * m, m);`,
         )
     }
@@ -262,7 +273,8 @@ export default function ParallaxMoon({ poses, sites, eph }: { poses: MoonPose[];
       // The fade keeps the text column clear of the Moon: it lies on the side away from the Moon. The scene has no
       // text column beside its Moon, so the fade goes as the scene takes over.
       const k = (side + 1) / 2
-      const keep = 1 - shared
+      // A centred Moon has no text column beside it, so neither fade shows.
+      const keep = (1 - shared) * Math.min(1, Math.abs(side) * 1.5)
       // The fade is page colour, so it gives way to the sky's box: it thins out across the box's soft edge, as the sky
       // thickens there (above the box while it comes up, below it once it has passed the middle).
       let mask = 'none'
@@ -589,7 +601,10 @@ export default function ParallaxMoon({ poses, sites, eph }: { poses: MoonPose[];
   return (
     // Sized to the large viewport (lvh): a phone's address bar sliding in and out never resizes the canvas, since a
     // resize clears the WebGL buffer and the Moon would blink on every scroll.
-    <div aria-hidden className="pointer-events-none fixed inset-x-0 top-14 z-0 h-[calc(100lvh-3.5rem)] overflow-hidden">
+    <div
+      aria-hidden
+      className={`pointer-events-none fixed inset-x-0 top-14 z-0 h-[calc(100lvh-3.5rem)] overflow-hidden ${textPanels ? 'tour-reading-scene' : ''}`}
+    >
       <canvas ref={canvasRef} className="size-full opacity-0" />
       {/* The fades that keep text off the Moon on wide screens, one per text side, under the labels so they never fade
           with them. Their opacity follows the Moon's side. */}
