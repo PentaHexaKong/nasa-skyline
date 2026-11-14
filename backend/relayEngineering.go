@@ -15,9 +15,55 @@ import (
 )
 
 type relayCompareRequest struct {
-	SiteID    string `json:"siteId"`
-	StartUTC  string `json:"startUtc"`
-	DurationS int    `json:"durationS"`
+	SiteID     string `json:"siteId"`
+	StartUTC   string `json:"startUtc"`
+	DurationS  int    `json:"durationS"`
+	Satellites *int   `json:"satellites,omitempty"`
+}
+
+const (
+	relayBaseCadenceS   = 120
+	relayMaxWindowS     = 28 * 86400
+	relayMaxSamples     = 6000
+	relayDefaultSats    = 2
+	relayMaxSats        = 4
+	relayTierVerified   = "verified-replay"
+	relayTierPropagated = "propagated-two-body"
+)
+
+var relayOrigin = time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+
+func (query relayCompareRequest) satelliteCount() int {
+	if query.Satellites == nil {
+		return relayDefaultSats
+	}
+	return *query.Satellites
+}
+
+// The mission-science leg caps a request at relayMaxSamples intervals, so a long window coarsens the shared grid.
+func relayCadenceFor(durationS int) int {
+	block := relayBaseCadenceS * relayMaxSamples
+	return relayBaseCadenceS * ((durationS + block - 1) / block)
+}
+
+// planRelayWindow validates a request and snaps it onto the cadence grid measured from the 2025 origin.
+func planRelayWindow(query relayCompareRequest) (relayCompareRequest, int, error) {
+	if query.DurationS <= 0 || query.DurationS > relayMaxWindowS {
+		return query, 0, fmt.Errorf("durationS must be between 1 and %d seconds", relayMaxWindowS)
+	}
+	if query.Satellites != nil && (*query.Satellites < 1 || *query.Satellites > relayMaxSats) {
+		return query, 0, fmt.Errorf("satellites must be between 1 and %d", relayMaxSats)
+	}
+	start, err := time.Parse(time.RFC3339, query.StartUTC)
+	if _, zoneOffsetS := start.Zone(); err != nil || zoneOffsetS != 0 {
+		return query, 0, fmt.Errorf("startUtc must be an RFC 3339 UTC timestamp")
+	}
+	cadence := relayCadenceFor(query.DurationS)
+	offset := start.Unix() - relayOrigin.Unix()
+	offset -= ((offset % int64(cadence)) + int64(cadence)) % int64(cadence)
+	query.StartUTC = time.Unix(relayOrigin.Unix()+offset, 0).UTC().Format(time.RFC3339)
+	query.DurationS = max(cadence, query.DurationS/cadence*cadence)
+	return query, cadence, nil
 }
 
 type comparisonEnvironment struct {
@@ -61,6 +107,8 @@ type comparisonRelay struct {
 		Correction    string            `json:"correction"`
 		SitePositionM []float64         `json:"sitePositionM"`
 		Sources       map[string]string `json:"sources"`
+		Tier          string            `json:"tier"`
+		Satellites    int               `json:"satellites"`
 	} `json:"provenance"`
 }
 
@@ -86,7 +134,7 @@ func callMissionService(ctx context.Context, client *http.Client, url string, pa
 	return body, nil
 }
 
-func validateRelayComparison(environment comparisonEnvironment, relay comparisonRelay) error {
+func validateRelayComparison(environment comparisonEnvironment, relay comparisonRelay, cadenceS int) error {
 	if environment.DataState != "computed" || relay.DataState != "computed" {
 		return fmt.Errorf("scientific evaluation unavailable")
 	}
@@ -125,7 +173,7 @@ func validateRelayComparison(environment comparisonEnvironment, relay comparison
 		return fmt.Errorf("incompatible timeline shapes")
 	}
 	for index, value := range times {
-		if value != float64(index*120) || value != environment.Result.TimesS[index] {
+		if value != float64(index*cadenceS) || value != environment.Result.TimesS[index] {
 			return fmt.Errorf("timestamp mismatch")
 		}
 		if math.IsNaN(margins[index]) || math.IsInf(margins[index], 0) {
@@ -138,7 +186,7 @@ func validateRelayComparison(environment comparisonEnvironment, relay comparison
 			return fmt.Errorf("invalid assisted connectivity")
 		}
 	}
-	if environment.Result.TimesS[len(times)] != float64(len(times)*120) {
+	if environment.Result.TimesS[len(times)] != float64(len(times)*cadenceS) {
 		return fmt.Errorf("endpoint mismatch")
 	}
 	return nil
@@ -188,7 +236,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 		decoder.DisallowUnknownFields()
 		var query relayCompareRequest
 		if decoder.Decode(&query) != nil {
-			writeError(w, 422, "invalid_comparison", "Expected siteId, startUtc and durationS.")
+			writeError(w, 422, "invalid_comparison", "Expected siteId, startUtc, durationS and optional satellites.")
 			return
 		}
 		var trailing any
@@ -196,11 +244,13 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 			writeError(w, 422, "invalid_comparison", "Send one JSON object.")
 			return
 		}
-		if query.DurationS <= 0 || query.DurationS > 86400 || query.DurationS%120 != 0 {
-			writeError(w, 422, "unsupported_scenario", "Comparison supports aligned windows up to one day.")
+		query, cadenceS, err := planRelayWindow(query)
+		if err != nil {
+			writeError(w, 422, "invalid_comparison", err.Error())
 			return
 		}
-		relayBody, err := callMissionService(r.Context(), client, relayURL+"/v1/evaluate", query)
+		adapterQuery := map[string]any{"siteId": query.SiteID, "startUtc": query.StartUTC, "durationS": query.DurationS, "satellites": query.satelliteCount(), "cadenceS": cadenceS}
+		relayBody, err := callMissionService(r.Context(), client, relayURL+"/v1/evaluate", adapterQuery)
 		if err != nil {
 			writeError(w, 422, "unsupported_scenario", err.Error())
 			return
@@ -210,7 +260,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 			writeError(w, 422, "scientific_incompatibility", "Missing actual replay timestamps.")
 			return
 		}
-		missionQuery := map[string]any{"site": query.SiteID, "startUtc": replayClock.Provenance.SampleUTC[0], "durationS": query.DurationS, "cadenceS": 120, "profile": "geometric", "earthDefinition": "center", "solarDefinition": "anyDisk", "horizonOffsetDeg": 0, "localResolutionM": 80}
+		missionQuery := map[string]any{"site": query.SiteID, "startUtc": replayClock.Provenance.SampleUTC[0], "durationS": query.DurationS, "cadenceS": cadenceS, "profile": "geometric", "earthDefinition": "center", "solarDefinition": "anyDisk", "horizonOffsetDeg": 0, "localResolutionM": 80}
 		environmentBody, err := callMissionService(r.Context(), client, missionURL+"/v1/evaluate", missionQuery)
 		if err != nil {
 			writeError(w, 502, "mission_unavailable", err.Error())
@@ -222,11 +272,11 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 			writeError(w, 502, "invalid_scientific_response", "Malformed scientific response.")
 			return
 		}
-		if err := validateRelayComparison(environment, relay); err != nil {
+		if err := validateRelayComparison(environment, relay, cadenceS); err != nil {
 			writeError(w, 422, "scientific_incompatibility", err.Error())
 			return
 		}
-		feed, err := buildRelayFeed(query, environmentBody, relayBody)
+		feed, err := buildRelayFeed(query, cadenceS, environmentBody, relayBody)
 		if err != nil {
 			writeError(w, 422, "scientific_incompatibility", err.Error())
 			return
@@ -235,7 +285,7 @@ func registerRelayEngineering(mux *http.ServeMux, client *http.Client) {
 			writeJSON(w, 200, feed)
 			return
 		}
-		writeJSON(w, 200, map[string]any{"schemaVersion": "1.0", "dataState": "computed", "direct": relay.Result.Direct, "assisted": relay.Result.Assisted, "improvementFraction": relay.Result.ImprovementFraction, "rfQualified": false, "rfAvailability": nil, "cadenceS": 120, "interval": "half-open left-endpoint bins", "comparison": "exact direct boolean parity on common timestamps", "missionScience": json.RawMessage(environmentBody), "relayScience": json.RawMessage(relayBody)})
+		writeJSON(w, 200, map[string]any{"schemaVersion": "1.0", "dataState": "computed", "direct": relay.Result.Direct, "assisted": relay.Result.Assisted, "improvementFraction": relay.Result.ImprovementFraction, "rfQualified": false, "rfAvailability": nil, "tier": relay.Provenance.Tier, "satellites": relay.Provenance.Satellites, "cadenceS": cadenceS, "interval": "half-open left-endpoint bins", "comparison": "exact direct boolean parity on common timestamps", "missionScience": json.RawMessage(environmentBody), "relayScience": json.RawMessage(relayBody)})
 	}
 	mux.HandleFunc("POST /api/relay-engineering/compare", compareHandler)
 	mux.HandleFunc("POST /api/relay-engineering/v1/relay-feed", compareHandler)

@@ -39,18 +39,18 @@ type sampleMetrics struct {
 	BlackoutIntervals              []sampleInterval `json:"blackoutIntervals"`
 }
 
-func deriveSampleMetrics(available []bool, start time.Time) sampleMetrics {
+func deriveSampleMetrics(available []bool, start time.Time, cadenceS int) sampleMetrics {
 	result := sampleMetrics{AvailableIntervals: []sampleInterval{}, BlackoutIntervals: []sampleInterval{}}
-	durationS := len(available) * 120
+	durationS := len(available) * cadenceS
 	for begin := 0; begin < len(available); {
 		end := begin + 1
 		for end < len(available) && available[end] == available[begin] {
 			end++
 		}
 		interval := sampleInterval{
-			StartUTC: start.Add(time.Duration(begin*120) * time.Second).Format(time.RFC3339),
-			EndUTC:   start.Add(time.Duration(end*120) * time.Second).Format(time.RFC3339),
-			StartS:   begin * 120, EndS: end * 120, StartClipped: begin == 0, EndClipped: end == len(available),
+			StartUTC: start.Add(time.Duration(begin*cadenceS) * time.Second).Format(time.RFC3339),
+			EndUTC:   start.Add(time.Duration(end*cadenceS) * time.Second).Format(time.RFC3339),
+			StartS:   begin * cadenceS, EndS: end * cadenceS, StartClipped: begin == 0, EndClipped: end == len(available),
 		}
 		if available[begin] {
 			result.AvailableIntervals = append(result.AvailableIntervals, interval)
@@ -68,17 +68,17 @@ func deriveSampleMetrics(available []bool, start time.Time) sampleMetrics {
 	return result
 }
 
-func deriveSampleMetricsOnGrid(available []bool, boundariesUTC []string) sampleMetrics {
-	metrics := deriveSampleMetrics(available, time.Time{})
+func deriveSampleMetricsOnGrid(available []bool, boundariesUTC []string, cadenceS int) sampleMetrics {
+	metrics := deriveSampleMetrics(available, time.Time{}, cadenceS)
 	for index := range metrics.AvailableIntervals {
 		interval := &metrics.AvailableIntervals[index]
-		interval.StartUTC = boundariesUTC[interval.StartS/120]
-		interval.EndUTC = boundariesUTC[interval.EndS/120]
+		interval.StartUTC = boundariesUTC[interval.StartS/cadenceS]
+		interval.EndUTC = boundariesUTC[interval.EndS/cadenceS]
 	}
 	for index := range metrics.BlackoutIntervals {
 		interval := &metrics.BlackoutIntervals[index]
-		interval.StartUTC = boundariesUTC[interval.StartS/120]
-		interval.EndUTC = boundariesUTC[interval.EndS/120]
+		interval.StartUTC = boundariesUTC[interval.StartS/cadenceS]
+		interval.EndUTC = boundariesUTC[interval.EndS/cadenceS]
 	}
 	return metrics
 }
@@ -109,13 +109,51 @@ func checkRelaySummary(raw json.RawMessage, metrics sampleMetrics) error {
 	return nil
 }
 
-func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte) (map[string]any, error) {
+func relayDynamicsMatchTier(tier, dynamics string) bool {
+	if tier == relayTierVerified {
+		return dynamics == "saved two-body states, no new propagation"
+	}
+	return strings.HasPrefix(dynamics, "Two-body Moon-centered propagation of the verified Candidate 2 orbital elements")
+}
+
+// The verified tier is valid across the whole saved replay. The propagated tier is valid only for the requested window.
+func relayTrajectoryValidity(tier, windowStart, windowEnd string) (epoch, validStart, validEnd string) {
+	if tier == relayTierVerified {
+		return "2025-01-01T00:00:00Z", "2025-01-01T00:00:00Z", "2025-01-29T00:00:00Z"
+	}
+	return windowStart, windowStart, windowEnd
+}
+
+func relayLadderSource(tier string) string {
+	if tier == relayTierVerified {
+		return "Synchronized mission-science and pinned Candidate 2 replay"
+	}
+	return "Synchronized mission-science and propagated Candidate 2 elements"
+}
+
+func relayLimitations(tier string, cadenceS int) []string {
+	if tier == relayTierVerified {
+		return []string{"120-second sampled geometry with left-endpoint bin metrics", "Subcadence transitions and outages may be missed", "Interval edges are sample-bin boundaries", "Saved two-body trajectory replay within its pinned 2025 epoch only", "Spherical Moon occultation for relay-to-Earth", "Sampled terrain skyline for surface hops", "Earth-center geometric target; ground-station and operational RF models unavailable"}
+	}
+	return []string{
+		fmt.Sprintf("%d-second sampled geometry with left-endpoint bin metrics", cadenceS),
+		"Subcadence transitions and outages may be missed",
+		"Interval edges are sample-bin boundaries",
+		"Two-body propagation of the verified Candidate 2 elements, with no Earth third-body perturbation and no lunar gravity harmonics",
+		"Propagation accuracy is unvalidated away from January 2025",
+		"Spherical Moon occultation for relay-to-Earth",
+		"Sampled terrain skyline for surface hops",
+		"Earth-center geometric target; ground-station and operational RF models unavailable",
+	}
+}
+
+func buildRelayFeed(query relayCompareRequest, cadenceS int, environmentBody, relayBody []byte) (map[string]any, error) {
 	var environment comparisonEnvironment
 	var relay comparisonRelay
 	if json.Unmarshal(environmentBody, &environment) != nil || json.Unmarshal(relayBody, &relay) != nil {
 		return nil, fmt.Errorf("malformed scientific response")
 	}
-	if err := validateRelayComparison(environment, relay); err != nil {
+	if err := validateRelayComparison(environment, relay, cadenceS); err != nil {
 		return nil, err
 	}
 	var source struct {
@@ -173,16 +211,26 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 	if err != nil || zoneOffsetS != 0 || start.Nanosecond() != 0 {
 		return nil, fmt.Errorf("UTC grid epoch required")
 	}
-	origin := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
-	offset := int(start.Sub(origin).Seconds())
-	if query.DurationS <= 0 ||
-		query.DurationS > 86400 ||
-		query.DurationS%120 != 0 ||
-		offset < 0 ||
-		offset%120 != 0 ||
-		offset+query.DurationS > 28*86400 ||
+	offset := int(start.Sub(relayOrigin).Seconds())
+	satellites := query.satelliteCount()
+	if cadenceS <= 0 ||
+		cadenceS%relayBaseCadenceS != 0 ||
+		query.DurationS <= 0 ||
+		query.DurationS > relayMaxWindowS ||
+		query.DurationS%cadenceS != 0 ||
+		query.DurationS/cadenceS > relayMaxSamples ||
+		offset%cadenceS != 0 ||
+		satellites < 1 ||
+		satellites > relayMaxSats ||
 		(query.SiteID != "CR1" && query.SiteID != "GR1" && query.SiteID != "SR1") {
-		return nil, fmt.Errorf("unsupported pinned replay scenario")
+		return nil, fmt.Errorf("unsupported relay scenario")
+	}
+	tier := relay.Provenance.Tier
+	verifiedWindow := offset >= 0 && offset+query.DurationS <= 28*86400 && satellites == relayDefaultSats && cadenceS == relayBaseCadenceS
+	if (tier != relayTierVerified && tier != relayTierPropagated) ||
+		(tier == relayTierVerified) != verifiedWindow ||
+		relay.Provenance.Satellites != satellites {
+		return nil, fmt.Errorf("relay tier mismatch")
 	}
 	request := source.Provenance.Request
 	missionRequest := env.Provenance.Request
@@ -199,7 +247,7 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 	boundariesUTC := append(append([]string{}, relay.Provenance.SampleUTC...), relay.Provenance.EndUTC)
 	for index, label := range boundariesUTC {
 		stamp, err := time.Parse(time.RFC3339Nano, label)
-		if err != nil || math.Abs(stamp.Sub(replayStart).Seconds()-float64(index*120)) > 0.001 {
+		if err != nil || math.Abs(stamp.Sub(replayStart).Seconds()-float64(index*cadenceS)) > 0.001 {
 			return nil, fmt.Errorf("invalid SPICE UTC sample grid")
 		}
 	}
@@ -211,8 +259,8 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		missionRequest.Site != query.SiteID ||
 		request.DurationS != query.DurationS ||
 		missionRequest.DurationS != float64(query.DurationS) ||
-		request.CadenceS != 120 ||
-		missionRequest.CadenceS != 120 ||
+		request.CadenceS != cadenceS ||
+		missionRequest.CadenceS != float64(cadenceS) ||
 		request.CandidateID != "nominal-candidate-2" ||
 		request.Profile != "geometric" ||
 		missionRequest.Profile != "geometric" ||
@@ -227,20 +275,20 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		source.Provenance.EarthDefinition != "center" {
 		return nil, fmt.Errorf("request and scientific profile mismatch")
 	}
-	if len(relay.Result.TimesS)*120 != query.DurationS ||
+	if len(relay.Result.TimesS)*cadenceS != query.DurationS ||
 		len(relay.Result.ViaRelayAvailable) != len(relay.Result.TimesS) ||
-		len(relay.Result.SiteRelayAvailable) != 2 ||
-		len(relay.Result.RelayEarthAvailable) != 2 {
+		len(relay.Result.SiteRelayAvailable) != satellites ||
+		len(relay.Result.RelayEarthAvailable) != satellites {
 		return nil, fmt.Errorf("missing communication-hop arrays")
 	}
-	for satellite := 0; satellite < 2; satellite++ {
+	for satellite := 0; satellite < satellites; satellite++ {
 		if len(relay.Result.SiteRelayAvailable[satellite]) != len(relay.Result.TimesS) || len(relay.Result.RelayEarthAvailable[satellite]) != len(relay.Result.TimesS) {
 			return nil, fmt.Errorf("communication-hop shape mismatch")
 		}
 	}
 	for index := range relay.Result.TimesS {
 		via := false
-		for satellite := 0; satellite < 2; satellite++ {
+		for satellite := 0; satellite < satellites; satellite++ {
 			via = via || (relay.Result.SiteRelayAvailable[satellite][index] && relay.Result.RelayEarthAvailable[satellite][index])
 		}
 		if via != relay.Result.ViaRelayAvailable[index] || relay.Result.AssistedAvailable[index] != (relay.Result.DirectAvailable[index] || via) {
@@ -278,14 +326,14 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		}
 	}
 	if trajectoryHash != "0f328f101228015d55ad301c512ffec27091beb02adb3649d3276669b1f54bce" ||
-		source.Provenance.Dynamics != "saved two-body states, no new propagation" ||
+		!relayDynamicsMatchTier(tier, source.Provenance.Dynamics) ||
 		len(source.Provenance.Implementation) == 0 ||
 		len(env.Provenance.Implementation) == 0 ||
 		env.Provenance.CacheKey == "" {
 		return nil, fmt.Errorf("missing verified trajectory or implementation identity")
 	}
-	direct := deriveSampleMetricsOnGrid(relay.Result.DirectAvailable, boundariesUTC)
-	assisted := deriveSampleMetricsOnGrid(relay.Result.AssistedAvailable, boundariesUTC)
+	direct := deriveSampleMetricsOnGrid(relay.Result.DirectAvailable, boundariesUTC, cadenceS)
+	assisted := deriveSampleMetricsOnGrid(relay.Result.AssistedAvailable, boundariesUTC, cadenceS)
 	if err := checkRelaySummary(relay.Result.Direct, direct); err != nil {
 		return nil, err
 	}
@@ -297,13 +345,13 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 	}
 	timestamps := relay.Provenance.SampleUTC
 	sampleGrid := map[string]any{
-		"cadenceS":         120,
+		"cadenceS":         cadenceS,
 		"sampleCount":      len(timestamps),
 		"timestampsUtc":    timestamps,
 		"elapsedS":         relay.Result.TimesS,
 		"endExclusive":     true,
 		"endUtc":           relay.Provenance.EndUTC,
-		"binDurationS":     120,
+		"binDurationS":     cadenceS,
 		"timeScale":        "SPICE ET seconds; UTC labels converted by SPICE",
 		"replayEpochEt":    relay.Provenance.EpochET,
 		"missionEpochEt":   env.Provenance.EpochET,
@@ -347,7 +395,9 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		"sampleGrid":            sampleGrid,
 	}
 	identityBytes, _ := json.Marshal(identity)
-	scenarioID := fmt.Sprintf("relay-feed-%x", sha256.Sum256(identityBytes))
+	// Cadence and satellite count already shape the identity through the grid and samples. Hashing them explicitly keeps the id from depending on that.
+	scenarioID := fmt.Sprintf("relay-feed-%x", sha256.Sum256(append(identityBytes, fmt.Sprintf("|cadenceS=%d|satellites=%d", cadenceS, satellites)...)))
+	epochUtc, validStartUtc, validEndUtc := relayTrajectoryValidity(tier, timestamps[0], relay.Provenance.EndUTC)
 	trajectory := map[string]any{
 		"candidateId":      request.CandidateID,
 		"path":             trajectoryPath,
@@ -356,17 +406,17 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		"center":           "MOON",
 		"positionUnit":     "km",
 		"velocityUnit":     "km/s",
-		"epochUtc":         "2025-01-01T00:00:00Z",
-		"validStartUtc":    "2025-01-01T00:00:00Z",
-		"validEndUtc":      "2025-01-29T00:00:00Z",
+		"epochUtc":         epochUtc,
+		"validStartUtc":    validStartUtc,
+		"validEndUtc":      validEndUtc,
 		"propagationModel": source.Provenance.Dynamics,
-		"satelliteCount":   2,
+		"satelliteCount":   satellites,
 	}
-	limitations := []string{"120-second sampled geometry with left-endpoint bin metrics", "Subcadence transitions and outages may be missed", "Interval edges are sample-bin boundaries", "Saved two-body trajectory replay within its pinned 2025 epoch only", "Spherical Moon occultation for relay-to-Earth", "Sampled terrain skyline for surface hops", "Earth-center geometric target; ground-station and operational RF models unavailable"}
+	limitations := relayLimitations(tier, cadenceS)
 	intervalMethod := map[string]any{
 		"kind":                           "sample-derived",
 		"convention":                     "half-open [start,end)",
-		"representation":                 "left-endpoint 120-second bins",
+		"representation":                 fmt.Sprintf("left-endpoint %d-second bins", cadenceS),
 		"transitionTimesRefined":         false,
 		"possibleMissedSubcadenceEvents": true,
 		"physicalTransitionUncertaintyS": nil,
@@ -381,7 +431,7 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 			"id":                    id,
 			"label":                 label,
 			"orbit_status":          status,
-			"source":                "Synchronized mission-science and pinned Candidate 2 replay",
+			"source":                relayLadderSource(tier),
 			"as_of":                 time.Now().UTC().Format("2006-01-02"),
 			"contact_share":         metrics.Fraction,
 			"longest_gap_h":         float64(metrics.LongestBlackoutS) / 3600,
@@ -395,6 +445,8 @@ func buildRelayFeed(query relayCompareRequest, environmentBody, relayBody []byte
 		"scenario": map[string]any{
 			"request":          query,
 			"candidateId":      request.CandidateID,
+			"tier":             tier,
+			"satellites":       satellites,
 			"profile":          "geometric",
 			"earthDefinition":  "center",
 			"horizonOffsetDeg": 0,

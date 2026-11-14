@@ -20,12 +20,24 @@ func comparisonFixture(t *testing.T) ([]byte, []byte) {
 	if err := json.Unmarshal(body, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	return fixture["missionScience"], fixture["relayScience"]
+	// The saved fixture predates the adapter's tier fields, so add what the verified replay now reports.
+	var relay map[string]any
+	if err := json.Unmarshal(fixture["relayScience"], &relay); err != nil {
+		t.Fatal(err)
+	}
+	provenance := relay["provenance"].(map[string]any)
+	provenance["tier"] = relayTierVerified
+	provenance["satellites"] = 2
+	withTier, err := json.Marshal(relay)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return fixture["missionScience"], withTier
 }
 
 func TestRelayFeedSampleIntervals(t *testing.T) {
 	start := time.Date(2025, 1, 6, 0, 0, 0, 0, time.UTC)
-	metrics := deriveSampleMetrics([]bool{false, true, false, false, true, false}, start)
+	metrics := deriveSampleMetrics([]bool{false, true, false, false, true, false}, start, 120)
 	if metrics.Fraction != 2./6 || metrics.AvailableDurationS != 240 || metrics.LongestBlackoutS != 240 || metrics.LongestBlackoutTouchesBoundary {
 		t.Fatal(metrics)
 	}
@@ -35,12 +47,12 @@ func TestRelayFeedSampleIntervals(t *testing.T) {
 	if metrics.AvailableIntervals[0].StartUTC != "2025-01-06T00:02:00Z" || metrics.AvailableIntervals[0].EndUTC != "2025-01-06T00:04:00Z" {
 		t.Fatal(metrics)
 	}
-	tied := deriveSampleMetrics([]bool{false, false, true, false, false, true}, start)
+	tied := deriveSampleMetrics([]bool{false, false, true, false, false, true}, start, 120)
 	if tied.LongestBlackoutS != 240 || !tied.LongestBlackoutTouchesBoundary {
 		t.Fatal("first longest tie was not selected", tied)
 	}
 	for _, available := range [][]bool{{true, true}, {false, false}, {true}, {false}} {
-		metrics := deriveSampleMetrics(available, start)
+		metrics := deriveSampleMetrics(available, start, 120)
 		if available[0] && (metrics.LongestBlackoutS != 0 || metrics.LongestBlackoutTouchesBoundary) {
 			t.Fatal(metrics)
 		}
@@ -53,7 +65,7 @@ func TestRelayFeedSampleIntervals(t *testing.T) {
 func TestRelayFeedRegressionAndRejections(t *testing.T) {
 	env, relay := comparisonFixture(t)
 	request := relayCompareRequest{SiteID: "CR1", StartUTC: "2025-01-06T00:00:00Z", DurationS: 86400}
-	feed, err := buildRelayFeed(request, env, relay)
+	feed, err := buildRelayFeed(request, 120, env, relay)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -64,7 +76,7 @@ func TestRelayFeedRegressionAndRejections(t *testing.T) {
 	if comparison["direct"].(sampleMetrics).LongestBlackoutS != 55080 || !comparison["direct"].(sampleMetrics).LongestBlackoutTouchesBoundary {
 		t.Fatal(comparison)
 	}
-	again, err := buildRelayFeed(request, env, relay)
+	again, err := buildRelayFeed(request, 120, env, relay)
 	if err != nil || again["scenarioId"] != feed["scenarioId"] {
 		t.Fatal("unstable identity", err)
 	}
@@ -117,20 +129,75 @@ func TestRelayFeedRegressionAndRejections(t *testing.T) {
 				provenance["sitePositionM"].([]any)[0] = nil
 			}
 			changed, _ := json.Marshal(altered)
-			if _, err := buildRelayFeed(request, env, changed); err == nil {
+			if _, err := buildRelayFeed(request, 120, env, changed); err == nil {
 				t.Fatal("accepted inconsistent", mutation)
 			}
 		})
 	}
+	threeSatellites := 3
 	for _, query := range []relayCompareRequest{
 		{SiteID: "apollo11", StartUTC: request.StartUTC, DurationS: 86400},
 		{SiteID: "CR1", StartUTC: "2026-11-20T00:00:00Z", DurationS: 86400},
+		{SiteID: "CR1", StartUTC: request.StartUTC, DurationS: 86400, Satellites: &threeSatellites},
+		{SiteID: "CR1", StartUTC: request.StartUTC, DurationS: 86400 * 29},
 		{SiteID: "CR1", StartUTC: "2025-01-06T00:00:01Z", DurationS: 86400},
 		{SiteID: "CR1", StartUTC: request.StartUTC, DurationS: 121},
 	} {
-		if _, err := buildRelayFeed(query, env, relay); err == nil {
+		if _, err := buildRelayFeed(query, 120, env, relay); err == nil {
 			t.Fatal("accepted unsupported query", query)
 		}
+	}
+}
+
+func TestRelayFeedTierText(t *testing.T) {
+	verified := strings.Join(relayLimitations(relayTierVerified, 120), "|")
+	if !strings.Contains(verified, "Saved two-body trajectory replay within its pinned 2025 epoch only") || !strings.Contains(verified, "120-second sampled geometry") {
+		t.Fatal(verified)
+	}
+	propagated := strings.Join(relayLimitations(relayTierPropagated, 480), "|")
+	for _, want := range []string{"480-second sampled geometry", "Two-body propagation of the verified Candidate 2 elements", "no Earth third-body", "no lunar gravity harmonics", "unvalidated away from January 2025"} {
+		if !strings.Contains(propagated, want) {
+			t.Fatal("missing", want, propagated)
+		}
+	}
+	if strings.Contains(propagated, "pinned 2025 epoch") || strings.Contains(propagated, "120-second") {
+		t.Fatal(propagated)
+	}
+}
+
+func TestRelayTrajectoryValidity(t *testing.T) {
+	epoch, start, end := relayTrajectoryValidity(relayTierVerified, "2025-01-06T00:00:00.000000Z", "2025-01-07T00:00:00.000000Z")
+	if epoch != "2025-01-01T00:00:00Z" || start != "2025-01-01T00:00:00Z" || end != "2025-01-29T00:00:00Z" {
+		t.Fatal(epoch, start, end)
+	}
+	epoch, start, end = relayTrajectoryValidity(relayTierPropagated, "2026-11-20T05:12:00.000000Z", "2026-12-18T05:12:00.000000Z")
+	if epoch != "2026-11-20T05:12:00.000000Z" || start != epoch || end != "2026-12-18T05:12:00.000000Z" {
+		t.Fatal(epoch, start, end)
+	}
+}
+
+func TestRelayFeedVerifiedTierFields(t *testing.T) {
+	env, relay := comparisonFixture(t)
+	feed, err := buildRelayFeed(relayCompareRequest{SiteID: "CR1", StartUTC: "2025-01-06T00:00:00Z", DurationS: 86400}, 120, env, relay)
+	if err != nil {
+		t.Fatal(err)
+	}
+	scenario := feed["scenario"].(map[string]any)
+	if scenario["tier"] != relayTierVerified || scenario["satellites"] != 2 {
+		t.Fatal(scenario["tier"], scenario["satellites"])
+	}
+	trajectory := scenario["trajectory"].(map[string]any)
+	if trajectory["validEndUtc"] != "2025-01-29T00:00:00Z" || trajectory["satelliteCount"] != 2 {
+		t.Fatal(trajectory)
+	}
+	var altered map[string]any
+	if err := json.Unmarshal(relay, &altered); err != nil {
+		t.Fatal(err)
+	}
+	altered["provenance"].(map[string]any)["tier"] = relayTierPropagated
+	changed, _ := json.Marshal(altered)
+	if _, err := buildRelayFeed(relayCompareRequest{SiteID: "CR1", StartUTC: "2025-01-06T00:00:00Z", DurationS: 86400}, 120, env, changed); err == nil {
+		t.Fatal("accepted a propagated tier for a verified-eligible window")
 	}
 }
 
