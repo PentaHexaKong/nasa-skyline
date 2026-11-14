@@ -1,9 +1,14 @@
 import { Badge } from '@cloudflare/kumo/components/badge'
+import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { WarningCircleIcon } from '@phosphor-icons/react'
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import type { Plan } from '~/components/planner/plan'
 import { type RelayLadder as Ladder, RELAY_MAX_S, type RelayStep, suggestedRelays, useRelayLadder } from '~/lib/relayLive'
 import { shortDate } from '~/lib/time'
+import { RelayDial, RelayFill, RelayGaps } from './RelayViews'
+import { COUNT, duration, pct } from './relayTrack'
+
+const Relay3D = lazy(() => import('./Relay3D'))
 
 /** Seconds since `running` turned on, ticking once a second, so a long computation visibly moves. */
 function useElapsed(running: boolean) {
@@ -16,10 +21,6 @@ function useElapsed(running: boolean) {
   }, [running])
   return s
 }
-
-const COUNT = ['No relays', 'One relay', 'Two relays', 'Three relays', 'Four relays']
-const pct = (x: number) => `${(x * 100).toFixed(1)} %`
-const silence = (s: number) => (s === 0 ? 'None' : s < 48 * 3600 ? `${Math.round(s / 3600)} h` : `${(s / 86400).toFixed(1)} days`)
 
 function headline(steps: RelayStep[], n: number) {
   const base = steps[0]
@@ -84,7 +85,7 @@ function Rows({ ladder, minEarth }: { ladder: Ladder; minEarth: number }) {
                 <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap text-ink-muted">
                   {step.relays === 0 ? '' : step.gain < 0.0005 ? 'Nothing' : `+${(step.gain * 100).toFixed(1)} pts`}
                 </td>
-                <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap">{silence(step.longestSilenceS)}</td>
+                <td className="tabular py-2.5 pl-3 sm:pl-4 text-right whitespace-nowrap">{duration(step.longestSilenceS)}</td>
               </tr>
             )
           })}
@@ -105,6 +106,42 @@ function Rows({ ladder, minEarth }: { ladder: Ladder; minEarth: number }) {
         </li>
       </ul>
     </>
+  )
+}
+
+type View = '3d' | 'ladder' | 'dial' | 'gaps'
+const VIEWS: { value: View; label: string }[] = [
+  { value: '3d', label: 'In 3D' },
+  { value: 'ladder', label: 'Ladder' },
+  { value: 'dial', label: 'Dial' },
+  { value: 'gaps', label: 'Gap ledger' },
+]
+
+/** The comparison drawn four ways; 3D only when the service sent the relays' positions. */
+function Views({ ladder, plan }: { ladder: Ladder; plan: Plan }) {
+  const site = (plan.sites.find((s) => s.data.site.id === plan.focus) ?? plan.sites[0])?.data.site
+  const in3d = !!ladder.track.relayKm?.length && !!site
+  const offered = in3d ? VIEWS : VIEWS.filter((v) => v.value !== '3d')
+  const [view, setView] = useState<View>(in3d ? '3d' : 'ladder')
+
+  return (
+    <div className="grid gap-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <Tabs variant="segmented" size="sm" tabs={offered} value={view} onValueChange={(v) => setView(v as View)} />
+        {!in3d && <p className="text-sm text-ink-muted">The 3D view needs relay positions, and this comparison did not return them.</p>}
+      </div>
+      {view === '3d' && site ? (
+        <Suspense fallback={<div className="aspect-[4/3] w-full outline -outline-offset-1 outline-line lg:max-w-[44rem]" />}>
+          <Relay3D ladder={ladder} site={site} />
+        </Suspense>
+      ) : view === 'dial' ? (
+        <RelayDial ladder={ladder} />
+      ) : view === 'gaps' ? (
+        <RelayGaps ladder={ladder} limitH={plan.requirements.maxNoEarth} />
+      ) : (
+        <RelayFill ladder={ladder} />
+      )}
+    </div>
   )
 }
 
@@ -155,8 +192,13 @@ export function RelayLadder({ plan }: { plan: Plan }) {
         </p>
       </div>
 
+      {ladder && <Views ladder={ladder} plan={plan} />}
+
       {ladder ? (
-        <Rows ladder={ladder} minEarth={plan.requirements.minEarth} />
+        <div className="grid gap-3 border-t border-line pt-4">
+          <h3 className="text-sm font-medium">Contact for each number of relays</h3>
+          <Rows ladder={ladder} minEarth={plan.requirements.minEarth} />
+        </div>
       ) : (
         <div aria-hidden className="grid gap-3">
           {[0, 1, 2, 3, 4].map((i) => (
