@@ -42,8 +42,12 @@ const AppLink = forwardRef<HTMLAnchorElement, LinkComponentProps>(function AppLi
   )
 })
 
-/** Explore is one page at `/` for the public and classrooms; the site views and lessons it opens belong to it too. */
-const exploreSection = (path: string) => path === '/' || path.startsWith('/explore') || path.startsWith('/understand')
+/** The three ways in, as numbered in the storyboard. Each owns its deeper pages (site views, lessons, the lab, reports). */
+const SECTIONS = [
+  { n: '01', to: '/explore', label: 'Explore', owns: (p: string) => p.startsWith('/explore') },
+  { n: '02', to: '/understand', label: 'Understand', owns: (p: string) => p.startsWith('/understand') },
+  { n: '03', to: '/analyze', label: 'Analyze', owns: (p: string) => p.startsWith('/analyze') },
+] as const
 
 export function Shell({ children, tools }: { children: ReactNode; tools?: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname })
@@ -53,23 +57,28 @@ export function Shell({ children, tools }: { children: ReactNode; tools?: ReactN
         <div className="isolate min-h-dvh">
           <header className="sticky top-0 z-(--z-sticky) border-b border-line bg-bg">
             <div className="mx-auto flex h-14 max-w-7xl items-center gap-x-2 px-4 sm:gap-x-4 sm:px-6">
-              <Link to="/" className="shrink-0 py-2.5 sm:pr-2">
+              <Link to="/" className="shrink-0 py-2.5 sm:pr-2" aria-label="Skyline, choose your journey">
                 {/* The Y's loop rises above and dips below the letters, so shift up to centre the letters with the nav labels. */}
                 <Wordmark className="h-6 w-auto -translate-y-[7%] max-[359px]:h-5 sm:h-7" />
               </Link>
               <nav aria-label="Main" className="flex min-w-0 items-center overflow-x-auto [scrollbar-width:none]">
-                <Link
-                  to="/"
-                  activeOptions={{ exact: true, includeHash: false, includeSearch: false }}
-                  data-status={exploreSection(path) ? 'active' : undefined}
-                  aria-current={exploreSection(path) ? 'page' : undefined}
-                  className={navLink}
-                >
-                  Explore
-                </Link>
-                <Link to="/analyze" className={navLink}>
-                  Analyze
-                </Link>
+                {SECTIONS.map((s) => {
+                  const on = s.owns(path)
+                  return (
+                    <Link
+                      key={s.to}
+                      to={s.to}
+                      data-status={on ? 'active' : undefined}
+                      aria-current={on ? 'page' : undefined}
+                      className={navLink}
+                    >
+                      <span aria-hidden className="mr-1.5 hidden font-mono text-ink-faint lg:inline">
+                        {s.n}
+                      </span>
+                      {s.label}
+                    </Link>
+                  )
+                })}
               </nav>
               <div className="-mr-2 ml-auto flex items-center gap-2 sm:-mr-3">
                 {tools}

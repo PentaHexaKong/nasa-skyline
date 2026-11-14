@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { Route as Planner } from '~/routes/analyze.index'
 import { scenarioSearch } from '~/routes/analyze.scenario.$piece'
-import { Route as Moon } from '~/routes/index'
+import { Route as Moon } from '~/routes/explore.index'
 import { siteSearch } from './useSiteView'
 
 const parse = (route: { options: { validateSearch?: unknown } }, input: object) =>
