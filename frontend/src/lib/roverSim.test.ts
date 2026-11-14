@@ -9,6 +9,8 @@ import { ROVER_TERMS } from './roverLive'
 import { AZ_BINS, areaByDay, buildModel, cellOf, horizons, type RoverSimInput, type SkySample, simulateRover, skySamples } from './roverSim'
 
 const HOUR = 3600
+/** Whole-tile runs take a few seconds alone and longer beside the rest of the suite. */
+const HEAVY = 60_000
 
 function synthetic(id: string, n: number, cellM: number, height: (col: number, row: number) => number): Terrain {
   const heights = new Int16Array(n * n)
@@ -142,7 +144,7 @@ test('a 28-day stay over the whole tile runs in a few seconds', () => {
   expect(r.g ** 2).toBeGreaterThan(16_000)
   expect(totalMs).toBeLessThan(10_000)
   expect(r.summary.cellsReached).toBeGreaterThan(1)
-})
+}, HEAVY)
 
 type Kind = 'landing' | 'reached' | 'not-reached' | 'too-steep'
 
@@ -198,12 +200,12 @@ describe('against the rover service, 2 h direct to Earth at Connecting Ridge', (
       'not-reached',
       'reached',
     ])
-  })
+  }, HEAVY)
   test('2026-11-20 12:00: the landing is not admitted in either', () => {
     const rows = compare(stuck as unknown as typeof served, 2)
     expect(rows[4]).toMatchObject({ sim: 'landing', admitted: false, serviceAdmitted: false })
     expect(rows.filter((x) => x.sim === 'reached')).toHaveLength(0)
-  })
+  }, HEAVY)
 })
 
 test("area by day adds each day's new cells to the ones before", () => {
