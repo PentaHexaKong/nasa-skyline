@@ -57,11 +57,6 @@ function Home() {
   return (
     <Shell bare>
       <main ref={ref} className="relative grid min-h-svh overflow-hidden">
-        {/* The Moon fades into the night at the bottom edge, so the footer line stays legible over it. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-black via-black/70 to-transparent"
-        />
         <div className="relative mx-auto grid w-full max-w-6xl grid-rows-[auto_auto_1fr_auto] justify-items-center gap-8 px-4 pt-[clamp(2rem,7svh,6rem)] pb-6 sm:px-6">
           <div className="grid content-end justify-items-center gap-5">
             <h1 className="relative grid place-items-center">
