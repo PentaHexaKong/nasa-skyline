@@ -1,0 +1,7 @@
+# Optimization methodology
+
+Finite-grid exhaustive enumeration evaluates every requested site/date/duration candidate at the specified delays, including zero. It computes nominal metrics, minimum solar/Earth availability, maximum solar/Earth outage, scenario violation frequency and robust feasibility. The five minimized objectives are negative worst solar fraction, negative worst Earth fraction, maximum solar outage, maximum Earth outage and maximum loss of solar fraction under delay. Pareto filtering retains equal nondominated points. Unavailable scenarios prevent robust-feasibility claims.
+
+Baseline A maximizes nominal sunlight. Baseline B reports the nominal four-metric Pareto set. The proposed result is the feasible worst-case Pareto set. Tie order follows input order. There is no inferred delay distribution. The bounded demonstration uses identical candidates and delay sets. It has no held-out evaluation delays and establishes no generalization or comparative superiority.
+
+The deterministic study records scenario metrics and constraints, runtime and selected candidate sets. The sensitivity artifact varies cadence, ephemeris profile, horizon elevation and actual 20 m DEM availability. Default mission constraints are permissive, so the example is an execution demonstration and cannot establish reduced mission failures. Scientific hypotheses require a predeclared grid and meaningful mission requirements in a separate study.
