@@ -8,11 +8,10 @@ The inspected frontend has roadmap references for rover reach and no existing Ro
 
 Python exposes `POST /v1/reachability-evaluations` on the isolated rover process. Go exposes `POST /api/rover-science/v1/reachability-evaluations`. An unset ROVER_SCIENCE_URL yields an explicit unavailable response. Core service readiness has no rover dependency. The optional process has its own cache, health route and concurrent-request gate.
 
-Enable the optional service from the application repository in PowerShell.
+The stack starts the rover service and points the gateway at it by default.
 
 ```powershell
-$env:ROVER_SCIENCE_URL = 'http://rover-science:8016'
-docker compose --profile rover up -d --build rover-science backend frontend
+docker compose up -d --build rover-science backend frontend
 ```
 
 For standalone execution from the mission-science repository, use its configured Python environment.

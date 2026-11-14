@@ -5,7 +5,7 @@ services:
     environment:
       SCIENTIFIC_ENGINE_URL: http://scientificengine:8003
       MISSION_SCIENCE_URL: http://mission-science:8014
-      ROVER_SCIENCE_URL: ${ROVER_SCIENCE_URL:-}
+      ROVER_SCIENCE_URL: ${ROVER_SCIENCE_URL:-http://rover-science:8016}
       RELAY_ADAPTER_URL: http://relay-adapter:8015
       DS_URL: http://ds:8001
       ML_URL: http://ml:8002
@@ -112,7 +112,6 @@ services:
       - relay-adapter-cache:/app/data/cache
 
   rover-science:
-    profiles: ['rover']
     build: ./services/missionScience
     command: ['python', '-m', 'uvicorn', 'skyline_rover_science.api:app', '--host', '0.0.0.0', '--port', '8016']
     init: true
