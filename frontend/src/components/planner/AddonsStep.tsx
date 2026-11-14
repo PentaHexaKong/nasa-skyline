@@ -2,8 +2,7 @@ import { Badge } from '@cloudflare/kumo/components/badge'
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Link as KLink } from '@cloudflare/kumo/components/link'
 import { Select } from '@cloudflare/kumo/components/select'
-import { ArrowRightIcon, BroadcastIcon, CarIcon, SolarPanelIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react'
-import { Link } from '@tanstack/react-router'
+import { ArrowRightIcon, BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
 import { type KeyboardEvent, lazy, Suspense } from 'react'
 import { RelayLadder } from '~/components/addons/RelayLadder'
 import { SiteProvenance } from '~/components/Evidence'
@@ -17,6 +16,7 @@ import { useFeed } from '~/lib/feeds'
 import { REQUIREMENTS, shortName, TOUCHDOWN_LABEL } from '~/lib/mission'
 import { matchesScenario, SCENARIO_PIECES, SCENARIOS, type ScenarioPiece, scenarioGuidance } from '~/lib/scenarios'
 
+const MastExample = lazy(() => import('~/components/addons/MastExample'))
 const Preview = import.meta.env.DEV ? lazy(() => import('~/prototypes/ScenarioPreview')) : null
 
 const pct = (x: number) => `${(x * 100).toFixed(0)} %`
@@ -106,40 +106,21 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
   const feed = useFeed('mast', siteId)
   if (piece === 'rover') return <RoverReach plan={plan} />
   if (piece === 'relay') return <RelayLadder plan={plan} />
-  if (feed.state === 'loading') return <p aria-busy="true">Checking scenario results…</p>
-  if (feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)) {
-    return (
-      <section aria-label="Pipeline scenario output" className="grid gap-4">
-        <p className="text-ink-muted">
-          Pipeline output for your site and period. Read its visibility rules and assumptions before comparing with your starting point.
-        </p>
-        <MastPanel siteId={siteId} />
-      </section>
-    )
-  }
+  const computed = feed.state === 'ready' && matchesScenario(feed.data, siteId, plan.window)
   return (
-    <section aria-labelledby="scenario-result" className="flex gap-3 rounded-xl border border-line-strong p-4">
-      <WarningCircleIcon aria-hidden className="mt-0.5 size-5 shrink-0 text-ink-muted" />
-      <div className="grid gap-1">
-        <h2 id="scenario-result" className="font-medium">
-          Scenario result · not computed
-        </h2>
-        <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
-          A computed result matching this site and the exact mission period is not available. Any improvement over your starting point is
-          not computed.
-        </p>
-        <p className="max-w-[72ch] text-sm text-pretty">
-          Meanwhile, the site report shows how the Sun clears this site’s ridge, hour by hour:{' '}
-          <Link to="/analyze/$siteId" params={{ siteId }} className="font-medium underline underline-offset-3 hover:text-ink">
-            open the {shortName(plan.sites.find((x) => x.data.site.id === siteId)?.data ?? plan.sites[0]!.data)} report
-          </Link>
-          .
-        </p>
-        {feed.state === 'invalid' && (
-          <p className="text-sm text-ink-muted">The delivered file could not be validated, so its results are hidden.</p>
-        )}
-      </div>
-    </section>
+    <div className="grid gap-8">
+      {computed && (
+        <section aria-label="Mast placement for your plan" className="grid gap-4">
+          <p className="text-ink-muted">
+            Pipeline output for your site and period. Read its visibility rules and assumptions before comparing with your starting point.
+          </p>
+          <MastPanel siteId={siteId} />
+        </section>
+      )}
+      <Suspense fallback={<p aria-busy="true">Loading the mast example…</p>}>
+        <MastExample />
+      </Suspense>
+    </div>
   )
 }
 

@@ -24,7 +24,7 @@ import type { LegacyMastData as MastData } from '~/lib/feed-schemas'
 import { heightAt } from '~/lib/sky'
 import { loadSpace, type Space, sampleSpace } from '~/lib/space'
 import { clock as clockOf, shortDate } from '~/lib/time'
-import { at, frontOf, Heights, heightsOf, Radius, SpotCard, spots } from './mast'
+import { at, frontOf, Heights, heightsOf, Radius, SpotCard, spots } from '~/components/addons/mastViews'
 import { cellOf, type Field, km2, Range, reachKm, SCENARIOS, Swatch, usePalette, useRover } from './rover'
 
 const Blank = () => <div className="aspect-[4/3] outline -outline-offset-1 outline-line" />
@@ -100,7 +100,7 @@ export function Mast3D({ data }: { data: MastData }) {
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
         <Heights heights={heights} value={height} onChange={setHeight} />
-        <Radius value={radius} onChange={setRadius} />
+        <Radius value={radius} onChange={setRadius} min={100} max={1600} step={50} />
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,44rem)_minmax(0,1fr)]">
         <div className="grid gap-2">

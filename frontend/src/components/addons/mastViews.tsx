@@ -46,7 +46,29 @@ export function Heights({ heights, value, onChange }: { heights: number[]; value
   )
 }
 
-export function Radius({ value, onChange }: { value: number; onChange: (r: number) => void }) {
+/** Map extent and cable-reach range sized to how far the tested spots lie from the landing. */
+export function scaleOf(data: MastData) {
+  const far = Math.max(40, ...spots(data).map((s) => s.distance))
+  const step = far > 400 ? 50 : 10
+  const max = Math.ceil((far * 2) / step) * step
+  const half = Math.max(150, far * 2.5)
+  const bar = [50, 100, 200, 500, 1000].find((m) => m >= half / 4) ?? 1000
+  return { reach: Math.ceil(far / step) * step, min: step, max, step, plan: { east: 0, north: 0, half } as View, bar }
+}
+
+export function Radius({
+  value,
+  onChange,
+  min,
+  max,
+  step,
+}: {
+  value: number
+  onChange: (r: number) => void
+  min: number
+  max: number
+  step: number
+}) {
   return (
     <label className="grid gap-1.5">
       <span className="text-sm text-ink-muted">
@@ -54,9 +76,9 @@ export function Radius({ value, onChange }: { value: number; onChange: (r: numbe
       </span>
       <input
         type="range"
-        min={100}
-        max={1600}
-        step={50}
+        min={min}
+        max={max}
+        step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="h-9 w-56 accent-(--brand)"
@@ -71,14 +93,14 @@ function arc(cx: number, cy: number, r: number, share: number) {
   return `M${cx} ${cy - r}A${r} ${r} 0 ${a > Math.PI ? 1 : 0} 1 ${cx + r * Math.sin(a)} ${cy - r * Math.cos(a)}`
 }
 
-const PLAN: View = { east: 0, north: 0, half: 1650 }
-
 /** 1. The answer is a place: spots on the real terrain, the cable as a ring you drag. */
 export function MastPlan({ data }: { data: MastData }) {
   const terrain = useTerrain()
+  const scale = scaleOf(data)
+  const PLAN = scale.plan
   const heights = heightsOf(data)
   const [height, setHeight] = useState(heights.at(-2) ?? 0)
-  const [radius, setRadius] = useState(1000)
+  const [radius, setRadius] = useState(scale.reach)
   const all = spots(data)
   const reach = all.filter((s) => s.distance <= radius)
   const front = frontOf(reach, height)
@@ -93,14 +115,14 @@ export function MastPlan({ data }: { data: MastData }) {
     const box = svg.getBoundingClientRect()
     const m = (2 * PLAN.half) / box.width
     const r = Math.hypot((e.clientX - box.left - box.width / 2) * m, (e.clientY - box.top - box.height / 2) * m)
-    setRadius(Math.max(100, Math.min(1600, Math.round(r / 50) * 50)))
+    setRadius(Math.max(scale.min, Math.min(scale.max, Math.round(r / scale.step) * scale.step)))
   }
 
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
         <Heights heights={heights} value={height} onChange={setHeight} />
-        <Radius value={radius} onChange={setRadius} />
+        <Radius value={radius} onChange={setRadius} min={scale.min} max={scale.max} step={scale.step} />
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,34rem)_minmax(0,1fr)]">
         <div className="grid gap-2">
@@ -149,14 +171,14 @@ export function MastPlan({ data }: { data: MastData }) {
                 onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
                 onPointerMove={drag}
               />
-              <ScaleBar view={PLAN} metres={500} />
+              <ScaleBar view={PLAN} metres={scale.bar} />
             </TerrainMap>
           ) : (
             <div className="aspect-square outline -outline-offset-1 outline-line" />
           )}
           <Fig>
-            Each spot carries two arcs: the outer is its share of the month with Sun, the inner with Earth. A full circle is 100 %. Drag the
-            square to change the cable reach. North is up.
+            Each spot carries two arcs: the outer is its share of the period with Sun, the inner with Earth. A full circle is 100 %. Drag
+            the square to change the cable reach. North is up.
           </Fig>
         </div>
         {shown && <SpotCard spot={shown} height={height} heights={heights} radius={radius} onFront={front.has(shown.id)} />}
@@ -183,8 +205,8 @@ export function SpotCard({
   return (
     <div className="grid content-start gap-5">
       <div>
-        <p className="eyebrow text-ink-muted">
-          Spot {spot.id} · {Math.round(spot.distance)} m at {bearing}°
+        <p className="text-sm text-ink-muted">
+          {spot.distance < 0.5 ? 'The landing spot' : `${spot.id} of the landing, bearing ${bearing}°`}
         </p>
         <p className="mt-1 text-xl text-pretty">
           {spot.distance > radius
@@ -305,7 +327,7 @@ export function MastSection({ data }: { data: MastData }) {
             </g>
           ))}
           <text x={(SEC.left + SEC.right) / 2} y={SEC.ground + 38} textAnchor="middle" className="fill-ink-muted text-xs">
-            Share of the month in view
+            Share of the period in view
           </text>
           <line x1={24} x2={SEC.w} y1={SEC.ground} y2={SEC.ground} className="stroke-terrain-edge" />
           <rect x={24} y={SEC.ground} width={SEC.w - 24} height={10} className="fill-terrain" />
@@ -372,8 +394,9 @@ export function MastSection({ data }: { data: MastData }) {
                     Sun <span className="tabular text-ink">{pts(here.sun_share - below.sun_share)}</span>, Earth{' '}
                     <span className="tabular text-ink">{pts(here.earth_center_share - below.earth_center_share)}</span>, longest dark{' '}
                     <span className="tabular text-ink">
-                      {here.longest_no_sun_h - below.longest_no_sun_h <= 0 ? '−' : '+'}
-                      {Math.abs(here.longest_no_sun_h - below.longest_no_sun_h).toFixed(0)} h
+                      {Math.round(here.longest_no_sun_h - below.longest_no_sun_h) === 0
+                        ? 'no change'
+                        : `${here.longest_no_sun_h < below.longest_no_sun_h ? '−' : '+'}${Math.abs(here.longest_no_sun_h - below.longest_no_sun_h).toFixed(0)} h`}
                     </span>
                   </span>
                 </li>
@@ -391,9 +414,10 @@ const TR = { w: 640, h: 440, l: 52, r: 16, t: 16, b: 44 }
 
 /** 3. The answer is a trade: every spot as a path through Sun and Earth as the mast grows. */
 export function MastTrade({ data }: { data: MastData }) {
+  const scale = scaleOf(data)
   const heights = heightsOf(data)
   const [height, setHeight] = useState(heights.at(-2) ?? 0)
-  const [radius, setRadius] = useState(1000)
+  const [radius, setRadius] = useState(scale.reach)
   const [hover, setHover] = useState<string>()
   const all = spots(data)
   const reach = all.filter((s) => s.distance <= radius)
@@ -414,7 +438,7 @@ export function MastTrade({ data }: { data: MastData }) {
     <div className="grid gap-6">
       <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
         <Heights heights={heights} value={height} onChange={setHeight} />
-        <Radius value={radius} onChange={setRadius} />
+        <Radius value={radius} onChange={setRadius} min={scale.min} max={scale.max} step={scale.step} />
       </div>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)]">
         <div className="grid gap-2">
@@ -505,7 +529,7 @@ export function MastTrade({ data }: { data: MastData }) {
                 className={`grid w-full grid-cols-[1rem_3rem_1fr_1fr_4rem] items-baseline gap-x-3 border-t border-line py-2.5 text-left transition-colors duration-(--duration-fast) ${hover === s.id ? 'bg-surface-hover' : ''}`}
               >
                 <span aria-hidden className={`size-2.5 self-center rounded-full outline outline-ink ${front.has(s.id) ? 'bg-ink' : ''}`} />
-                <span className="readout font-normal">{s.id}</span>
+                <span className="readout font-normal whitespace-nowrap">{s.id}</span>
                 <span className="readout text-right font-normal text-sun">{pct(at(s, height).sun_share)}</span>
                 <span className="readout text-right font-normal text-comms">{pct(at(s, height).earth_center_share)}</span>
                 <span className="readout text-right text-sm font-normal text-ink-muted">{Math.round(s.distance)} m</span>

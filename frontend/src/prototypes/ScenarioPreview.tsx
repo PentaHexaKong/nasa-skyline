@@ -1,11 +1,11 @@
 import { Button } from '@cloudflare/kumo/components/button'
 import { ButtonGroup } from '@cloudflare/kumo/components/button-group'
 import { lazy, Suspense, useState } from 'react'
+import { MastPlan, MastSection, MastTrade } from '~/components/addons/mastViews'
 import { LegacyMastFeed, RelayFeed } from '~/lib/feed-schemas'
 import type { ScenarioPiece } from '~/lib/scenarios'
 import mastFixture from '../../fixtures/feeds/mast/connecting-ridge.json'
 import relayFixture from '../../fixtures/feeds/relay/connecting-ridge.json'
-import { MastPlan, MastSection, MastTrade } from './mast'
 import { RelayDial, RelayFill, RelayGaps } from './relay'
 import { RoverCorridor, RoverDays, RoverReach } from './rover'
 
