@@ -1,0 +1,1162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "number",
+      "const": 1
+    },
+    "origin": {
+      "type": "string",
+      "const": "computed"
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "algorithm_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sources": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "assumptions": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "algorithm_version",
+        "sources",
+        "assumptions"
+      ]
+    },
+    "site_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "period": {
+      "type": "object",
+      "properties": {
+        "start_utc": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        },
+        "end_utc": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+        }
+      },
+      "required": [
+        "start_utc",
+        "end_utc"
+      ]
+    },
+    "scenarios": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "orbit_status": {
+            "type": "string",
+            "enum": [
+              "none",
+              "published",
+              "indicative",
+              "illustrative"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "contact_share": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "longest_gap_h": {
+            "type": "number",
+            "minimum": 0
+          },
+          "longest_gap_truncated": {
+            "type": "boolean"
+          },
+          "intervals": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              ],
+              "items": false,
+              "minItems": 2,
+              "maxItems": 2
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "orbit_status",
+          "source",
+          "as_of",
+          "contact_share",
+          "longest_gap_h",
+          "longest_gap_truncated",
+          "intervals"
+        ]
+      }
+    },
+    "contractVersion": {
+      "type": "string",
+      "const": "skyline-relay-feed/1.0.0"
+    },
+    "dataState": {
+      "type": "string",
+      "const": "computed"
+    },
+    "scenarioId": {
+      "type": "string",
+      "pattern": "^relay-feed-[0-9a-f]{64}$"
+    },
+    "scenario": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "type": "object",
+          "properties": {
+            "siteId": {
+              "type": "string",
+              "enum": [
+                "CR1",
+                "GR1",
+                "SR1"
+              ]
+            },
+            "startUtc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "durationS": {
+              "type": "integer",
+              "minimum": 120,
+              "maximum": 86400
+            }
+          },
+          "required": [
+            "siteId",
+            "startUtc",
+            "durationS"
+          ]
+        },
+        "candidateId": {
+          "type": "string",
+          "const": "nominal-candidate-2"
+        },
+        "profile": {
+          "type": "string",
+          "const": "geometric"
+        },
+        "earthDefinition": {
+          "type": "string",
+          "const": "center"
+        },
+        "horizonOffsetDeg": {
+          "type": "number",
+          "const": 0
+        },
+        "terrainProfile": {
+          "type": "string",
+          "const": "lola-80-240-zero-mask"
+        },
+        "observer": {
+          "type": "object",
+          "properties": {
+            "site": {
+              "type": "object",
+              "properties": {
+                "siteId": {
+                  "type": "string",
+                  "enum": [
+                    "CR1",
+                    "GR1",
+                    "SR1"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "latitudeDeg": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "longitudeDeg": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "sourceFrame": {
+                  "type": "string",
+                  "const": "MOON_ME_DE421"
+                },
+                "sourceUrl": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "siteId",
+                "name",
+                "latitudeDeg",
+                "longitudeDeg",
+                "sourceFrame",
+                "sourceUrl"
+              ]
+            },
+            "frame": {
+              "type": "string",
+              "const": "MOON_ME_DE421"
+            },
+            "positionM": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "items": false,
+              "minItems": 3,
+              "maxItems": 3
+            },
+            "heightAboveTerrainM": {
+              "type": "number",
+              "const": 0
+            },
+            "groundElevationM": {
+              "type": "number"
+            },
+            "radialReferenceM": {
+              "type": "number",
+              "const": 1737400
+            },
+            "longitudeConvention": {
+              "type": "string",
+              "const": "east-positive signed degrees"
+            }
+          },
+          "required": [
+            "site",
+            "frame",
+            "positionM",
+            "heightAboveTerrainM",
+            "groundElevationM",
+            "radialReferenceM",
+            "longitudeConvention"
+          ]
+        },
+        "trajectory": {
+          "type": "object",
+          "properties": {
+            "candidateId": {
+              "type": "string",
+              "const": "nominal-candidate-2"
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "inputFrame": {
+              "type": "string",
+              "const": "J2000"
+            },
+            "center": {
+              "type": "string",
+              "const": "MOON"
+            },
+            "positionUnit": {
+              "type": "string",
+              "const": "km"
+            },
+            "velocityUnit": {
+              "type": "string",
+              "const": "km/s"
+            },
+            "epochUtc": {
+              "type": "string",
+              "const": "2025-01-01T00:00:00Z"
+            },
+            "validStartUtc": {
+              "type": "string",
+              "const": "2025-01-01T00:00:00Z"
+            },
+            "validEndUtc": {
+              "type": "string",
+              "const": "2025-01-29T00:00:00Z"
+            },
+            "propagationModel": {
+              "type": "string",
+              "const": "saved two-body states, no new propagation"
+            },
+            "satelliteCount": {
+              "type": "number",
+              "const": 2
+            }
+          },
+          "required": [
+            "candidateId",
+            "path",
+            "sha256",
+            "inputFrame",
+            "center",
+            "positionUnit",
+            "velocityUnit",
+            "epochUtc",
+            "validStartUtc",
+            "validEndUtc",
+            "propagationModel",
+            "satelliteCount"
+          ]
+        },
+        "sourceIdentity": {
+          "type": "object",
+          "properties": {
+            "algorithmVersion": {
+              "type": "string",
+              "const": "synchronized-relay-feed/1.0.0"
+            },
+            "goImplementation": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "request": {
+              "type": "object",
+              "properties": {
+                "siteId": {
+                  "type": "string",
+                  "enum": [
+                    "CR1",
+                    "GR1",
+                    "SR1"
+                  ]
+                },
+                "startUtc": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "durationS": {
+                  "type": "integer",
+                  "minimum": 120,
+                  "maximum": 86400
+                }
+              },
+              "required": [
+                "siteId",
+                "startUtc",
+                "durationS"
+              ]
+            },
+            "candidateId": {
+              "type": "string",
+              "const": "nominal-candidate-2"
+            },
+            "observer": {
+              "type": "object",
+              "properties": {
+                "site": {
+                  "type": "object",
+                  "properties": {
+                    "siteId": {
+                      "type": "string",
+                      "enum": [
+                        "CR1",
+                        "GR1",
+                        "SR1"
+                      ]
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "latitudeDeg": {
+                      "type": "number",
+                      "minimum": -90,
+                      "maximum": 90
+                    },
+                    "longitudeDeg": {
+                      "type": "number",
+                      "minimum": -180,
+                      "maximum": 180
+                    },
+                    "sourceFrame": {
+                      "type": "string",
+                      "const": "MOON_ME_DE421"
+                    },
+                    "sourceUrl": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "siteId",
+                    "name",
+                    "latitudeDeg",
+                    "longitudeDeg",
+                    "sourceFrame",
+                    "sourceUrl"
+                  ]
+                },
+                "frame": {
+                  "type": "string",
+                  "const": "MOON_ME_DE421"
+                },
+                "positionM": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "heightAboveTerrainM": {
+                  "type": "number",
+                  "const": 0
+                },
+                "groundElevationM": {
+                  "type": "number"
+                },
+                "radialReferenceM": {
+                  "type": "number",
+                  "const": 1737400
+                },
+                "longitudeConvention": {
+                  "type": "string",
+                  "const": "east-positive signed degrees"
+                }
+              },
+              "required": [
+                "site",
+                "frame",
+                "positionM",
+                "heightAboveTerrainM",
+                "groundElevationM",
+                "radialReferenceM",
+                "longitudeConvention"
+              ]
+            },
+            "terrainConfig": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "number"
+              }
+            },
+            "sources": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "relayImplementation": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
+            },
+            "missionImplementation": {
+              "type": "object",
+              "properties": {
+                "sources": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string",
+                    "pattern": "^[0-9a-f]{64}$"
+                  }
+                },
+                "dependencies": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "python": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "sources",
+                "dependencies",
+                "python"
+              ]
+            },
+            "environmentCacheKey": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "sampleGrid": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "samples": {
+              "type": "object",
+              "properties": {
+                "directAvailable": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "viaRelayAvailable": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "assistedAvailable": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "boolean"
+                  }
+                },
+                "siteRelayAvailable": {
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "type": "array",
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "relayEarthAvailable": {
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "type": "array",
+                  "items": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              },
+              "required": [
+                "directAvailable",
+                "viaRelayAvailable",
+                "assistedAvailable",
+                "siteRelayAvailable",
+                "relayEarthAvailable"
+              ]
+            }
+          },
+          "required": [
+            "algorithmVersion",
+            "goImplementation",
+            "request",
+            "candidateId",
+            "observer",
+            "terrainConfig",
+            "sources",
+            "relayImplementation",
+            "missionImplementation",
+            "environmentCacheKey",
+            "sampleGrid",
+            "samples"
+          ]
+        }
+      },
+      "required": [
+        "request",
+        "candidateId",
+        "profile",
+        "earthDefinition",
+        "horizonOffsetDeg",
+        "terrainProfile",
+        "observer",
+        "trajectory",
+        "sourceIdentity"
+      ]
+    },
+    "comparison": {
+      "type": "object",
+      "properties": {
+        "durationS": {
+          "type": "integer",
+          "minimum": 120,
+          "maximum": 86400
+        },
+        "grid": {
+          "type": "object",
+          "properties": {
+            "cadenceS": {
+              "type": "number",
+              "const": 120
+            },
+            "sampleCount": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 720
+            },
+            "timestampsUtc": {
+              "minItems": 1,
+              "maxItems": 720,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "elapsedS": {
+              "minItems": 1,
+              "maxItems": 720,
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              }
+            },
+            "endExclusive": {
+              "type": "boolean",
+              "const": true
+            },
+            "binDurationS": {
+              "type": "number",
+              "const": 120
+            },
+            "timeScale": {
+              "type": "string",
+              "const": "SPICE ET seconds; UTC labels converted by SPICE"
+            },
+            "endUtc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            },
+            "replayEpochEt": {
+              "type": "number"
+            },
+            "missionEpochEt": {
+              "type": "number"
+            },
+            "epochDifferenceS": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 0.000001
+            },
+            "epochToleranceS": {
+              "type": "number",
+              "const": 0.000001
+            },
+            "nominalStartUtc": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            }
+          },
+          "required": [
+            "cadenceS",
+            "sampleCount",
+            "timestampsUtc",
+            "elapsedS",
+            "endExclusive",
+            "binDurationS",
+            "timeScale",
+            "endUtc",
+            "replayEpochEt",
+            "missionEpochEt",
+            "epochDifferenceS",
+            "epochToleranceS",
+            "nominalStartUtc"
+          ]
+        },
+        "samples": {
+          "type": "object",
+          "properties": {
+            "directAvailable": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            "viaRelayAvailable": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            "assistedAvailable": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "boolean"
+              }
+            },
+            "siteRelayAvailable": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "relayEarthAvailable": {
+              "minItems": 2,
+              "maxItems": 2,
+              "type": "array",
+              "items": {
+                "minItems": 1,
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "required": [
+            "directAvailable",
+            "viaRelayAvailable",
+            "assistedAvailable",
+            "siteRelayAvailable",
+            "relayEarthAvailable"
+          ]
+        },
+        "direct": {
+          "type": "object",
+          "properties": {
+            "fraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "availableDurationS": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "longestBlackoutS": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "longestBlackoutTouchesBoundary": {
+              "type": "boolean"
+            },
+            "availableIntervals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "startUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "endUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "startS": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "endS": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "startClipped": {
+                    "type": "boolean"
+                  },
+                  "endClipped": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "startUtc",
+                  "endUtc",
+                  "startS",
+                  "endS",
+                  "startClipped",
+                  "endClipped"
+                ]
+              }
+            },
+            "blackoutIntervals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "startUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "endUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "startS": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "endS": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "startClipped": {
+                    "type": "boolean"
+                  },
+                  "endClipped": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "startUtc",
+                  "endUtc",
+                  "startS",
+                  "endS",
+                  "startClipped",
+                  "endClipped"
+                ]
+              }
+            }
+          },
+          "required": [
+            "fraction",
+            "availableDurationS",
+            "longestBlackoutS",
+            "longestBlackoutTouchesBoundary",
+            "availableIntervals",
+            "blackoutIntervals"
+          ]
+        },
+        "assisted": {
+          "type": "object",
+          "properties": {
+            "fraction": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "availableDurationS": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "longestBlackoutS": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "longestBlackoutTouchesBoundary": {
+              "type": "boolean"
+            },
+            "availableIntervals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "startUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "endUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "startS": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "endS": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "startClipped": {
+                    "type": "boolean"
+                  },
+                  "endClipped": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "startUtc",
+                  "endUtc",
+                  "startS",
+                  "endS",
+                  "startClipped",
+                  "endClipped"
+                ]
+              }
+            },
+            "blackoutIntervals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "startUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "endUtc": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "startS": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "endS": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "startClipped": {
+                    "type": "boolean"
+                  },
+                  "endClipped": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "startUtc",
+                  "endUtc",
+                  "startS",
+                  "endS",
+                  "startClipped",
+                  "endClipped"
+                ]
+              }
+            }
+          },
+          "required": [
+            "fraction",
+            "availableDurationS",
+            "longestBlackoutS",
+            "longestBlackoutTouchesBoundary",
+            "availableIntervals",
+            "blackoutIntervals"
+          ]
+        },
+        "improvementFraction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "intervalMethod": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "sample-derived"
+            },
+            "convention": {
+              "type": "string",
+              "const": "half-open [start,end)"
+            },
+            "representation": {
+              "type": "string",
+              "const": "left-endpoint 120-second bins"
+            },
+            "transitionTimesRefined": {
+              "type": "boolean",
+              "const": false
+            },
+            "possibleMissedSubcadenceEvents": {
+              "type": "boolean",
+              "const": true
+            },
+            "physicalTransitionUncertaintyS": {
+              "type": "null"
+            },
+            "boundaryContinuityKnown": {
+              "type": "boolean",
+              "const": false
+            }
+          },
+          "required": [
+            "kind",
+            "convention",
+            "representation",
+            "transitionTimesRefined",
+            "possibleMissedSubcadenceEvents",
+            "physicalTransitionUncertaintyS",
+            "boundaryContinuityKnown"
+          ]
+        },
+        "rfQualified": {
+          "type": "boolean",
+          "const": false
+        },
+        "rfAvailability": {
+          "type": "null"
+        },
+        "continuousAvailabilityValidated": {
+          "type": "boolean",
+          "const": false
+        }
+      },
+      "required": [
+        "durationS",
+        "grid",
+        "samples",
+        "direct",
+        "assisted",
+        "improvementFraction",
+        "intervalMethod",
+        "rfQualified",
+        "rfAvailability",
+        "continuousAvailabilityValidated"
+      ]
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "const": "computed-with-cross-service-consistency-checks"
+        },
+        "independentlyValidated": {
+          "type": "boolean",
+          "const": false
+        },
+        "checks": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "status",
+        "independentlyValidated",
+        "checks"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "origin",
+    "provenance",
+    "site_id",
+    "period",
+    "scenarios",
+    "contractVersion",
+    "dataState",
+    "scenarioId",
+    "scenario",
+    "comparison",
+    "validation"
+  ]
+}
