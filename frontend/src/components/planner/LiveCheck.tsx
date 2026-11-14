@@ -69,14 +69,14 @@ export function LiveCheck({ plan }: { plan: Plan }) {
             ) : (
               <CloudSlashIcon aria-hidden className="text-ink-faint" />
             )}
-            Check this landing with the mission-science service
+            Live check
           </h2>
           <p className="text-sm text-ink-muted text-pretty">
             {health === 'checking'
               ? 'Looking for the service…'
               : health === 'up'
-                ? 'The API bridge and the service are running. The service recomputes the same stay from the pinned SPICE kernels and LOLA terrain and sends back its own result, shown beside the numbers above.'
-                : `The API bridge or the service behind it is not reachable at ${API_URL}. The results above are the pipeline’s precomputed files and do not need them. To compare live, start services/missionScience and backend/ (see their READMEs), or run the whole stack with docker compose.`}
+                ? 'Recompute this stay on the mission-science service and compare it with the numbers above.'
+                : `Service offline at ${API_URL}. The numbers above come from the pipeline’s files and don’t need it.`}
           </p>
         </div>
         <button

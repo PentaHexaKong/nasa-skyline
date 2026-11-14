@@ -1,18 +1,18 @@
-import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Select } from '@cloudflare/kumo/components/select'
-import { ArrowRightIcon, CalendarBlankIcon, CheckCircleIcon, InfoIcon, StackIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowRightIcon, CalendarBlankIcon, CheckCircleIcon, StackIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react'
 import { Link } from '@tanstack/react-router'
 import { ScenarioScene } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { reviewSearch } from '~/components/planner/resolvePlan'
 import { ScenarioIcon } from '~/components/planner/ScenarioIcon'
+import { Eyebrow } from '~/components/Shell'
 import { type SitePlan, shortName, siteResult } from '~/lib/mission'
 import { SCENARIOS, type ScenarioPiece, scenarioGuidance } from '~/lib/scenarios'
 
 const BLURB = {
-  mast: 'Check whether a different position or height keeps a clearer view of the Sun and Earth.',
-  relay: 'Compare direct contact windows with what a relay spacecraft could add.',
-  rover: 'Explore the surrounding terrain and what could be reached from this site.',
+  mast: 'A higher or nearby spot may see more Sun and Earth.',
+  relay: 'What a relay spacecraft adds to direct contact.',
+  rover: 'What a rover could reach from here.',
 } as const
 
 /** A share against its limit: the bar is the share, the tick is the limit, the words say which side of it the share falls. */
@@ -59,18 +59,15 @@ function Status({ site, plan }: { site: SitePlan; plan: Plan }) {
   const name = shortName(site.data)
   return (
     <div className="grid content-start gap-3">
-      <span
-        className={`inline-flex w-max items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${r.works ? 'bg-go-fill text-go' : 'bg-miss-fill text-miss'}`}
-      >
+      <span className={`inline-flex w-max items-center gap-1.5 text-sm font-medium ${r.works ? 'text-go' : 'text-miss'}`}>
         {r.works ? <CheckCircleIcon aria-hidden weight="fill" /> : <WarningCircleIcon aria-hidden weight="fill" />}
         {r.works ? 'Works for this landing' : 'Needs attention'}
       </span>
       <p className="text-lg leading-snug text-pretty">
         {r.works
-          ? `${name} keeps the Sun and Earth within your limits over this ${plan.stay}-day stay, and both are in view at touchdown.`
+          ? `${name} meets every limit over the ${plan.stay}-day stay.`
           : `${name}: ${r.why.charAt(0).toLowerCase()}${r.why.slice(1)}. ${g.headline}`}
       </p>
-      {!r.works && <p className="text-sm text-ink-muted text-pretty">{g.detail}</p>}
     </div>
   )
 }
@@ -87,11 +84,14 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
     document.getElementById('compare')?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' })
   }
   return (
-    <section aria-labelledby="next-title" className="grid gap-6 rounded-xl border border-line p-5 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 id="next-title" className="text-2xl font-medium">
-          What should you do next?
-        </h2>
+    <section aria-labelledby="next-title" className="grid gap-6 border-t border-line pt-10">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="grid gap-2">
+          <Eyebrow pip>Next</Eyebrow>
+          <h2 id="next-title" className="text-[clamp(1.5rem,1.2rem+1vw,2rem)] leading-tight font-medium">
+            What should you do next?
+          </h2>
+        </div>
         {plan.sites.length > 1 && (
           <div className="flex items-center gap-2">
             <span id="next-site" className="text-sm text-ink-muted">
@@ -156,14 +156,6 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
           </div>
         </div>
       </div>
-      <div className="grid gap-2 rounded-lg border border-story/40 bg-story/10 p-4 sm:grid-cols-[auto_12rem_minmax(0,1fr)] sm:items-center sm:gap-4">
-        <InfoIcon aria-hidden className="size-6 text-story-ink" />
-        <p className="font-medium">Why this matters</p>
-        <p className="text-sm text-ink-muted text-pretty">
-          A good site keeps the Sun in view for power, keeps Earth in direct view for communication, and fits the planned stay. Skyline
-          checks the geometry of all three; delivered power, thermal limits and the radio link still need their own analysis.
-        </p>
-      </div>
       <div className="grid gap-3">
         <h3 className="text-xl font-medium">{guidance.priority.length > 0 ? 'Next steps' : 'Explore further'}</h3>
         <ul className="grid gap-4 lg:grid-cols-3">
@@ -215,19 +207,8 @@ export function NextSteps({ plan, actions, search }: { plan: Plan; actions: Plan
             )
           })}
         </ul>
-        <p className="text-xs text-ink-faint">
-          The scenes are drawings. Follow-up results are not computed yet; each page keeps your plan and says so.
-        </p>
+        <p className="text-xs text-ink-faint">Drawings. Follow-up results are not computed yet.</p>
       </div>
-      <Collapsible.Root>
-        <Collapsible.DefaultTrigger>About this review</Collapsible.DefaultTrigger>
-        <Collapsible.DefaultPanel>
-          <div className="grid max-w-[72ch] gap-2 text-sm text-ink-muted">
-            <p>{guidance.detail}</p>
-            <p>Limits cover the whole stay and come from your selected profile unless you changed them. Profile thresholds are examples.</p>
-          </div>
-        </Collapsible.DefaultPanel>
-      </Collapsible.Root>
     </section>
   )
 }

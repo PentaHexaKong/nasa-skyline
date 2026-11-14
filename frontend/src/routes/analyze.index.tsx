@@ -80,11 +80,17 @@ function PlannerPage() {
     <Shell>
       <h1 className="sr-only">Analyze a landing</h1>
       <StepBar step={step} plan={plan} actions={actions} />
-      <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
-        {step === 'setup' && <SetupStep plan={plan} actions={actions} />}
-        {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
-        {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
-      </main>
+      {step === 'setup' ? (
+        // Set up is one full-width screen that fits the viewport.
+        <main>
+          <SetupStep plan={plan} actions={actions} />
+        </main>
+      ) : (
+        <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
+          {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
+          {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
+        </main>
+      )}
       {step !== 'setup' && (
         <div className="sticky bottom-0 z-(--z-sticky) flex items-center justify-between gap-3 border-t border-line bg-bg px-4 py-2 sm:hidden">
           <span className="tabular min-w-0 truncate text-xs text-ink-muted">{missionShort(plan)}</span>

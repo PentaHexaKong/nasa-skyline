@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react'
-import { MOON_PREVIEW } from '~/components/moonTextures'
 import type { Summary } from '~/lib/data'
 import type { ScenarioPiece } from '~/lib/scenarios'
 
@@ -35,21 +34,6 @@ export function SiteThumb({ site, className = '' }: { site: Summary; className?:
       <polygon points={`0,${H} ${ridge} ${W},${H}`} fill={`url(#${id}-ground)`} />
       <polyline points={ridge} fill="none" stroke="#fff" strokeOpacity="0.8" strokeWidth="0.8" />
     </svg>
-  )
-}
-
-/** The dark lunar backdrop of the feasibility summary: the Moon's limb from the NASA colour map, and Earth above it. */
-export function MoonBackdrop() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(100deg,#0a1220_0%,#0d1626_40%,#141a24_100%)]" />
-      <div
-        className="absolute -right-[12%] -bottom-[160%] aspect-square w-[75%] rounded-full bg-cover opacity-80 shadow-[inset_30px_40px_80px_rgb(0_0_0/0.85)]"
-        style={{ backgroundImage: `url(${MOON_PREVIEW.color})`, backgroundSize: '260% 100%', backgroundPosition: '30% 50%' }}
-      />
-      <div className="absolute top-[14%] right-[22%] size-9 rounded-full bg-[radial-gradient(circle_at_35%_35%,#e8f4ff_0%,#5aa9e6_35%,#1d4f8f_70%,#0b1f3d_100%)] shadow-[inset_-6px_-3px_10px_rgb(0_0_0/0.8)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,#0a1220_0%,rgb(10_18_32/0.92)_45%,transparent_80%)]" />
-    </div>
   )
 }
 

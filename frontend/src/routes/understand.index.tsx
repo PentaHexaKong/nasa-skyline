@@ -131,15 +131,14 @@ function Landing() {
         A different place.
         <br />A different <span className="text-flare">perspective.</span>
       </h1>
-      <div className="grid items-end gap-6 sm:grid-cols-[1fr_auto]">
-        <p className="rise max-w-[40ch] text-lg leading-relaxed text-ink-muted text-pretty [--i:1]">
-          Follow the light around the Moon. Change the time, explore the landscape, and discover when the Sun and Earth can come into view.
-        </p>
-        <div className="rise grid justify-items-center gap-2 [--i:2]">
-          <Mascot pose="scientist-moons" className="size-36" />
-        </div>
+      <p className="rise max-w-[40ch] text-lg leading-relaxed text-ink-muted text-pretty [--i:1]">
+        Follow the light around the Moon. Change the time, explore the landscape, and discover when the Sun and Earth can come into view.
+      </p>
+      {/* The scientist speaks: the bubble sits to its right, its tail pointing back at the face. */}
+      <div className="rise flex items-end gap-3 [--i:2]">
+        <Mascot pose="scientist-moons" className="size-32 shrink-0 sm:size-36" />
+        <Bubble className="mb-16">Scroll with me. Four questions, one Moon.</Bubble>
       </div>
-      <Bubble className="rise ml-2 [--i:3]">Scroll with me. Four questions, one Moon.</Bubble>
       <ol className="rise grid border-t border-line sm:grid-cols-2 sm:gap-x-8 [--i:4]">
         {CHAPTERS.slice(1, 5).map((c, k) => (
           <li key={c.id}>

@@ -1,9 +1,9 @@
 import { CalendarBlankIcon, CaretDownIcon, MapPinIcon, RocketLaunchIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
-import { MoonBackdrop, SiteThumb } from '~/components/planner/Illustrations'
+import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions } from '~/components/planner/plan'
 import { verdictRows } from '~/components/planner/ResultStep'
-import { Explain } from '~/components/Shell'
+import { Explain, Eyebrow } from '~/components/Shell'
 import { Mascot } from '~/components/story'
 import { type GoWindow, goWindows, type LandingStatus, nextDays, type SitePlan, shortName } from '~/lib/mission'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
@@ -42,9 +42,7 @@ function Availability({ plan, actions }: { plan: Plan; actions: PlanActions }) {
             <h3 id="availability" className="text-lg font-medium">
               Landing availability across the year
             </h3>
-            <p className="text-sm text-ink-muted">
-              When each site meets the Sun and Earth at touchdown and your limits over the stay. Click a day to choose it.
-            </p>
+            <p className="text-sm text-ink-muted">Click a day to plan around it.</p>
           </div>
         </div>
         <ul className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-muted">
@@ -226,33 +224,27 @@ function WindowCard({ site, windows, plan, actions }: { site: SitePlan; windows:
 
 export function DatesStep({ plan, actions }: { plan: Plan; actions: PlanActions }) {
   return (
-    <div className="grid gap-8">
-      <section aria-labelledby="dates" className="relative isolate overflow-hidden rounded-xl border border-line">
-        <MoonBackdrop />
-        <div className="relative grid gap-5 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-          <div className="grid gap-3">
-            <p className="eyebrow text-ink-muted">Landing opportunity</p>
-            <h2 id="dates" className="max-w-[30em] text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] leading-tight font-medium text-balance">
-              {nextDays(verdictRows(plan))}
-            </h2>
-            <p className="max-w-[70ch] text-ink-muted text-pretty">
-              Landing at {minuteLabel(plan.minute)} UTC for a {plan.stay}-day stay, across the computed year from{' '}
-              {longDate(plan.dates[0] ?? plan.date)}.
-            </p>
-            <ul className="flex flex-wrap gap-3 pt-1">
-              {plan.sites.map((s) => (
-                <li key={s.data.site.id} className="flex items-center gap-2 rounded-lg border border-line bg-black/50 px-3 py-2">
-                  <CalendarBlankIcon aria-hidden className="text-go" />
-                  <span>
-                    <span className="readout text-lg">{s.goDays}</span> <span className="text-sm">good days</span>
-                    <span className="block text-2xs text-ink-muted">{shortName(s.data)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <Mascot pose="planner-magnifier" className="hidden size-32 lg:block" />
+    <div className="grid gap-10">
+      <section aria-labelledby="dates" className="grid items-end gap-6 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="grid gap-4">
+          <Eyebrow pip>
+            Dates · landing at {minuteLabel(plan.minute)} UTC, {plan.stay}-day stay
+          </Eyebrow>
+          <h2 id="dates" className="max-w-[28em] text-[clamp(1.75rem,1.3rem+1.8vw,2.75rem)] leading-[1.08] font-medium text-balance">
+            {nextDays(verdictRows(plan))}
+          </h2>
+          <dl className="flex flex-wrap gap-x-10 gap-y-3 border-t border-line pt-4">
+            {plan.sites.map((s) => (
+              <div key={s.data.site.id} className="grid gap-0.5">
+                <dt className="text-sm text-ink-muted">{shortName(s.data)}</dt>
+                <dd>
+                  <span className="readout text-2xl">{s.goDays}</span> <span className="text-sm text-ink-muted">days that work</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
         </div>
+        <Mascot pose="planner-magnifier" className="hidden size-32 md:block" />
       </section>
       <Availability plan={plan} actions={actions} />
       <section aria-labelledby="windows" className="grid gap-4">
@@ -262,9 +254,7 @@ export function DatesStep({ plan, actions }: { plan: Plan; actions: PlanActions 
             <h3 id="windows" className="text-lg font-medium">
               Landing windows by site
             </h3>
-            <p className="text-sm text-ink-muted">
-              Runs of consecutive days that work, from the chosen day on. Pick one to plan around it.
-            </p>
+            <p className="text-sm text-ink-muted">Runs of days that work. Pick one.</p>
           </div>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

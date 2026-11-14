@@ -1,6 +1,7 @@
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Link as KLink } from '@cloudflare/kumo/components/link'
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   ArrowSquareOutIcon,
   CalendarBlankIcon,
@@ -11,7 +12,6 @@ import {
   GlobeHemisphereWestIcon,
   LinkSimpleIcon,
   SunIcon,
-  WarningIcon,
   XCircleIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -21,12 +21,12 @@ import { Lanes } from '~/components/Lanes'
 import { moment, NextChange, NextEarth, PhaseBadge } from '~/components/Moment'
 import { Panorama } from '~/components/Panorama'
 import { DeeperAnalysis } from '~/components/planner/DeeperAnalysis'
-import { MoonBackdrop, SiteThumb } from '~/components/planner/Illustrations'
+import { SiteThumb } from '~/components/planner/Illustrations'
 import { LiveCheck } from '~/components/planner/LiveCheck'
+import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import { NextSteps } from '~/components/planner/NextSteps'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
-import { OpenEnd } from '~/components/Shell'
-import { Mascot } from '~/components/story'
+import { Eyebrow, OpenEnd } from '~/components/Shell'
 import {
   evaluate,
   type Measure,
@@ -39,7 +39,7 @@ import {
   whyNote,
 } from '~/lib/mission'
 import { earthTarget } from '~/lib/target'
-import { longDate, shortDate } from '~/lib/time'
+import { longDate, minuteLabel, shortDate } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'
 
 export const verdictRows = (plan: Plan): VerdictRow[] =>
@@ -47,7 +47,7 @@ export const verdictRows = (plan: Plan): VerdictRow[] =>
 
 type Requirement = (typeof REQUIREMENTS)[number]
 
-const Missed = () => <XIcon aria-label="Missed" weight="bold" className="mr-1 inline text-now" />
+const Missed = () => <XIcon aria-label="Missed" weight="bold" className="mr-1 inline text-miss" />
 
 const pct = (x: number) => `${(x * 100).toFixed(0)} %`
 const value = (q: Requirement, m: Measure) => `${q.read(m).toFixed(1)} ${q.unit}`
@@ -82,7 +82,11 @@ function Reading({ q, s }: { q: Requirement; s: SitePlan }) {
 function Seen({ what, seen }: { what: string; seen: boolean }) {
   return (
     <span className="inline-flex items-center gap-1 whitespace-nowrap">
-      {seen ? <CheckIcon aria-hidden weight="bold" className="text-ink-muted" /> : <XIcon aria-hidden weight="bold" className="text-now" />}
+      {seen ? (
+        <CheckIcon aria-hidden weight="bold" className="text-ink-muted" />
+      ) : (
+        <XIcon aria-hidden weight="bold" className="text-miss" />
+      )}
       {what}
       <span className="sr-only">{seen ? ' in view' : ' hidden'}</span>
     </span>
@@ -310,75 +314,59 @@ function MarkerKey({ mixedScales }: { mixedScales: boolean }) {
   )
 }
 
-/** The answer first: how many sites work, what fails, and the next day that works, over a lunar backdrop. */
-function FeasibilityBanner({ plan, actions }: { plan: Plan; actions: PlanActions }) {
+/** The answer first, beside the Moon at the landing moment: the verdict, how many sites work, and the next day that does. */
+function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
   const v = verdict(verdictRows(plan), plan.slip)
-  const results = plan.sites.map(siteResult)
-  const working = results.filter((r) => r.works).length
-  const missing = results.length - working
-  const next = plan.sites
-    .map((s) => s.nextGo)
-    .filter((d): d is string => !!d)
-    .sort()[0]
-  const n = plan.sites.length
+  const markers: MoonMarker[] = plan.sites.map((s) => ({
+    id: s.data.site.id,
+    name: shortName(s.data),
+    lat: s.data.site.lat_deg,
+    lon: s.data.site.lon_deg_east,
+    selected: true,
+    status: !s.checks ? 'not-computed' : siteResult(s).works ? 'works' : 'fails',
+  }))
   return (
-    <section aria-labelledby="verdict" className="relative isolate overflow-hidden rounded-xl border border-line">
-      <MoonBackdrop />
-      <div className="relative grid gap-6 p-6 sm:p-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_auto] lg:items-center">
-        <div className="grid gap-3">
-          <p className="eyebrow text-ink-muted">Landing feasibility summary</p>
-          <h2 id="verdict" aria-live="polite" className="text-[clamp(1.5rem,1.1rem+1.6vw,2.25rem)] leading-tight font-medium text-balance">
-            {working > 0 && working < n ? (
-              <>
-                <span className="mr-2 rounded-md bg-go-fill px-2 py-0.5 text-go">
-                  {working} of {n}
-                </span>
-                sites work for this landing.
-              </>
-            ) : (
-              v.headline
-            )}
-          </h2>
-          <p className="max-w-[60ch] text-ink-muted text-pretty">
-            {v.detail} {v.next && <span className="text-ink">{v.next}</span>}{' '}
-            {plan.base ? (
-              <button
-                type="button"
-                className="cursor-pointer text-ink underline underline-offset-3"
-                onClick={() => {
-                  const i = plan.dates.indexOf(plan.base ?? '')
-                  if (i >= 0) actions.selectDay(i)
-                }}
-              >
-                Back to {shortDate(plan.base)}
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="cursor-pointer text-ink underline underline-offset-3"
-                onClick={() => actions.setStep('dates')}
-              >
-                See all dates →
-              </button>
-            )}
-          </p>
+    <section aria-labelledby="verdict" className="grid items-center gap-x-10 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+      <div className="grid content-center gap-5">
+        <Eyebrow pip>
+          Result · {shortDate(plan.date)} {plan.date.slice(0, 4)}, {minuteLabel(plan.minute)} UTC · {plan.stay}-day stay
+        </Eyebrow>
+        <h2 id="verdict" aria-live="polite" className="text-[clamp(2rem,1.4rem+2.2vw,3.25rem)] leading-[1.05] font-medium text-balance">
+          {v.headline}
+        </h2>
+        <p className="max-w-[58ch] text-lg leading-relaxed text-ink-muted text-pretty">
+          {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {plan.base ? (
+            <button
+              type="button"
+              className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
+              onClick={() => {
+                const i = plan.dates.indexOf(plan.base ?? '')
+                if (i >= 0) actions.selectDay(i)
+              }}
+            >
+              <ArrowLeftIcon aria-hidden /> Back to {shortDate(plan.base)}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
+            onClick={() => actions.setStep('dates')}
+          >
+            <CalendarBlankIcon aria-hidden /> See every date
+          </button>
+          <button
+            type="button"
+            className="inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-ink-muted underline-offset-4 hover:text-ink hover:underline"
+            onClick={() => actions.setStep('setup')}
+          >
+            Change the setup
+          </button>
         </div>
-        <ul className="grid gap-2.5 border-line lg:border-l lg:pl-6">
-          <li className="flex items-center gap-2">
-            <CheckCircleIcon aria-hidden weight="fill" className="size-5 shrink-0 text-go" />
-            {working} site{working === 1 ? '' : 's'} meet{working === 1 ? 's' : ''} every requirement
-          </li>
-          <li className="flex items-center gap-2">
-            <WarningIcon aria-hidden weight="fill" className={`size-5 shrink-0 ${missing ? 'text-sun' : 'text-ink-faint'}`} />
-            {missing} site{missing === 1 ? '' : 's'} with a missed requirement or a hidden Sun or Earth at touchdown
-          </li>
-          <li className="flex items-center gap-2">
-            <CalendarBlankIcon aria-hidden className="size-5 shrink-0 text-ink-muted" />
-            Next day that works: {next ? longDate(next) : 'none in the computed year'}
-          </li>
-        </ul>
-        <Mascot pose={working > 0 ? 'planner-excited' : 'planner-thinking'} className="hidden size-28 lg:block" />
       </div>
+      <MissionMoon markers={markers} at={plan.window.start} controls={false} className="h-[22rem] rounded-xl sm:h-[26rem]" />
     </section>
   )
 }
@@ -398,18 +386,23 @@ function SiteCard({ site, plan }: { site: SitePlan; plan: Plan }) {
   const Icon = { minSun: SunIcon, maxNoSun: ClockIcon, minEarth: GlobeHemisphereWestIcon, maxNoEarth: ClockIcon } as const
   const short = { minSun: 'Sun in view', maxNoSun: 'Longest w/o Sun', minEarth: 'Earth in view', maxNoEarth: 'Longest w/o Earth' } as const
   return (
-    <article
-      className={`grid content-start gap-3 rounded-xl border p-4 ${r.works ? 'border-go/50 bg-go-fill/15' : 'border-miss/50 bg-miss-fill/20'}`}
-    >
-      <header className="grid grid-cols-[5.5rem_minmax(0,1fr)_auto] items-start gap-3">
-        <SiteThumb site={data} className="h-14 w-full overflow-hidden rounded-md" />
-        <div className="grid gap-1.5">
-          <h3 className="leading-tight font-semibold">{data.site.name}</h3>
-          <span
-            className={`inline-flex w-max items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${r.works ? 'bg-go-fill text-go' : 'bg-miss-fill text-miss'}`}
-          >
-            {r.works ? <CheckCircleIcon aria-hidden /> : <XCircleIcon aria-hidden />}
-            {r.works ? 'Works' : 'Doesn’t work'}
+    <article className="grid content-start gap-3 rounded-xl border border-line p-4 transition-colors hover:border-line-strong">
+      <header className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-start gap-3">
+        <SiteThumb site={data} className="h-12 w-full overflow-hidden rounded-md" />
+        <div className="grid gap-1">
+          <h3 className="leading-tight font-medium">{data.site.name}</h3>
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium">
+            {!site.checks ? (
+              <span className="text-ink-muted">Not computed</span>
+            ) : r.works ? (
+              <>
+                <CheckCircleIcon aria-hidden weight="fill" className="text-go" /> <span className="text-go">Works</span>
+              </>
+            ) : (
+              <>
+                <XCircleIcon aria-hidden weight="fill" className="text-miss" /> <span className="text-miss">Doesn’t work</span>
+              </>
+            )}
           </span>
         </div>
         <Link
@@ -417,12 +410,13 @@ function SiteCard({ site, plan }: { site: SitePlan; plan: Plan }) {
           params={{ siteId: data.site.id }}
           search={{ day: plan.date, t: plan.minute }}
           aria-label={`Open the full report for ${data.site.name}`}
+          title="Open the full site report"
           className="rounded p-1 text-ink-muted hover:bg-surface-hover hover:text-ink"
         >
           <ArrowSquareOutIcon aria-hidden className="size-5" />
         </Link>
       </header>
-      {!r.works && <p className="text-xs text-miss">{r.why}</p>}
+      {!r.works && <p className="text-sm text-ink-muted text-pretty">{r.why}.</p>}
       <Panorama
         skyline={data.skyline.elevation_deg}
         azStep={data.skyline.az_step_deg}
@@ -456,10 +450,6 @@ function SiteCard({ site, plan }: { site: SitePlan; plan: Plan }) {
       </dl>
     </article>
   )
-}
-
-function saveBrief(actions: PlanActions) {
-  actions.downloadBrief()
 }
 
 function CopyLink() {
@@ -523,9 +513,15 @@ function BeforeYouDecide({ plan }: { plan: Plan }) {
 export function ResultStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
   const polar = plan.sites.map((s) => Math.abs(s.data.site.lat_deg) >= 75)
   return (
-    <div className="grid gap-8">
-      <FeasibilityBanner plan={plan} actions={actions} />
-      <section id="compare" aria-label="Sites side by side" className="grid scroll-mt-32 gap-3">
+    <div className="grid gap-12">
+      <Verdict plan={plan} actions={actions} />
+      <section id="compare" aria-labelledby="compare-title" className="grid scroll-mt-32 gap-4">
+        <div className="grid gap-2">
+          <Eyebrow pip>Site by site</Eyebrow>
+          <h2 id="compare-title" className="text-[clamp(1.5rem,1.2rem+1vw,2rem)] leading-tight font-medium">
+            What each site sees at touchdown
+          </h2>
+        </div>
         <div className="grid grid-cols-[repeat(auto-fit,minmax(19rem,1fr))] gap-4">
           {plan.sites.map((s) => (
             <SiteCard key={s.data.site.id} site={s} plan={plan} />
@@ -533,33 +529,37 @@ export function ResultStep({ plan, actions, search }: { plan: Plan; actions: Pla
         </div>
         <MarkerKey mixedScales={polar.includes(true) && polar.includes(false)} />
       </section>
-      <section aria-labelledby="table-title" className="grid gap-3 rounded-xl border border-line p-5">
-        <h2 id="table-title" className="sr-only">
-          Every requirement, site by site
-        </h2>
-        <ResultTable plan={plan} />
-        <ResultCards plan={plan} />
-        <p className="max-w-[80ch] text-xs text-ink-faint text-pretty">
-          A + means the gap touches the edge of the stay, so it may be longer. These are geometric opportunities under stated assumptions,
-          not delivered power or a working radio link.
-        </p>
-      </section>
-      <Collapsible.Root>
-        <Collapsible.DefaultTrigger>Sun and Earth at touchdown, site by site</Collapsible.DefaultTrigger>
-        <Collapsible.DefaultPanel>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-x-8 gap-y-10 pt-3">
-            {plan.sites.map((s) => (
-              <SiteColumn key={s.data.site.id} site={s} plan={plan} />
-            ))}
-          </div>
-        </Collapsible.DefaultPanel>
-      </Collapsible.Root>
+      <div className="grid gap-1">
+        <Collapsible.Root>
+          <Collapsible.DefaultTrigger>Every limit, site by site</Collapsible.DefaultTrigger>
+          <Collapsible.DefaultPanel>
+            <section aria-label="Every limit, site by site" className="grid gap-3 pt-2">
+              <ResultTable plan={plan} />
+              <ResultCards plan={plan} />
+              <p className="max-w-[80ch] text-xs text-ink-faint text-pretty">
+                A + means the gap touches the edge of the stay, so it may be longer. These are geometric opportunities under stated
+                assumptions, not delivered power or a working radio link.
+              </p>
+            </section>
+          </Collapsible.DefaultPanel>
+        </Collapsible.Root>
+        <Collapsible.Root>
+          <Collapsible.DefaultTrigger>Sun and Earth at touchdown, in detail</Collapsible.DefaultTrigger>
+          <Collapsible.DefaultPanel>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-x-8 gap-y-10 pt-3">
+              {plan.sites.map((s) => (
+                <SiteColumn key={s.data.site.id} site={s} plan={plan} />
+              ))}
+            </div>
+          </Collapsible.DefaultPanel>
+        </Collapsible.Root>
+      </div>
       <NextSteps plan={plan} actions={actions} search={search} />
       <LiveCheck plan={plan} />
       <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
         <button
           type="button"
-          onClick={() => saveBrief(actions)}
+          onClick={actions.downloadBrief}
           className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-brand px-4 py-2 font-medium text-bg hover:opacity-90"
         >
           <DownloadSimpleIcon aria-hidden weight="bold" /> Download mission brief
