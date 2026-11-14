@@ -1,5 +1,7 @@
 import { createFileRoute, useHydrated, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
+import { useMoonScene } from '~/components/MoonStage'
+import type { MoonScene } from '~/components/ParallaxMoon'
 import { DatesStep } from '~/components/planner/DatesStep'
 import { type Plan, type PlanActions, type PlanSearch, planSearch, type StepId, stepOf } from '~/components/planner/plan'
 import { ResultStep } from '~/components/planner/ResultStep'
@@ -7,7 +9,7 @@ import { resolvePlan } from '~/components/planner/resolvePlan'
 import { SetupStep } from '~/components/planner/SetupStep'
 import { missionShort, SlipButtons, StepBar } from '~/components/planner/StepBar'
 import { Shell } from '~/components/Shell'
-import { loadSummary, MOON_SITES } from '~/lib/data'
+import { loadMoonEphemeris, loadSummary, MOON_SITES } from '~/lib/data'
 import { buildBrief } from '~/lib/mission'
 
 // The flow starts at Set up; links that mean the answer (the scenario pages' way back) ask for Result by name.
@@ -15,10 +17,16 @@ const DEFAULT_STEP: StepId = 'setup'
 
 export const Route = createFileRoute('/analyze/')({
   validateSearch: planSearch,
-  loader: () => Promise.all(MOON_SITES.map((s) => loadSummary(s.id))),
+  loader: async () => {
+    const [eph, all] = await Promise.all([loadMoonEphemeris(), Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))])
+    return { eph, all }
+  },
   head: () => ({ meta: [{ title: 'Analyze · Skyline' }] }),
   component: PlannerPage,
 })
+
+/** The shared Moon glides into Set up's Moon and hands over to it (MissionMoon's `handoff`). */
+const PLANNER_MOON: MoonScene = { kind: 'planner' }
 
 function saveText(text: string) {
   const url = URL.createObjectURL(new Blob([text], { type: 'text/markdown' }))
@@ -30,7 +38,8 @@ function saveText(text: string) {
 }
 
 function PlannerPage() {
-  const all = Route.useLoaderData()
+  const { eph, all } = Route.useLoaderData()
+  useMoonScene(PLANNER_MOON, eph)
   const params = Route.useSearch()
   const hydrated = useHydrated()
   const navigate = useNavigate({ from: Route.fullPath })

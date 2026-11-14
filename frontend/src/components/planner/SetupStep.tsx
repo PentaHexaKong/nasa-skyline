@@ -327,7 +327,8 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
       aria-labelledby="stage-title"
       data-open={open ?? undefined}
       data-emerge={emerging && !open ? '' : undefined}
-      className="plan-stage relative isolate h-[calc(100svh-6.5rem)] min-h-[32rem] overflow-hidden bg-black"
+      // No fill of its own: the page is black already, and the shared Moon glides in behind this box (MissionMoon `handoff`).
+      className="plan-stage relative isolate h-[calc(100svh-6.5rem)] min-h-[32rem] overflow-hidden"
     >
       <MissionMoon
         markers={markers}
@@ -338,6 +339,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         aim={aim}
         sway
         spin={spin}
+        handoff
         footClassName={
           open && wide
             ? `bottom-[5.6rem] ${side === 'left' ? 'right-6 justify-end' : 'left-6 justify-start'}`

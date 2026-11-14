@@ -41,6 +41,25 @@ export const moonBridge = {
   draw: null as (() => void) | null,
 }
 
+/**
+ * The hand-off between the page Moon and Analyze's own Moon (MissionMoon on Set up), which the reader turns and which
+ * carries the site pins. Both draw the same globe, so drawn from the same camera, lens and Sun they are the same
+ * picture. The page Moon glides from the previous page into MissionMoon's view (`cover`), MissionMoon then shows itself
+ * in the same frame (`shown`) and the page Moon steps aside; leaving Analyze, the page Moon glides on from that view.
+ */
+export type PlannerView = Omit<SharedView, 'stars'> & { light: number; ambient: number }
+
+export const plannerBridge = {
+  /** MissionMoon's camera, lens and Sun, as it last drew them. Set by MissionMoon while it is on Set up. */
+  view: null as PlannerView | null,
+  /** Counts changes to `view`. */
+  version: 0,
+  /** The page Moon has glided in and now draws `view` on screen, waiting for MissionMoon. Set by ParallaxMoon. */
+  cover: false,
+  /** MissionMoon's own Moon is on screen. Set by MissionMoon. */
+  shown: false,
+}
+
 const toBox = new THREE.Matrix4()
 
 /**
@@ -85,6 +104,9 @@ export function afterGlide(fn: () => void) {
     cancelAnimationFrame(raf)
   }
 }
+
+/** The Moon is gliding to a new page's place. */
+export const gliding = () => glide.on
 
 /** The Moon has started gliding to a new page's place. */
 export function beginGlide() {

@@ -1,7 +1,7 @@
-import { type RefObject, useEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { HORIZON_FOV, HORIZON_VIEW, horizonFrame, quarterHour, SPIN_DEG_S } from '~/components/horizon'
-import { beginGlide, endGlide, moonBridge, reaim, type SharedView } from '~/components/moonBridge'
+import { beginGlide, endGlide, moonBridge, plannerBridge, reaim, type SharedView } from '~/components/moonBridge'
 import { halo, moonMaterial, toVec } from '~/components/moonGlobe'
 import type { MoonEphemeris } from '~/lib/data'
 import { bestHour, SYNODIC_HOURS, subPoints, whenAt } from '~/lib/moonLight'
@@ -17,6 +17,9 @@ import { minuteLabel, shortDate } from '~/lib/time'
  * - `tour` (Explore, Understand): the Moon stays on screen while the page scrolls and turns to the place each chapter
  *   talks about. Sunlight and the point under Earth come from the pipeline's SPICE ephemeris for a stated moment, so
  *   the lit side is the real one; only the camera moves with the scroll.
+ *
+ * - `planner` (Analyze): Analyze draws its own Moon, which the reader turns (MissionMoon). This Moon glides into that
+ *   Moon's exact view and hands over to it, and on leaving glides on from it (plannerBridge in moonBridge.ts).
  *
  * When the scene changes, the frame on screen is kept and the Moon glides from it into the new scene's frame.
  */
@@ -70,6 +73,7 @@ export type MoonScene =
        */
       spin?: boolean
     }
+  | { kind: 'planner' }
 
 const FOV = 30
 /** The site header's height on the tour pages, in CSS px (h-14): the tour frames the Moon in the screen below it. */
@@ -158,6 +162,12 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
   latest.current = moonScene
   const [failed, setFailed] = useState(false)
   const sites = moonScene.kind === 'tour' ? moonScene.sites : []
+  const stepNow = useRef<(() => void) | null>(null)
+  // A new page draws its first frame before the browser paints it: leaving Analyze, its own Moon is gone from this
+  // paint, so this one must be on screen in it.
+  useLayoutEffect(() => {
+    stepNow.current?.()
+  }, [moonScene])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -559,7 +569,7 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     const sceneDir = new THREE.Vector3()
     let sceneKey = ''
     /** The scene's box on this canvas, in CSS px from its top left; it scrolls with the page. */
-    const sceneBox = (view: SharedView) => {
+    const sceneBox = (view: Pick<SharedView, 'canvas'>) => {
       const rc = canvas.getBoundingClientRect()
       const rs = view.canvas.getBoundingClientRect()
       if (!w || !h || rs.width < 1 || rs.height < 1) return null
@@ -603,7 +613,14 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     let glideU = 0
     let drawn = false
     let snap = true
+    // Analyze's own Moon was on screen as of the last frame (its unmount clears the bridge before the next page sets
+    // its scene, so the glide out reads this instead).
+    let plannerOn = false
+    // How long a glide into Analyze has waited for Analyze's Moon to show up, in seconds.
+    let plannerWait = 0
+    let plannerVersion = -1
     const settle = () => {
+      plannerBridge.cover = false
       if (!from) return
       from = null
       glideK = 0
@@ -624,7 +641,9 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       if (sc !== shown) {
         // A new page: the glide starts from exactly what is on screen now, and the new page's own frame takes over at
         // once underneath (snap), so the glide is the only movement.
-        if (drawn && !reduced.matches && opacity > 0.05) {
+        // Leaving Analyze, its Moon was the one on screen, drawn from the view this Moon kept following unseen.
+        const handing = shown?.kind === 'planner' && plannerOn
+        if ((drawn || handing) && !reduced.matches && (opacity > 0.05 || handing)) {
           from = {
             position: camera.position.clone(),
             quaternion: camera.quaternion.clone(),
@@ -633,8 +652,10 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
             light: light.intensity,
             ambient: ambient.intensity,
             thin: thinK.value,
-            opacity: Number.parseFloat(canvas.style.opacity) || opacity,
+            opacity: handing ? 1 : Number.parseFloat(canvas.style.opacity) || opacity,
           }
+          plannerOn = false
+          plannerWait = 0
           glideU = 0
           glideK = 1
           beginGlide()
@@ -652,10 +673,20 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       let sideGoal = 0
       let sceneShare = 0
       let centreY = 0
+      const pv = sc.kind === 'planner' ? plannerBridge.view : null
       if (sc.kind === 'horizon') {
         // A lunar day, sped up. Reduced motion holds it still.
         if (!reduced.matches) spin = (spin + SPIN_DEG_S * dt) % 360
         centreY = horizonGoal(sc)
+      } else if (sc.kind === 'planner') {
+        // Analyze's Moon is the one on screen there: this one shows only while it glides in and waits for it, and
+        // otherwise follows its view unseen, ready to glide on from it.
+        plannerOn = plannerBridge.shown
+        opGoal = from && pv && !plannerOn ? 1 : 0
+        if (plannerBridge.version !== plannerVersion) {
+          plannerVersion = plannerBridge.version
+          dirty = true
+        }
       } else {
         tourMoment(sc.sites)
         const g = goal(sc.poses)
@@ -688,7 +719,11 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       // Nothing shows until the colour map has arrived, then the Moon fades in; a new page takes its opacity at once
       // (the glide blends it).
       const opTarget = ready ? opGoal : 0
-      opacity = snap && drawn ? opTarget : opacity + (opTarget - opacity) * (reduced.matches ? 1 : Math.min(1, dt * 4))
+      if (sc.kind === 'planner') {
+        // On and off at once: Analyze's Moon takes over in the same frame, with the same picture.
+        if (opacity !== opTarget) dirty = true
+        opacity = opTarget
+      } else opacity = snap && drawn ? opTarget : opacity + (opTarget - opacity) * (reduced.matches ? 1 : Math.min(1, dt * 4))
       earthK += (earthGoal - earthK) * k
       const sideBefore = side
       side += (sideGoal - side) * k
@@ -698,11 +733,25 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
 
       // ---- the glide from the previous page's frame
       if (from && ready) {
-        // By frame time, at most a 30th of a second a frame, so a busy frame on the arriving page pauses the glide for
-        // a moment instead of skipping a stretch of it.
-        glideU += Math.min(dt, 1 / 30) / GLIDE_S
-        glideK = 1 - glideEase(glideU)
-        if (glideU >= 1) settle()
+        if (sc.kind === 'planner' && !pv) {
+          // Analyze's Moon has not drawn yet, so there is nowhere to go: hold the old frame. A step with no Moon of its
+          // own (Result, Dates) never draws one, so after a moment the Moon fades out where it is.
+          plannerWait += dt
+          if (plannerWait > 0.6) {
+            from.opacity = Math.max(0, from.opacity - dt * 3)
+            if (from.opacity <= 0.01) settle()
+          }
+        } else {
+          // By frame time, at most a 30th of a second a frame, so a busy frame on the arriving page pauses the glide
+          // for a moment instead of skipping a stretch of it.
+          glideU += Math.min(dt, 1 / 30) / GLIDE_S
+          glideK = 1 - glideEase(glideU)
+          if (glideU >= 1) {
+            // Into Analyze, the glide ends when Analyze's Moon has taken over; until then this one holds its view.
+            if (sc.kind !== 'planner' || plannerBridge.shown) settle()
+            else plannerBridge.cover = true
+          }
+        }
         dirty = true
       }
 
@@ -761,10 +810,16 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       if (tour && tourTurn !== 0) sunDir.value.applyAxisAngle(yAxis, tourTurn)
       // Toward the scene's camera by its share.
       if (view && mapped) toward(view, mapped, shared)
+      // Analyze: exactly its Moon's frame, its lens re-aimed at this canvas.
+      const plannerBox = pv ? sceneBox(pv) : null
+      if (pv && plannerBox) {
+        toward(pv, reaim(pv.projection, plannerBox, { w, h }, camera.near, camera.far, sceneProj), 1)
+        sunDir.value.copy(pv.sun)
+      }
       // Toward the previous page's frame by what is left of the glide. Same canvas, so its lens applies as it was.
-      let thinShown = tour ? 0 : 1
-      let lightShown = tour ? LIGHT.tour : LIGHT.horizon
-      let ambientShown = tour ? AMBIENT.tour : AMBIENT.horizon
+      let thinShown = tour || pv ? 0 : 1
+      let lightShown = pv ? pv.light : tour ? LIGHT.tour : LIGHT.horizon
+      let ambientShown = pv ? pv.ambient : tour ? AMBIENT.tour : AMBIENT.horizon
       let opacityShown = opacity
       if (from && glideK > 0) {
         toward(from, from.projection, glideK)
@@ -809,10 +864,12 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       if (!moonBridge.view || latest.current.kind !== 'tour') step()
     }
     moonBridge.draw = step
+    stepNow.current = step
     tick()
 
     return () => {
       cancelAnimationFrame(frame)
+      stepNow.current = null
       ro.disconnect()
       settle()
       moonBridge.ready = false

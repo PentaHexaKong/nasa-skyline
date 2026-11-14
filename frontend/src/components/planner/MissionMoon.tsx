@@ -1,5 +1,6 @@
 import { ArrowCounterClockwiseIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
+import { gliding, type PlannerView, plannerBridge } from '~/components/moonBridge'
 import { loadMoonEphemeris } from '~/lib/data'
 import { ephemerisHours, subPoints, whenAt } from '~/lib/moonLight'
 import { minuteLabel, shortDate } from '~/lib/time'
@@ -45,6 +46,9 @@ const GAP = 8
  * labelled rotate and reset buttons for keyboards. `labels={false}` keeps only the dots. `zoom` (camera distance as a
  * share of the usual one) and `aim` (where the disc's centre moves, as shares of the box's width and height) ease the
  * camera in the render loop, so a zoom stays sharp instead of scaling the picture.
+ *
+ * `handoff` (Set up) makes it the shared Moon's last stop: the page Moon glides in from the previous page to exactly
+ * this view, and this Moon shows itself the moment it lands (plannerBridge in moonBridge.ts).
  */
 export default function MissionMoon({
   markers,
@@ -56,6 +60,7 @@ export default function MissionMoon({
   aim = NO_AIM,
   sway = false,
   spin = 0,
+  handoff = false,
   footClassName = 'right-3 bottom-2.5 left-3 justify-between',
   className = '',
 }: {
@@ -72,6 +77,8 @@ export default function MissionMoon({
    */
   sway?: boolean
   spin?: number
+  /** Take over from the shared page Moon, and let it glide on from here when the reader leaves. */
+  handoff?: boolean
   /** Where the caption line sits in the box. */
   footClassName?: string
   className?: string
@@ -83,12 +90,14 @@ export default function MissionMoon({
   const pins = useRef<Record<string, HTMLSpanElement | null>>({})
   const lines = useRef<Record<string, SVGLineElement | null>>({})
   const labels = useRef<Record<string, HTMLElement | null>>({})
-  const latest = useRef({ markers, at, showLabels, zoom, aim, sway })
-  latest.current = { markers, at, showLabels, zoom, aim, sway }
+  const latest = useRef({ markers, at, showLabels, zoom, aim, sway, handoff })
+  latest.current = { markers, at, showLabels, zoom, aim, sway, handoff }
   const api = useRef({ redraw: () => {}, light: () => {}, turn: (_: string) => {}, spin: () => {} })
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [caption, setCaption] = useState('')
+  // How a hand-off Moon came on screen: at once over the page Moon that glided in, or fading in when nothing did.
+  const [reveal, setReveal] = useState<'hidden' | 'instant' | 'fade'>('hidden')
 
   useEffect(() => {
     api.current.redraw()
@@ -178,7 +187,15 @@ export default function MissionMoon({
         return map
       }
       // Progressive, as on Understand: the first-look maps show the Moon early and the full ones replace them.
-      const { material, capRot } = moonMaterial(tex, () => !disposed && setReady(true), true)
+      let mapsIn = false
+      const { material, capRot } = moonMaterial(
+        tex,
+        () => {
+          mapsIn = true
+          if (!disposed) setReady(true)
+        },
+        true,
+      )
       const moon = new THREE.Mesh(new THREE.SphereGeometry(1, 128, 64), material)
       const sunDir = { value: new THREE.Vector3(1, 0, 0) }
       // The limb glow adds light but never coverage, as on the story pages.
@@ -194,7 +211,20 @@ export default function MissionMoon({
       capRot.value.setFromMatrix4(moon.matrixWorld)
       const sun = new THREE.DirectionalLight(0xffffff, 3.2)
       // A faint fill, as earthshine gives, so the night side still reads as a shape.
-      scene.add(moon, sun, new THREE.AmbientLight(0xffffff, 0.06))
+      const fill = new THREE.AmbientLight(0xffffff, 0.06)
+      scene.add(moon, sun, fill)
+      // ---- the hand-off with the page Moon: this Moon's view, published each frame, and whether it is on screen yet
+      const handoff = latest.current.handoff
+      const shared: PlannerView = {
+        canvas: surface,
+        position: new THREE.Vector3(),
+        quaternion: new THREE.Quaternion(),
+        projection: new THREE.Matrix4(),
+        sun: new THREE.Vector3(),
+        light: sun.intensity,
+        ambient: fill.intensity,
+      }
+      let taken = !handoff
 
       // ---- the Sun at the landing moment, and a camera that follows it until the reader turns the Moon
       let follow = true
@@ -293,7 +323,7 @@ export default function MissionMoon({
             pin.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`
             pin.style.opacity = seen ? '1' : '0'
           }
-          if (overlay.current) overlay.current.style.opacity = '1'
+          if (overlay.current) overlay.current.style.opacity = taken ? '1' : '0'
           return
         }
         const sorted = [...points].sort((a, b) => a.x - b.x)
@@ -360,7 +390,7 @@ export default function MissionMoon({
             line.style.opacity = seen ? '1' : '0'
           }
         }
-        if (overlay.current) overlay.current.style.opacity = '1'
+        if (overlay.current) overlay.current.style.opacity = taken ? '1' : '0'
       }
 
       function draw(now: number) {
@@ -413,6 +443,29 @@ export default function MissionMoon({
         camera.position.setLength(unzoomed * curZoom)
         camera.lookAt(0, 0, 0)
         renderer.render(scene, camera)
+        if (handoff) {
+          shared.position.copy(camera.position)
+          shared.quaternion.copy(camera.quaternion)
+          shared.projection.copy(camera.projectionMatrix)
+          shared.sun.copy(sunDir.value)
+          plannerBridge.view = shared
+          plannerBridge.version++
+          if (!taken && mapsIn) {
+            // The page Moon has landed on this view: show this Moon in its place, in the same frame. Nothing glided
+            // in (a direct visit): fade in as usual. Otherwise keep drawing until it lands.
+            if (plannerBridge.cover || !gliding()) {
+              taken = true
+              plannerBridge.shown = true
+              // Now, not on React's next render: the page Moon steps aside on its next frame.
+              if (plannerBridge.cover) {
+                renderer.domElement.style.transition = 'none'
+                renderer.domElement.style.opacity = '1'
+              }
+              setReveal(plannerBridge.cover ? 'instant' : 'fade')
+            }
+          }
+          if (!taken) moving = true
+        }
         placeLabels(box?.clientWidth ?? 0, box?.clientHeight ?? 0)
         if (moving) requestDraw()
         else last = 0
@@ -498,6 +551,10 @@ export default function MissionMoon({
       }
       release = () => {
         cancelAnimationFrame(frame)
+        if (plannerBridge.view === shared) {
+          plannerBridge.view = null
+          plannerBridge.shown = false
+        }
         resize.disconnect()
         orbit.dispose()
         motion.removeEventListener('change', onMotion)
@@ -535,11 +592,11 @@ export default function MissionMoon({
     }
   }, [])
 
-  const live = ready && !failed
+  const live = (handoff ? reveal !== 'hidden' : ready) && !failed
   return (
     // `relative` only when the caller has not positioned the box itself, or it would override `absolute`.
     <div ref={host} className={`overflow-hidden ${/(^|\s)(absolute|fixed)(\s|$)/.test(className) ? '' : 'relative'} ${className}`}>
-      {!live && (
+      {!live && !(handoff && gliding()) && (
         <div
           aria-hidden
           className="absolute top-1/2 left-1/2 aspect-square h-[58%] max-w-[80%] -translate-1/2 rounded-full bg-white/[0.04] motion-safe:animate-pulse"
@@ -549,7 +606,7 @@ export default function MissionMoon({
         ref={canvas}
         role="img"
         aria-label={`The Moon from below its south pole, with ${markers.length} landing sites at their computed coordinates. ${caption}`}
-        className={`absolute inset-0 size-full cursor-grab transition-opacity duration-700 active:cursor-grabbing ${live ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute inset-0 size-full cursor-grab active:cursor-grabbing ${reveal === 'instant' ? '' : 'transition-opacity duration-700'} ${live ? 'opacity-100' : 'opacity-0'}`}
       />
       {failed ? (
         showLabels && (

@@ -8,11 +8,11 @@ if (typeof window !== 'undefined') void loadMoon()
 const ParallaxMoon = lazy(loadMoon)
 
 /**
- * One Moon for the front door, Explore and Understand. It lives above the routes, so going from one of these pages to
- * another never draws a new Moon: the page says where the Moon should be (`useMoonScene`) and the same Moon glides
- * there. On every other page it is gone.
+ * One Moon for the front door, Explore, Understand and Analyze. It lives above the routes, so going from one of these
+ * pages to another never draws a new Moon: the page says where the Moon should be (`useMoonScene`) and the same Moon
+ * glides there. On Analyze it hands over to Analyze's own Moon, which the reader turns. On every other page it is gone.
  */
-const PAGES = new Set(['/', '/explore', '/understand'])
+const PAGES = new Set(['/', '/explore', '/understand', '/analyze'])
 
 let current: { scene: MoonScene; eph: MoonEphemeris } | null = null
 const listeners = new Set<() => void>()
