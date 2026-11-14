@@ -1,0 +1,9 @@
+# Build context is the repo root; the frontend image needs only frontend/.
+*
+!frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/.output/
+frontend/.tanstack/
+frontend/src/data/generated/
+frontend/public/scientificClient/

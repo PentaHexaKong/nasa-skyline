@@ -26,7 +26,7 @@ class Handler(BaseHTTPRequestHandler):
             "status": "stub_only",
             "service": "ds",
             "received": payload,
-            "note": "Integration placeholder; add the DS team's implementation."
+            "note": "Integration placeholder; replace with the analysis implementation."
         })
 
     def log_message(self, fmt, *args):

@@ -26,7 +26,7 @@ class Handler(BaseHTTPRequestHandler):
             "status": "stub_only",
             "service": "ml",
             "received": payload,
-            "note": "Integration placeholder; add the ML team's implementation."
+            "note": "Integration placeholder; replace with the prediction implementation."
         })
 
     def log_message(self, fmt, *args):
