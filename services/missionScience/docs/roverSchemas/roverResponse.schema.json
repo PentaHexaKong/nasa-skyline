@@ -1,0 +1,1040 @@
+{
+  "$defs": {
+    "ContractError": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "ContractError",
+      "type": "object"
+    },
+    "RoverBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "maxGeometryEvaluations": {
+          "maximum": 21,
+          "minimum": 0,
+          "title": "Maxgeometryevaluations",
+          "type": "integer"
+        },
+        "maxGraphNodes": {
+          "maximum": 1089,
+          "minimum": 1,
+          "title": "Maxgraphnodes",
+          "type": "integer"
+        },
+        "maxTransitions": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Maxtransitions",
+          "type": "integer"
+        },
+        "maxWallTimeS": {
+          "maximum": 300,
+          "minimum": 0.01,
+          "title": "Maxwalltimes",
+          "type": "number"
+        }
+      },
+      "required": [
+        "maxGeometryEvaluations",
+        "maxGraphNodes",
+        "maxTransitions",
+        "maxWallTimeS"
+      ],
+      "title": "RoverBudget",
+      "type": "object"
+    },
+    "RoverComputed": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-rover-response/0.1.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "contractStatus": {
+          "const": "proposed-for-team-review",
+          "title": "Contractstatus",
+          "type": "string"
+        },
+        "dataState": {
+          "const": "computed",
+          "title": "Datastate",
+          "type": "string"
+        },
+        "scenarioId": {
+          "pattern": "^rover-[0-9a-f]{64}$",
+          "title": "Scenarioid",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/RoverRequest"
+        },
+        "units": {
+          "$ref": "#/$defs/Units"
+        },
+        "result": {
+          "$ref": "#/$defs/RoverResult"
+        },
+        "provenance": {
+          "additionalProperties": true,
+          "title": "Provenance",
+          "type": "object"
+        },
+        "error": {
+          "title": "Error",
+          "type": "null"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "contractStatus",
+        "dataState",
+        "scenarioId",
+        "request",
+        "units",
+        "result",
+        "provenance",
+        "error"
+      ],
+      "title": "RoverComputed",
+      "type": "object"
+    },
+    "RoverEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "sourceCell": {
+          "title": "Sourcecell",
+          "type": "integer"
+        },
+        "targetCell": {
+          "title": "Targetcell",
+          "type": "integer"
+        },
+        "midpointPoint": {
+          "title": "Midpointpoint",
+          "type": "integer"
+        },
+        "traversable": {
+          "title": "Traversable",
+          "type": "boolean"
+        },
+        "distanceM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Distancem"
+        },
+        "maximumSegmentGradeDeg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Maximumsegmentgradedeg"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "sourceCell",
+        "targetCell",
+        "midpointPoint",
+        "traversable",
+        "distanceM",
+        "maximumSegmentGradeDeg",
+        "reason"
+      ],
+      "title": "RoverEdge",
+      "type": "object"
+    },
+    "RoverFailure": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-rover-response/0.1.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "contractStatus": {
+          "const": "proposed-for-team-review",
+          "title": "Contractstatus",
+          "type": "string"
+        },
+        "dataState": {
+          "enum": [
+            "unsupported",
+            "not_computed",
+            "unavailable",
+            "failed"
+          ],
+          "title": "Datastate",
+          "type": "string"
+        },
+        "scenarioId": {
+          "title": "Scenarioid",
+          "type": "null"
+        },
+        "request": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoverRequest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "units": {
+          "$ref": "#/$defs/Units"
+        },
+        "result": {
+          "title": "Result",
+          "type": "null"
+        },
+        "provenance": {
+          "title": "Provenance",
+          "type": "null"
+        },
+        "error": {
+          "$ref": "#/$defs/ContractError"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Coverage"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "contractStatus",
+        "dataState",
+        "scenarioId",
+        "request",
+        "units",
+        "result",
+        "provenance",
+        "error",
+        "coverage"
+      ],
+      "title": "RoverFailure",
+      "type": "object"
+    },
+    "RoverGrid": {
+      "additionalProperties": false,
+      "properties": {
+        "rows": {
+          "title": "Rows",
+          "type": "integer"
+        },
+        "columns": {
+          "title": "Columns",
+          "type": "integer"
+        },
+        "startCell": {
+          "title": "Startcell",
+          "type": "integer"
+        },
+        "frame": {
+          "const": "MOON_ME_DE421",
+          "title": "Frame",
+          "type": "string"
+        },
+        "projectionId": {
+          "title": "Projectionid",
+          "type": "string"
+        },
+        "projectionWkt": {
+          "title": "Projectionwkt",
+          "type": "string"
+        },
+        "projectedCellDimensionsM": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Projectedcelldimensionsm",
+          "type": "array"
+        },
+        "affineCornerTransform": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Affinecornertransform",
+          "type": "array"
+        },
+        "indexing": {
+          "const": "row-major; columns +projection X, rows -projection Y",
+          "title": "Indexing",
+          "type": "string"
+        },
+        "terrainValidMask": {
+          "items": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "title": "Terrainvalidmask",
+          "type": "array"
+        },
+        "terrainTraversableMask": {
+          "items": {
+            "items": {
+              "type": "boolean"
+            },
+            "type": "array"
+          },
+          "title": "Terraintraversablemask",
+          "type": "array"
+        },
+        "points": {
+          "items": {
+            "$ref": "#/$defs/RoverPoint"
+          },
+          "title": "Points",
+          "type": "array"
+        },
+        "cellPointIndices": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Cellpointindices",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/RoverEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "dem": {
+          "additionalProperties": true,
+          "title": "Dem",
+          "type": "object"
+        },
+        "referenceSite": {
+          "additionalProperties": true,
+          "title": "Referencesite",
+          "type": "object"
+        },
+        "slopeProbeStepM": {
+          "title": "Slopeprobestepm",
+          "type": "number"
+        },
+        "slopeFootprintDiameterM": {
+          "title": "Slopefootprintdiameterm",
+          "type": "number"
+        }
+      },
+      "required": [
+        "rows",
+        "columns",
+        "startCell",
+        "frame",
+        "projectionId",
+        "projectionWkt",
+        "projectedCellDimensionsM",
+        "affineCornerTransform",
+        "indexing",
+        "terrainValidMask",
+        "terrainTraversableMask",
+        "points",
+        "cellPointIndices",
+        "edges",
+        "dem",
+        "referenceSite",
+        "slopeProbeStepM",
+        "slopeFootprintDiameterM"
+      ],
+      "title": "RoverGrid",
+      "type": "object"
+    },
+    "RoverPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "pointId": {
+          "title": "Pointid",
+          "type": "string"
+        },
+        "latitudeDeg": {
+          "title": "Latitudedeg",
+          "type": "number"
+        },
+        "longitudeDegEast": {
+          "title": "Longitudedegeast",
+          "type": "number"
+        },
+        "groundElevationM": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Groundelevationm"
+        },
+        "estimatedSlopeDeg": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Estimatedslopedeg"
+        },
+        "terrainValid": {
+          "title": "Terrainvalid",
+          "type": "boolean"
+        },
+        "terrainReason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Terrainreason"
+        },
+        "surfacePositionM": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Surfacepositionm"
+        },
+        "row": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Row"
+        },
+        "column": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Column"
+        },
+        "projectedXM": {
+          "title": "Projectedxm",
+          "type": "number"
+        },
+        "projectedYM": {
+          "title": "Projectedym",
+          "type": "number"
+        }
+      },
+      "required": [
+        "pointId",
+        "latitudeDeg",
+        "longitudeDegEast",
+        "groundElevationM",
+        "estimatedSlopeDeg",
+        "terrainValid",
+        "terrainReason",
+        "surfacePositionM",
+        "row",
+        "column",
+        "projectedXM",
+        "projectedYM"
+      ],
+      "title": "RoverPoint",
+      "type": "object"
+    },
+    "RoverRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "schemaVersion": {
+          "const": "skyline-rover-request/0.1.0",
+          "title": "Schemaversion",
+          "type": "string"
+        },
+        "site": {
+          "maxLength": 60,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Site",
+          "type": "string"
+        },
+        "startUtc": {
+          "format": "date-time",
+          "title": "Startutc",
+          "type": "string"
+        },
+        "durationS": {
+          "maximum": 7200,
+          "minimum": 60,
+          "title": "Durations",
+          "type": "integer"
+        },
+        "timeStepS": {
+          "maximum": 600,
+          "minimum": 30,
+          "title": "Timesteps",
+          "type": "integer"
+        },
+        "terrainDemId": {
+          "const": "LDEM_80S_80MPP_ADJ.TIF",
+          "title": "Terraindemid",
+          "type": "string"
+        },
+        "projectionId": {
+          "const": "LOLA-south-polar-stereographic-DE421",
+          "title": "Projectionid",
+          "type": "string"
+        },
+        "gridRadiusCells": {
+          "enum": [
+            0,
+            1
+          ],
+          "title": "Gridradiuscells",
+          "type": "integer"
+        },
+        "gridResolutionM": {
+          "maximum": 320,
+          "minimum": 80,
+          "title": "Gridresolutionm",
+          "type": "number"
+        },
+        "observerHeightM": {
+          "maximum": 20,
+          "minimum": 0,
+          "title": "Observerheightm",
+          "type": "number"
+        },
+        "speedMps": {
+          "exclusiveMinimum": 0,
+          "title": "Speedmps",
+          "type": "number"
+        },
+        "maximumSlopeDeg": {
+          "maximum": 90,
+          "minimum": 0,
+          "title": "Maximumslopedeg",
+          "type": "number"
+        },
+        "movementRule": {
+          "const": "four-neighbor-no-diagonals",
+          "title": "Movementrule",
+          "type": "string"
+        },
+        "allowWaiting": {
+          "title": "Allowwaiting",
+          "type": "boolean"
+        },
+        "movementRequiresSunlight": {
+          "title": "Movementrequiressunlight",
+          "type": "boolean"
+        },
+        "movementRequiresCommunication": {
+          "title": "Movementrequirescommunication",
+          "type": "boolean"
+        },
+        "stoppingRequiresSunlight": {
+          "title": "Stoppingrequiressunlight",
+          "type": "boolean"
+        },
+        "stoppingRequiresCommunication": {
+          "title": "Stoppingrequirescommunication",
+          "type": "boolean"
+        },
+        "solarDefinition": {
+          "enum": [
+            "anyDisk",
+            "center",
+            "fullDisk"
+          ],
+          "title": "Solardefinition",
+          "type": "string"
+        },
+        "profile": {
+          "const": "geometric",
+          "title": "Profile",
+          "type": "string"
+        },
+        "horizonOffsetDeg": {
+          "const": 0,
+          "title": "Horizonoffsetdeg",
+          "type": "integer"
+        },
+        "communicationMode": {
+          "enum": [
+            "direct-only",
+            "relay-assisted"
+          ],
+          "title": "Communicationmode",
+          "type": "string"
+        },
+        "budget": {
+          "$ref": "#/$defs/RoverBudget"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "site",
+        "startUtc",
+        "durationS",
+        "timeStepS",
+        "terrainDemId",
+        "projectionId",
+        "gridRadiusCells",
+        "gridResolutionM",
+        "observerHeightM",
+        "speedMps",
+        "maximumSlopeDeg",
+        "movementRule",
+        "allowWaiting",
+        "movementRequiresSunlight",
+        "movementRequiresCommunication",
+        "stoppingRequiresSunlight",
+        "stoppingRequiresCommunication",
+        "solarDefinition",
+        "profile",
+        "horizonOffsetDeg",
+        "communicationMode",
+        "budget"
+      ],
+      "title": "RoverRequest",
+      "type": "object"
+    },
+    "RoverResult": {
+      "additionalProperties": false,
+      "properties": {
+        "grid": {
+          "$ref": "#/$defs/RoverGrid"
+        },
+        "timeGrid": {
+          "$ref": "#/$defs/RoverTimeGrid"
+        },
+        "directOnly": {
+          "$ref": "#/$defs/RoverSection"
+        },
+        "relayAssisted": {
+          "$ref": "#/$defs/RoverSection"
+        },
+        "difference": {
+          "additionalProperties": true,
+          "title": "Difference",
+          "type": "object"
+        },
+        "visibility": {
+          "additionalProperties": true,
+          "title": "Visibility",
+          "type": "object"
+        },
+        "requestedModeState": {
+          "title": "Requestedmodestate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "grid",
+        "timeGrid",
+        "directOnly",
+        "relayAssisted",
+        "difference",
+        "visibility",
+        "requestedModeState"
+      ],
+      "title": "RoverResult",
+      "type": "object"
+    },
+    "RoverSection": {
+      "additionalProperties": false,
+      "properties": {
+        "dataState": {
+          "enum": [
+            "computed",
+            "unsupported",
+            "not_computed",
+            "unavailable",
+            "failed"
+          ],
+          "title": "Datastate",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reason"
+        },
+        "reachableMask": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reachablemask"
+        },
+        "earliestArrivalS": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Earliestarrivals"
+        },
+        "earliestArrivalUtc": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Earliestarrivalutc"
+        },
+        "reachedAtTimeMask": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "boolean"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reachedattimemask"
+        },
+        "reachableTimeLevelFraction": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Reachabletimelevelfraction"
+        },
+        "waitingOpportunityBinMask": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "boolean"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Waitingopportunitybinmask"
+        },
+        "arrivalAtEndBoundaryMask": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "boolean"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Arrivalatendboundarymask"
+        },
+        "startAdmitted": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Startadmitted"
+        },
+        "transitionsChecked": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Transitionschecked"
+        },
+        "communicationConstraintApplied": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Communicationconstraintapplied"
+        }
+      },
+      "required": [
+        "dataState",
+        "reason",
+        "reachableMask",
+        "earliestArrivalS",
+        "earliestArrivalUtc",
+        "reachedAtTimeMask",
+        "reachableTimeLevelFraction",
+        "waitingOpportunityBinMask",
+        "arrivalAtEndBoundaryMask",
+        "startAdmitted",
+        "transitionsChecked",
+        "communicationConstraintApplied"
+      ],
+      "title": "RoverSection",
+      "type": "object"
+    },
+    "RoverTimeGrid": {
+      "additionalProperties": false,
+      "properties": {
+        "nominalStartUtc": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "title": "Nominalstartutc",
+          "type": "string"
+        },
+        "elapsedS": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Elapseds",
+          "type": "array"
+        },
+        "timestampsUtc": {
+          "items": {
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+            "type": "string"
+          },
+          "title": "Timestampsutc",
+          "type": "array"
+        },
+        "endpointIncluded": {
+          "const": true,
+          "title": "Endpointincluded",
+          "type": "boolean"
+        },
+        "durationScale": {
+          "const": "elapsed SPICE ET seconds",
+          "title": "Durationscale",
+          "type": "string"
+        },
+        "timeLevelFractionDenominator": {
+          "maximum": 121,
+          "minimum": 2,
+          "title": "Timelevelfractiondenominator",
+          "type": "integer"
+        },
+        "waitingBins": {
+          "const": "half-open [start,end); sampled stopping opportunities",
+          "title": "Waitingbins",
+          "type": "string"
+        }
+      },
+      "required": [
+        "nominalStartUtc",
+        "elapsedS",
+        "timestampsUtc",
+        "endpointIncluded",
+        "durationScale",
+        "timeLevelFractionDenominator",
+        "waitingBins"
+      ],
+      "title": "RoverTimeGrid",
+      "type": "object"
+    },
+    "Units": {
+      "additionalProperties": false,
+      "properties": {
+        "angles": {
+          "const": "deg",
+          "title": "Angles",
+          "type": "string"
+        },
+        "distances": {
+          "const": "m",
+          "title": "Distances",
+          "type": "string"
+        },
+        "durations": {
+          "const": "s",
+          "title": "Durations",
+          "type": "string"
+        },
+        "fractions": {
+          "const": "fraction",
+          "title": "Fractions",
+          "type": "string"
+        },
+        "timestamps": {
+          "const": "UTC ISO 8601",
+          "title": "Timestamps",
+          "type": "string"
+        }
+      },
+      "required": [
+        "angles",
+        "distances",
+        "durations",
+        "fractions",
+        "timestamps"
+      ],
+      "title": "Units",
+      "type": "object"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "computed": "#/$defs/RoverComputed",
+      "failed": "#/$defs/RoverFailure",
+      "not_computed": "#/$defs/RoverFailure",
+      "unavailable": "#/$defs/RoverFailure",
+      "unsupported": "#/$defs/RoverFailure"
+    },
+    "propertyName": "dataState"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/RoverComputed"
+    },
+    {
+      "$ref": "#/$defs/RoverFailure"
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
