@@ -34,7 +34,7 @@ The app is dark only. Light token values exist but are unused.
 
 ## Structure
 
-Three ways in, numbered in the top navigation as the storyboard draws them: **01 Explore** (the curious public, `/explore`), **02 Understand** (classrooms and anyone who wants to experiment, `/understand` and the lab at `/understand/lab`) and **03 Analyze** (mission planners, `/analyze`). Method sits on the right and in the footer. `/` is the front door: "What brings you to the Moon?" with one mascot and one button per way in.
+Three ways in, numbered in the top navigation as the storyboard draws them: **01 Explore** (the curious public, `/explore`), **02 Understand** (classrooms and anyone who wants to experiment, `/understand` and the lab at `/understand/lab`) and **03 Analyze** (mission planners, `/analyze`). Method sits on the right and in the footer. `/` is the front door: "What brings you to the Moon?" with one mascot and one button per way in. It has no header (the three doors are its navigation); the accurate globe (`HorizonMoon.tsx`) rises from the bottom edge, past first quarter so the terminator crosses it, turning slowly on its axis, and never reaching the text. Reduced motion holds it still.
 
 ### Story pages: mascot, parallax, real data
 
