@@ -152,3 +152,24 @@ test('an unreachable bridge is reported for every site, never as a number', asyn
   }
   expect(got).toEqual(data.map(() => ({ error: 'The API bridge is not reachable.' })))
 })
+
+test('a run cancelled while an answer is arriving reports nothing for the old plan', async () => {
+  const data = await Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))
+  const c = new AbortController()
+  const real = globalThis.fetch
+  globalThis.fetch = (async () =>
+    ({
+      status: 200,
+      json: async () => {
+        c.abort()
+        throw new DOMException('The operation was aborted.', 'AbortError')
+      },
+    }) as unknown as Response) as unknown as typeof fetch
+  const got: unknown[] = []
+  try {
+    await expect(evaluateAll(data, { start, end: start + DAY_MS }, limits, (_, r) => got.push(r), undefined, c.signal)).rejects.toThrow()
+  } finally {
+    globalThis.fetch = real
+  }
+  expect(got).toEqual([])
+})
