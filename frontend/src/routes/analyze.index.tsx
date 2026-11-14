@@ -1,11 +1,8 @@
-import { Button } from '@cloudflare/kumo/components/button'
-import { ArrowRightIcon } from '@phosphor-icons/react'
 import { createFileRoute, useHydrated, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { DatesStep } from '~/components/planner/DatesStep'
-import { type Plan, type PlanActions, type PlanSearch, planSearch, STEPS, type StepId } from '~/components/planner/plan'
+import { type Plan, type PlanActions, type PlanSearch, planSearch, type StepId, stepOf } from '~/components/planner/plan'
 import { ResultStep } from '~/components/planner/ResultStep'
-import { ReviewStep } from '~/components/planner/ReviewStep'
 import { resolvePlan } from '~/components/planner/resolvePlan'
 import { SetupStep } from '~/components/planner/SetupStep'
 import { missionShort, SlipButtons, StepBar } from '~/components/planner/StepBar'
@@ -41,7 +38,7 @@ function PlannerPage() {
   const plan: Plan = useMemo(() => resolvePlan(all, p), [all, p])
   const { dates, index, date, window, requirements, sites } = plan
   const chosenIds = sites.map((s) => s.data.site.id)
-  const step = p.step ?? DEFAULT_STEP
+  const step = stepOf(p.step) ?? DEFAULT_STEP
 
   const actions: PlanActions = {
     go,
@@ -79,26 +76,14 @@ function PlannerPage() {
       ),
   }
 
-  const next = STEPS[STEPS.findIndex((s) => s.id === step) + 1]
-  const nextLabel = STEPS.find((s) => s.id === step)?.next
-
   return (
     <Shell>
       <h1 className="sr-only">Analyze a landing</h1>
       <StepBar step={step} plan={plan} actions={actions} />
       <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
         {step === 'setup' && <SetupStep plan={plan} actions={actions} />}
-        {step === 'result' && <ResultStep plan={plan} actions={actions} />}
+        {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
         {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
-        {step === 'review' && <ReviewStep plan={plan} actions={actions} search={p} />}
-        {next && nextLabel && (
-          <div className="flex justify-end border-t border-line pt-4">
-            <Button variant="primary" onClick={() => actions.setStep(next.id)}>
-              {nextLabel}
-              <ArrowRightIcon />
-            </Button>
-          </div>
-        )}
       </main>
       {step !== 'setup' && (
         <div className="sticky bottom-0 z-(--z-sticky) flex items-center justify-between gap-3 border-t border-line bg-bg px-4 py-2 sm:hidden">
