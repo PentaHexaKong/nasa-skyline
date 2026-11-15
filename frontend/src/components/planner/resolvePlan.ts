@@ -4,8 +4,6 @@ import type { Summary } from '~/lib/data'
 import { DAY_MS, planSite, siteResult, siteSpans } from '~/lib/mission'
 import { profileById } from '~/lib/profiles'
 
-const PROFILE_KEYS = ['sites', 'day', 'base', 't', 'stay', 'minSun', 'maxNoSun', 'minEarth', 'maxNoEarth'] as const
-
 function scaleFor(sites: Summary[]) {
   const polar = (s: Summary) => Math.abs(s.site.lat_deg) >= 75
   const range = (group: Summary[]): [number, number] => {
@@ -46,7 +44,19 @@ export function resolvePlan(all: Summary[], p: PlanSearch): Plan {
   const working = sites.find((s) => siteResult(s).works)?.data.site.id
   return {
     profile,
-    edited: PROFILE_KEYS.some((k) => p[k] != null),
+    // Edited only when a value really differs from the mission's own: a field committed or a day picked with the same
+    // value it already had puts the key in the URL but changes nothing.
+    edited:
+      date !== profile.day ||
+      baseIndex != null ||
+      minute !== profile.t ||
+      stay !== profile.stay ||
+      (Object.keys(requirements) as (keyof typeof requirements)[]).some((k) => requirements[k] !== profile.requirements[k]) ||
+      chosen.map((s) => s.site.id).join(',') !==
+        all
+          .filter((s) => profile.sites.includes(s.site.id))
+          .map((s) => s.site.id)
+          .join(','),
     all,
     sites,
     dates,

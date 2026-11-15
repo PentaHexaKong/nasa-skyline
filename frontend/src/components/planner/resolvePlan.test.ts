@@ -88,3 +88,16 @@ test('after a slip, each site says whether the original day worked, by the same 
     expect(s.wasGo).toBe(siteResult(base.sites[i] as (typeof base.sites)[number]).works)
   }
 })
+
+test('a setting written back with the profile’s own value is not an edit', () => {
+  const profile = resolvePlan(all, {}).profile
+  const same = resolvePlan(all, {
+    day: profile.day,
+    t: profile.t,
+    stay: profile.stay,
+    sites: profile.sites.join(','),
+    minSun: profile.requirements.minSun,
+  })
+  expect(same.edited).toBe(false)
+  expect(resolvePlan(all, { stay: profile.stay + 1 }).edited).toBe(true)
+})
