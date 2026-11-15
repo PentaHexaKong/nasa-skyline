@@ -132,7 +132,7 @@ func callMissionService(ctx context.Context, client *http.Client, url string, pa
 	}
 	defer response.Body.Close()
 	body, err := io.ReadAll(io.LimitReader(response.Body, (16<<20)+1))
-	if err != nil || len(body) > 16<<20 || response.StatusCode != 200 {
+	if err != nil || len(body) > 16<<20 {
 		return nil, fmt.Errorf("scientific service rejected evaluation (%d)", response.StatusCode)
 	}
 	var reply struct {
@@ -143,10 +143,14 @@ func callMissionService(ctx context.Context, client *http.Client, url string, pa
 	if json.Unmarshal(body, &reply) == nil && reply.Error != nil && reply.Error.Code == "busy" {
 		return nil, errServiceBusy
 	}
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("scientific service rejected evaluation (%d)", response.StatusCode)
+	}
 	return body, nil
 }
 
-// The science services run one evaluation at a time and answer the rest 200 with error.code "busy"; callers retry.
+// The science services run one evaluation at a time and turn the rest away with error.code "busy" (mission science
+// answers HTTP 503); callers retry.
 var errServiceBusy = errors.New("the scientific service is busy with another evaluation")
 
 // writeServiceError reports a busy service as retryable and anything else with the caller's status and code.

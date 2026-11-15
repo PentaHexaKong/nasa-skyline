@@ -306,6 +306,8 @@ func TestRelayCompareForwardsPositions(t *testing.T) {
 
 func TestRelayCompareReportsBusyServiceAsRetryable(t *testing.T) {
 	service := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Mission science turns a concurrent request away with HTTP 503 and error.code "busy" (services/missionScience api.py).
+		w.WriteHeader(503)
 		_, _ = w.Write([]byte(`{"schemaVersion":"1.0","dataState":"unavailable","error":{"code":"busy"}}`))
 	}))
 	defer service.Close()
