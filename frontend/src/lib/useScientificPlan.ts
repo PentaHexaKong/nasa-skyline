@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import type { Plan } from '~/components/planner/plan'
 import { initialPlannerRows, type PlannerRows, plannerInputs, runPlannerRequests, scientificPlan } from './dynamicPlanner'
 
-export function useScientificPlan(selected: Plan, enabled: boolean, focus?: string) {
+/** The selected plan, with each site's stay replaced by the live engine's answer once it arrives. */
+export function useScientificPlan(selected: Plan, enabled: boolean) {
   // The key contains every request field, including height, date, limits and scientific settings.
   const inputKey = JSON.stringify(plannerInputs(selected))
   const inputs = useMemo(() => JSON.parse(inputKey) as ReturnType<typeof plannerInputs>, [inputKey])
@@ -32,5 +33,5 @@ export function useScientificPlan(selected: Plan, enabled: boolean, focus?: stri
     }
   }, [key, inputs, enabled, initial])
 
-  return { plan: scientificPlan(selected, rows, focus), rows, refresh: () => setAttempt((value) => value + 1) }
+  return { plan: scientificPlan(selected, rows), rows, refresh: () => setAttempt((value) => value + 1) }
 }

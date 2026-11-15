@@ -125,7 +125,8 @@ export function scientificTouchdown(response: ComputedResponse): Touchdown {
 
 export function plannerHeadline(rows: PlannerRows, plan: Plan) {
   const selected = plan.sites.map((site) => rows[site.data.site.id])
-  if (selected.some((row) => !row || row.state === 'loading' || row.state === 'not_computed')) return 'Evaluating the selected mission…'
+  if (selected.some((row) => !row || row.state === 'loading' || row.state === 'not_computed'))
+    return 'Checking the selected stay with the live engine…'
   const computed = selected.filter((row) => row?.state === 'computed')
   const works = computed.filter(
     (row) =>
@@ -134,39 +135,65 @@ export function plannerHeadline(rows: PlannerRows, plan: Plan) {
       evaluate(scientificMeasure(row.response), plan.requirements).passed,
   ).length
   if (computed.length !== selected.length)
-    return `${computed.length} of ${selected.length} sites evaluated. Review the remaining scientific states.`
+    return `${computed.length} of ${selected.length} sites checked by the live engine, and ${works} of those meet the touchdown and mission requirements. The others use precomputed files.`
   return `${works} of ${selected.length} sites meet the touchdown and mission requirements.`
 }
 
-/** Clear all annual-derived metrics, recommendations and slip comparisons before projecting current API results. */
-export function scientificPlan(plan: Plan, rows: PlannerRows, focus?: string): Plan {
+export type LiveSummary = {
+  /** checking: a reply is pending; live: every site answered; partial: some did; offline: none could. */
+  state: 'checking' | 'live' | 'partial' | 'offline'
+  /** Sites whose numbers come from the live engine. */
+  live: number
+  total: number
+}
+
+export function liveSummary(rows: PlannerRows, plan: Plan): LiveSummary {
+  const selected = plan.sites.map((site) => rows[site.data.site.id])
+  const live = selected.filter((row) => row?.state === 'computed').length
+  const total = selected.length
+  const checking = selected.some((row) => !row || row.state === 'loading' || row.state === 'not_computed')
+  return { state: checking ? 'checking' : live === total ? 'live' : live > 0 ? 'partial' : 'offline', live, total }
+}
+
+/** A failure message short and plain enough to show; schema dumps and stack-like text become a generic phrase. */
+export function readableReason(message: string) {
+  const text = message.trim().replace(/\.$/, '')
+  return text.length > 120 || /^[[{]/.test(text) ? 'it sent back an unexpected reply' : text.charAt(0).toLowerCase() + text.slice(1)
+}
+
+/** One site's live state in the reader's words. */
+export function liveLabel(row: PlannerRow | undefined): { short: string; detail: string } {
+  if (!row || row.state === 'loading' || row.state === 'not_computed')
+    return { short: 'Checking', detail: 'Asking the live engine about this stay. The numbers shown meanwhile are precomputed.' }
+  if (row.state === 'computed') return { short: 'Live', detail: 'Computed for this exact stay by the live engine.' }
+  if (row.state === 'unsupported')
+    return { short: 'Precomputed', detail: `The live engine doesn’t cover this site yet, so its precomputed file is shown. ${row.message}` }
+  return {
+    short: 'Precomputed',
+    detail: `The live engine couldn’t check this stay (${readableReason(row.message)}), so the site’s precomputed file is shown.`,
+  }
+}
+
+/**
+ * The plan with each site's selected stay taken from the live engine where it answered. Sites it could not evaluate keep their
+ * precomputed numbers and say so (`source`). A live stay drops the slip comparison, which would compare two different models.
+ */
+export function scientificPlan(plan: Plan, rows: PlannerRows): Plan {
   const sites = plan.sites.map((site) => {
     const row = rows[site.data.site.id]
-    const response = row?.state === 'computed' ? row.response : null
-    const stay = response ? scientificMeasure(response) : null
-    const checks = stay ? evaluate(stay, plan.requirements) : null
-    const touchdown = response ? scientificTouchdown(response) : 'neither'
-    const status = touchdown !== 'both' ? 'no' : checks?.passed ? 'go' : 'arrive'
+    if (row?.state !== 'computed') return { ...site, source: 'precomputed' as const }
+    const stay = scientificMeasure(row.response)
     return {
       ...site,
+      source: 'live' as const,
       stay,
-      checks,
-      touchdown,
+      checks: evaluate(stay, plan.requirements),
+      touchdown: scientificTouchdown(row.response),
       was: null,
       wasGo: null,
-      nextGo: null,
-      goDays: checks?.passed && touchdown === 'both' ? 1 : 0,
-      runs: response ? [{ from: plan.index, to: plan.index + 1, status: status as 'go' | 'arrive' | 'no' }] : [],
     }
   })
-  return {
-    ...plan,
-    sites,
-    baseline: { headline: plannerHeadline(rows, plan) },
-    focus: sites.some((site) => site.data.site.id === focus)
-      ? focus
-      : (sites.find((site) => site.checks?.passed && site.touchdown === 'both') ?? sites[0])?.data.site.id,
-  }
+  return { ...plan, sites, live: liveSummary(rows, plan) }
 }
 
 export function buildScientificBrief(plan: Plan, rows: PlannerRows): string {
@@ -183,9 +210,19 @@ export function buildScientificBrief(plan: Plan, rows: PlannerRows): string {
     const row = rows[site.data.site.id]
     lines.push(`## ${site.data.site.name}`, '')
     if (row?.state !== 'computed') {
-      lines.push(`Scientific state ${row?.state ?? 'not_computed'}`, '', row && 'message' in row ? row.message : 'Evaluation pending.', '')
+      lines.push(`Source: precomputed site file, pipeline ${site.data.provenance.algorithm_version}. ${liveLabel(row).detail}`, '')
+      if (site.stay) {
+        const stay = site.stay
+        for (const requirement of REQUIREMENTS) {
+          lines.push(
+            `- ${requirement.label} ${requirement.read(stay).toFixed(3)} ${requirement.unit}, required ${requirement.bound} ${plan.requirements[requirement.key]} ${requirement.unit}`,
+          )
+        }
+        lines.push('')
+      }
       continue
     }
+    lines.push('Source: live mission-science engine', '')
     const { response } = row
     const { observer, period, metrics } = response.result
     const measure = scientificMeasure(response)

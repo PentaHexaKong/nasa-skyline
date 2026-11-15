@@ -304,7 +304,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         : 'planner-thinking'
   const value: Record<OptionId, string> = {
     mission: `${plan.profile.name}${plan.edited ? ' · edited' : ''}`,
-    sites: `${plan.sites.length} site${plan.sites.length === 1 ? '' : 's'} · ${plan.sites.filter((site) => site.checks).length} evaluated`,
+    sites: `${plan.sites.length} site${plan.sites.length === 1 ? '' : 's'} · ${works} work${works === 1 ? 's' : ''}`,
     when: `${shortDate(plan.date)} · ${minuteLabel(plan.minute)} UTC · ${plan.stay} d`,
     limits: `Sun ≥ ${plan.requirements.minSun}% · Earth ≥ ${plan.requirements.minEarth}%`,
   }
@@ -542,7 +542,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         <Mascot pose={pose} className="-my-5 size-14 shrink-0 sm:size-16" />
         <div className="grid min-w-0 flex-1 gap-0.5">
           <p aria-live="polite" className="text-sm font-medium text-pretty sm:text-base">
-            {plan.baseline?.headline ?? v.headline}
+            {v.headline}
           </p>
           <ul aria-label="Each site" className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs max-sm:hidden">
             {plan.sites.map((site) => (

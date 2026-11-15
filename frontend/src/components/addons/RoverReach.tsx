@@ -53,8 +53,6 @@ function Terms() {
       {(
         [
           ['Speed', `${ROVER_TERMS.speedMps} m/s`],
-          ['Observer height', '0 m above the DEM surface'],
-          ['Geometry', 'Geometric, direct Earth'],
           ['Steepest slope', `${ROVER_TERMS.maximumSlopeDeg}°`],
           ['Moves', 'Square to square, no diagonals'],
           ['Needs', 'Sun and Earth in view, moving or waiting'],
@@ -126,6 +124,7 @@ export function RoverReach({ plan }: { plan: Plan }) {
         {reach?.kind === 'reach' ? (
           <ul aria-label="The nine squares around the landing point" className="sr-only">
             {reach.cells.map((cell, i) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: the nine squares are fixed positions
               <Cell key={i} cell={cell} index={i} />
             ))}
           </ul>

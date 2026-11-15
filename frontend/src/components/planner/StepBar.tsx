@@ -68,12 +68,7 @@ export function StepBar({ step, plan, actions }: { step: StepId; plan: Plan; act
             <ProfileSelect plan={plan} actions={actions} />
             <p className="tabular min-w-0 flex-1 truncate">
               {missionSummary(plan)}
-              {plan.base && (
-                <span className="text-ink-muted">
-                  {' '}
-                  · {plan.baseline ? 'slipped from' : 'compared with'} {shortDate(plan.base)}
-                </span>
-              )}
+              {plan.base && <span className="text-ink-muted"> · compared with {shortDate(plan.base)}</span>}
             </p>
             <button
               type="button"
