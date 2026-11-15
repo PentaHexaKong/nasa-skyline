@@ -2,15 +2,21 @@ import { type CSSProperties, type PointerEvent, useLayoutEffect, useRef } from '
 
 export type DeckItem = { id: string; title: string; desc: string; value: string; detail?: string }
 
-/** How far each card behind the front one peeks out above it, and how much smaller it is. */
-const PEEK = 15
+/**
+ * How far the card behind the front one peeks out above it, and how much smaller it is. Only that one card shows: the
+ * rest wait exactly behind it, so the stack reads as "more questions" without a pile of edges.
+ */
+export const PEEK = 15
 const SHRINK = 0.055
 const THROW_MS = 470
 const RETURN_MS = 540
 /** A drag this far (or a fifth of the card) throws the card. */
 const THROW_AT = 90
 
-const poseOf = (depth: number) => `translate(0px, ${(-depth * PEEK).toFixed(1)}px) rotate(0deg) scale(${(1 - depth * SHRINK).toFixed(3)})`
+const poseOf = (depth: number) => {
+  const d = Math.min(depth, 1)
+  return `translate(0px, ${(-d * PEEK).toFixed(1)}px) rotate(0deg) scale(${(1 - d * SHRINK).toFixed(3)})`
+}
 const outOf = (dir: number, w: number) => `translate(${(dir * w).toFixed(0)}px, 46px) rotate(${dir * 24}deg) scale(0.94)`
 const FACE = ['#0a0a0a', '#151515', '#1e1e1e', '#272727']
 

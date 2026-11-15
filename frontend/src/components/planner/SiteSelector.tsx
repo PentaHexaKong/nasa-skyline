@@ -106,8 +106,11 @@ export function siteAnswer(s: SitePlan, plan: Plan, day: number) {
   return { works: status === 'go', computed: status !== 'outside', why: WHY[status] }
 }
 
-/** Every computed site: a checkbox, its coordinates and its answer on the day in view, with the reason when it fails. */
-export function SiteList({ plan, actions, day }: { plan: Plan; actions: PlanActions; day: number }) {
+/**
+ * Every computed site: a checkbox, its coordinates and its answer on the day in view, with the reason when it fails.
+ * `verdicts={false}` (Set up, which only asks) shows whether each site is in the plan instead: answers are Result's.
+ */
+export function SiteList({ plan, actions, day, verdicts = true }: { plan: Plan; actions: PlanActions; day: number; verdicts?: boolean }) {
   const selected = new Set(plan.sites.map((s) => s.data.site.id))
   return (
     <ul className="grid gap-2">
@@ -115,7 +118,7 @@ export function SiteList({ plan, actions, day }: { plan: Plan; actions: PlanActi
         const id = data.site.id
         const site = plan.sites.find((s) => s.data.site.id === id)
         const last = !!site && selected.size === 1
-        const a = site && siteAnswer(site, plan, day)
+        const a = verdicts && site ? siteAnswer(site, plan, day) : undefined
         return (
           <li key={id}>
             <label
@@ -136,7 +139,13 @@ export function SiteList({ plan, actions, day }: { plan: Plan; actions: PlanActi
                 </span>
               </span>
               <span className="text-xs">
-                {a ? <StatusWord works={a.works} computed={a.computed} /> : <span className="text-ink-faint">Not in plan</span>}
+                {a ? (
+                  <StatusWord works={a.works} computed={a.computed} />
+                ) : site ? (
+                  <span className="text-ink-muted">In plan</span>
+                ) : (
+                  <span className="text-ink-faint">Not in plan</span>
+                )}
               </span>
               {a && !a.works && a.why && <span className="col-start-2 col-end-4 text-xs text-ink-muted text-pretty">{a.why}.</span>}
             </label>

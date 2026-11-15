@@ -1,16 +1,14 @@
+import { Link as KLink } from '@cloudflare/kumo/components/link'
 import { ArrowLeftIcon, ArrowRightIcon, XIcon } from '@phosphor-icons/react'
 import { type CSSProperties, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { DayField, NumberField, TimeSlider } from '~/components/Controls'
-import { Deck } from '~/components/planner/Deck'
+import { Deck, PEEK } from '~/components/planner/Deck'
 import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import { ProfileCards } from '~/components/planner/ProfilePicker'
 import type { Plan, PlanActions } from '~/components/planner/plan'
-import { verdictRows } from '~/components/planner/ResultStep'
-import { StatusWord } from '~/components/planner/Section'
-import { SiteList, siteAnswer, useDayPreview, Year } from '~/components/planner/SiteSelector'
+import { SiteList, useDayPreview } from '~/components/planner/SiteSelector'
 import { Eyebrow } from '~/components/Shell'
-import { Mascot, type MascotPose } from '~/components/story'
-import { REQUIREMENTS, shortName, siteResult, verdict } from '~/lib/mission'
+import { REQUIREMENTS, shortName } from '~/lib/mission'
 import { useReducedMotion } from '~/lib/motion'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
 
@@ -29,7 +27,7 @@ const OPTIONS: { id: OptionId; label: string; title: string; desc: string }[] = 
     id: 'when',
     label: 'When',
     title: 'When do you land, and for how long?',
-    desc: 'Pick the landing day, the time and the stay. Play through the year to find a day that works.',
+    desc: 'Pick the landing day, the time and how long you stay.',
   },
   {
     id: 'limits',
@@ -51,16 +49,6 @@ const GROUPS = [
   { title: 'Contact with Earth', dot: 'rotate-45 bg-comms', keys: ['minEarth', 'maxNoEarth'] },
 ] as const
 
-/** Renders its children a little after it mounts, to split a heavy panel's first build into smaller pieces. */
-function Later({ ms, children }: { ms: number; children: ReactNode }) {
-  const [shown, setShown] = useState(false)
-  useEffect(() => {
-    const id = window.setTimeout(() => setShown(true), ms)
-    return () => window.clearTimeout(id)
-  }, [ms])
-  return shown ? children : null
-}
-
 function useWide() {
   const [wide, setWide] = useState(true)
   useEffect(() => {
@@ -76,8 +64,8 @@ function useWide() {
 /**
  * Set up as one screen with no scrolling: the Moon, lit by the SPICE Sun at the landing time, and the four questions as a
  * deck of cards in front of it. Pointing at a card lifts it and says what it is for; choosing it lifts it toward its side
- * and grows its panel out of it while the camera moves in on the Moon. The answer stays at the bottom the whole time.
- * Every status is Result's own.
+ * and grows its panel out of it while the camera moves in on the Moon. Set up only asks: no site is said to work or
+ * fail here (the dots, the site list and the bar stay neutral). Every answer is Result's.
  */
 export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions }) {
   const stage = useRef<HTMLElement>(null)
@@ -92,7 +80,10 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   const wide = useWide()
   const reduced = useReducedMotion()
   const preview = useDayPreview(plan, actions)
-  const v = verdict(verdictRows(plan), plan.slip)
+  // The questions opened this visit. They all start answered (the example mission fills them in), so "checked" means
+  // the reader has looked, not that a value exists.
+  const [seen, setSeen] = useState<ReadonlySet<OptionId>>(() => new Set())
+  const see = (id: OptionId) => setSeen((s) => (s.has(id) ? s : new Set(s).add(id)))
 
   // Exactly the space under the header and step bar, so this step never scrolls. It is measured again after every render,
   // since a note above it (MotionNotice) can come and go.
@@ -155,6 +146,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
     window.clearTimeout(timer.current)
     setClosing(null)
     setOpen(id)
+    see(id)
   }
   /**
    * To another question. With none open the deck moves. With one open, the row of cards on the Moon slides: the next
@@ -166,6 +158,7 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
     setFront(i)
     if (!open) return
     setOpen(target)
+    see(target)
   }
   useEffect(() => {
     if (!open) return
@@ -189,16 +182,8 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   const zoom = open ? (wide ? 0.6 : 0.85) : wide ? 1.2 : 0.95
   const aim: [number, number] = open ? [0, wide ? -0.03 : -0.06] : [0, wide ? -0.1 : -0.17]
 
-  const works = plan.sites.filter((s) => siteResult(s).works).length
-  const pose: MascotPose = open
-    ? 'planner-pointing'
-    : works > 0 && works === plan.sites.length
-      ? 'planner-cheer'
-      : works > 0
-        ? 'planner-excited'
-        : 'planner-thinking'
   // Each option's current answer to its own question, with a second line where one is needed. Whether the plan works is
-  // the bar's job, not the answers'.
+  // Result's job.
   const detail: Partial<Record<OptionId, string>> = { when: `${plan.stay}-day stay` }
   const value: Record<OptionId, string> = {
     mission: `${plan.profile.name}${plan.edited ? ' (edited)' : ''}`,
@@ -211,22 +196,24 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   // Small enough to leave most of the Moon in view: the card sits low, just above the answer bar.
   const cardH = wide ? Math.max(190, Math.min(230, size.h * 0.28)) : size.h < 600 ? 170 : 190
   const deckW = cardW + 12 + 44
-  // The deck's own height (the card or the track beside it, whichever is taller), measured; the back cards peek 45 px above.
-  const deckH = Math.max(cardH, deckBox) + 3 * 15
+  // The deck's own height (the card or the track beside it, whichever is taller), measured; one back card peeks above.
+  const deckH = Math.max(cardH, deckBox) + PEEK
   // The deck sits in the middle of the stage; it steps away while a question is open on the Moon.
   const deckX = size.w / 2 - deckW / 2
-  const deckY = size.h - (wide ? 100 : 92) - deckH + 45
+  // The bar to Result stays out of the way until the reader opens a question; then it slides up and stays.
+  const bar = seen.size > 0
+  const deckY = size.h - (bar ? (wide ? 84 : 76) : wide ? 32 : 24) - deckH + PEEK
   const items = OPTIONS.map((o) => ({ id: o.id, title: o.title, desc: o.desc, value: value[o.id], detail: detail[o.id] }))
   const markers: MoonMarker[] = plan.all.map((data) => {
     const site = plan.sites.find((s) => s.data.site.id === data.site.id)
-    const a = site && siteAnswer(site, plan, preview.day)
     return {
       id: data.site.id,
       name: shortName(data),
       lat: data.site.lat_deg,
       lon: data.site.lon_deg_east,
       selected: !!site,
-      status: !a ? 'not-selected' : !a.computed ? 'not-computed' : a.works ? 'works' : 'fails',
+      // Neutral: a dot for each site in the plan, faint for the rest. Works and fails are Result's.
+      status: site ? 'not-computed' : 'not-selected',
     }
   })
 
@@ -241,11 +228,9 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
               Preview · {longDate(preview.date)}, {minuteLabel(plan.minute)} UTC
             </p>
           )}
-          <SiteList plan={plan} actions={actions} day={preview.day} />
+          <SiteList plan={plan} actions={actions} day={preview.day} verdicts={false} />
           <p className="text-2xs leading-relaxed text-ink-faint text-pretty">
-            Dots on the Moon sit on the pipeline’s coordinates (Moon ME frame, longitude °E). Sunlight is the SPICE Sun at the landing time.
-            Works means the Sun and Earth are in view at touchdown and every limit holds over the stay: a geometric opportunity, not
-            delivered power or a working radio link.
+            Dots on the Moon sit on the pipeline’s coordinates (Moon ME frame, longitude °E). Whether each site works is on Result.
           </p>
         </div>
       )}
@@ -265,13 +250,13 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
             />
           </div>
           <TimeSlider value={plan.minute} onChange={(value) => actions.go({ t: value })} />
-          <div className="min-h-[11.5rem] rounded-xl border border-line">
-            <Later ms={120}>
-              <Year {...preview.year} />
-            </Later>
-          </div>
           <p className="text-xs text-ink-faint">
-            All times UTC. The data covers {longDate(plan.dates[0] ?? plan.date)} to {longDate(plan.dates.at(-1) ?? plan.date)}.
+            All times UTC. The data covers {longDate(plan.dates[0] ?? plan.date)} to {longDate(plan.dates.at(-1) ?? plan.date)}. To see
+            which days work across the year, open{' '}
+            <KLink render={<button type="button" onClick={() => actions.setStep('dates')} />} className="cursor-pointer">
+              Dates
+            </KLink>
+            .
           </p>
         </div>
       )}
@@ -365,11 +350,9 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
       <header
         className={`scene-text pointer-events-none absolute inset-x-0 top-0 z-10 grid justify-items-center gap-1.5 px-4 text-center transition-opacity duration-500 pt-12 sm:pt-6 ${open ? 'opacity-0' : ''}`}
       >
-        <Eyebrow pip>Plan a landing</Eyebrow>
-        <h2 id="stage-title" className="text-[clamp(1.2rem,0.85rem+1.7vw,2.25rem)] leading-tight font-medium text-balance">
-          Answer four questions to plan your <span className="text-story-ink">landing</span>
+        <h2 id="stage-title" className="text-[clamp(1.15rem,0.85rem+1.3vw,1.875rem)] leading-tight font-medium text-balance">
+          Check four choices for your <span className="text-story-ink">landing</span>
         </h2>
-        <p className="text-sm text-ink/80 text-pretty">Click the card to answer it, or a number to pick another question.</p>
       </header>
 
       {/* The deck: the four questions stacked in the middle, thrown aside one by one. */}
@@ -426,26 +409,34 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         </QuestionRow>
       )}
 
-      {/* The planner says the answer, always in view. */}
-      <div className="absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-3 rounded-xl border border-line-strong bg-black/90 py-2.5 pr-3 pl-2 shadow-[0_10px_28px_rgb(0_0_0/0.5)] sm:inset-x-auto sm:left-1/2 sm:w-[min(46rem,calc(100%-2rem))] sm:-translate-x-1/2 sm:pr-4">
-        <Mascot pose={pose} className="-my-5 size-14 shrink-0 sm:size-16" />
-        <div className="grid min-w-0 flex-1 gap-0.5">
-          <p aria-live="polite" className="text-sm font-medium text-pretty sm:text-base">
-            {v.headline}
-          </p>
-          <ul aria-label="Each site" className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs max-sm:hidden">
-            {plan.sites.map((site) => (
-              <li key={site.data.site.id} className="inline-flex items-baseline gap-1.5">
-                <span className="text-ink-muted">{shortName(site.data)}</span>
-                <StatusWord works={siteResult(site).works} computed={!!site.checks} short />
-              </li>
+      {/* Set up only asks: how far the reader has looked, and the way to the answer. Hidden until a question is opened. */}
+      <div
+        inert={!bar}
+        className={`absolute inset-x-2 bottom-2 z-30 flex items-center justify-between gap-4 rounded-xl border border-line-strong bg-black/90 py-2 pr-2 pl-4 transition-[translate,opacity] duration-500 ease-[cubic-bezier(0.2,0.85,0.25,1)] motion-reduce:transition-none sm:inset-x-auto sm:left-1/2 sm:w-[min(34rem,calc(100%-2rem))] sm:-translate-x-1/2 ${bar ? '' : 'pointer-events-none translate-y-[calc(100%+1rem)] opacity-0'}`}
+      >
+        <p aria-live="polite" className="flex min-w-0 items-center gap-3 text-sm text-ink-muted">
+          <span aria-hidden className="flex gap-1">
+            {OPTIONS.map((o) => (
+              <span
+                key={o.id}
+                className={`h-1 w-4 rounded-full transition-colors duration-300 ${seen.has(o.id) ? 'bg-ink' : 'bg-white/20'}`}
+              />
             ))}
-          </ul>
-        </div>
+          </span>
+          <span className="truncate">
+            {seen.size === OPTIONS.length ? (
+              'All four checked'
+            ) : (
+              <>
+                <span className="readout text-ink">{seen.size}</span> of 4 checked
+              </>
+            )}
+          </span>
+        </p>
         <button
           type="button"
           onClick={() => actions.setStep('result')}
-          className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-md bg-story px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-story-hover sm:px-5 sm:py-2.5"
+          className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-md bg-story px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-story-hover"
         >
           See the result <ArrowRightIcon aria-hidden weight="bold" />
         </button>
