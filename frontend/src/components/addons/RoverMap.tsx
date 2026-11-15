@@ -127,7 +127,6 @@ export function RoverMap({
                 ? `rgb(255 255 255 / ${(0.18 + 0.4 * (1 - cell.arrivalS / ROVER_TERMS.durationS)).toFixed(3)})`
                 : 'none'
           return (
-            // biome-ignore lint/suspicious/noArrayIndexKey: the squares are fixed grid positions
             <g key={i}>
               <polygon
                 points={points}

@@ -3,9 +3,9 @@ import { createElement, type ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeAll, expect, test, vi } from 'vitest'
 import { DynamicSiteReference } from '~/components/dynamicSiteReference'
+import { getRouter } from '~/router'
 import backendRequest from '../../../contracts/referenceRequest.schema.json'
 import backendWindow from '../../../contracts/referenceWindow.schema.json'
-import { getRouter } from '~/router'
 import computedExample from '../../../examples/scientificResponse.computed.json'
 import { loadReferenceSite, loadSummary, type Summary } from './data'
 import frontendRequest from './referenceRequest.schema.json'
@@ -276,7 +276,9 @@ test('the actual annual report renders pending states and unknown days before hy
 
 test('an unsupported annual observer stays visible without percentages or a flat horizon', async () => {
   const unsupported = await loadReferenceSite('change4')
-  const html = renderToStaticMarkup(withRouter(createElement(DynamicSiteReference, { site: unsupported, search: {}, go: () => {}, onSite: () => {} })))
+  const html = renderToStaticMarkup(
+    withRouter(createElement(DynamicSiteReference, { site: unsupported, search: {}, go: () => {}, onSite: () => {} })),
+  )
   expect(html).toContain('Not available for this site')
   expect(html).toContain('unresolved coordinate realization')
   expect(html).not.toContain('Annual sunlight</dt>')

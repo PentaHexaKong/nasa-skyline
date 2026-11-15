@@ -124,7 +124,6 @@ export function RoverReach({ plan }: { plan: Plan }) {
         {reach?.kind === 'reach' ? (
           <ul aria-label="The nine squares around the landing point" className="sr-only">
             {reach.cells.map((cell, i) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: the nine squares are fixed positions
               <Cell key={i} cell={cell} index={i} />
             ))}
           </ul>
