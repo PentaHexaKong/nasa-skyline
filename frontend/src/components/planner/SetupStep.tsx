@@ -49,6 +49,9 @@ const GROUPS = [
   { title: 'Contact with Earth', dot: 'rotate-45 bg-comms', keys: ['minEarth', 'maxNoEarth'] },
 ] as const
 
+/** The questions opened this visit, across trips to Result and back. */
+let seenThisVisit: ReadonlySet<OptionId> = new Set()
+
 function useWide() {
   const [wide, setWide] = useState(true)
   useEffect(() => {
@@ -82,8 +85,14 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   const preview = useDayPreview(plan, actions)
   // The questions opened this visit. They all start answered (the example mission fills them in), so "checked" means
   // the reader has looked, not that a value exists.
-  const [seen, setSeen] = useState<ReadonlySet<OptionId>>(() => new Set())
-  const see = (id: OptionId) => setSeen((s) => (s.has(id) ? s : new Set(s).add(id)))
+  // Kept outside the component, so going to Result and back keeps the ticks; a reload starts over.
+  const [seen, setSeen] = useState<ReadonlySet<OptionId>>(() => seenThisVisit)
+  const see = (id: OptionId) =>
+    setSeen((s) => {
+      if (s.has(id)) return s
+      seenThisVisit = new Set(s).add(id)
+      return seenThisVisit
+    })
 
   // Exactly the space under the header and step bar, so this step never scrolls. It is measured again after every render,
   // since a note above it (MotionNotice) can come and go.
@@ -186,7 +195,8 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   // Result's job.
   const detail: Partial<Record<OptionId, string>> = { when: `${plan.stay}-day stay` }
   const value: Record<OptionId, string> = {
-    mission: `${plan.profile.name}${plan.edited ? ' (edited)' : ''}`,
+    // Just the mission's name: a changed day, stay or limit shows on its own card, not as "(edited)" here.
+    mission: plan.profile.name,
     sites: plan.sites.length === 1 && plan.sites[0] ? shortName(plan.sites[0].data) : `${plan.sites.length} sites to compare`,
     when: `${shortDate(plan.date)} ${plan.date.slice(0, 4)}, ${minuteLabel(plan.minute)} UTC`,
     limits: `Sun ≥ ${plan.requirements.minSun}% · Earth ≥ ${plan.requirements.minEarth}%`,
@@ -198,12 +208,27 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   const deckW = cardW + 12 + 44
   // The deck's own height (the card or the track beside it, whichever is taller), measured; one back card peeks above.
   const deckH = Math.max(cardH, deckBox) + PEEK
-  // The deck sits in the middle of the stage; it steps away while a question is open on the Moon.
-  const deckX = size.w / 2 - deckW / 2
-  // The bar to Result stays out of the way until the reader opens a question; then it slides up and stays.
-  const bar = seen.size > 0
+  // The card sits on the Moon's axis with the track hanging to its right; on narrow screens the pair just fits the width.
+  // It steps away while a question is open on the Moon.
+  const deckX = Math.max(16, Math.min(size.w / 2 - cardW / 2, size.w - 16 - deckW))
+  // The bar rides along while a question is open, and stays at rest once all four have been looked at. Until then its
+  // button leads to the next question not yet opened; only with all four checked does it lead to Result.
+  const done = seen.size === OPTIONS.length
+  const bar = open != null || done
+  const at = OPTIONS.findIndex((o) => o.id === open)
+  const nextUnseen = OPTIONS.map((_, k) => (Math.max(0, at) + k) % OPTIONS.length).find((k) => {
+    const o = OPTIONS[k]
+    return o != null && !seen.has(o.id)
+  })
   const deckY = size.h - (bar ? (wide ? 84 : 76) : wide ? 32 : 24) - deckH + PEEK
-  const items = OPTIONS.map((o) => ({ id: o.id, title: o.title, desc: o.desc, value: value[o.id], detail: detail[o.id] }))
+  const items = OPTIONS.map((o) => ({
+    id: o.id,
+    title: o.title,
+    desc: o.desc,
+    value: value[o.id],
+    detail: detail[o.id],
+    seen: seen.has(o.id),
+  }))
   const markers: MoonMarker[] = plan.all.map((data) => {
     const site = plan.sites.find((s) => s.data.site.id === data.site.id)
     return {
@@ -435,10 +460,17 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         </p>
         <button
           type="button"
-          onClick={() => actions.setStep('result')}
+          onClick={() => {
+            if (done || nextUnseen == null) return actions.setStep('result')
+            const id = OPTIONS[nextUnseen]?.id
+            if (!id) return
+            if (open) toQuestion(nextUnseen)
+            else choose(id)
+          }}
           className="inline-flex shrink-0 cursor-pointer items-center gap-2 rounded-md bg-story px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-story-hover"
         >
-          See the result <ArrowRightIcon aria-hidden weight="bold" />
+          {done || nextUnseen == null ? 'See the result' : `Next: ${OPTIONS[nextUnseen]?.label}`}
+          <ArrowRightIcon aria-hidden weight="bold" />
         </button>
       </div>
     </section>

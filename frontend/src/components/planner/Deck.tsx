@@ -1,6 +1,8 @@
+import { ArrowRightIcon, CheckIcon } from '@phosphor-icons/react'
 import { type CSSProperties, type PointerEvent, useLayoutEffect, useRef } from 'react'
 
-export type DeckItem = { id: string; title: string; desc: string; value: string; detail?: string }
+/** `seen`: the reader has opened this question this visit (its point on the track gets a tick). */
+export type DeckItem = { id: string; title: string; desc: string; value: string; detail?: string; seen?: boolean }
 
 /**
  * How far the card behind the front one peeks out above it, and how much smaller it is. Only that one card shows: the
@@ -212,7 +214,7 @@ export function Deck({
                       ? `Up next, question ${i + 1} of ${n}: ${it.title}`
                       : `Question ${i + 1} of ${n}: ${it.title} Current answer: ${it.value}${it.detail ? `, ${it.detail}` : ''}. Open to change it.`
                   }
-                  className="plan-card-face flex h-full w-full cursor-pointer touch-pan-y flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-white/15 p-5 text-left select-none sm:rounded-3xl sm:p-8"
+                  className="plan-card-face group flex h-full w-full cursor-pointer touch-pan-y flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-white/15 p-5 text-left select-none sm:rounded-3xl sm:p-8"
                   style={{ backgroundColor: FACE[depth] }}
                 >
                   <span className="flex items-baseline justify-between gap-3">
@@ -225,7 +227,14 @@ export function Deck({
                     <span className="text-[clamp(1.6rem,1.05rem+1.7vw,2.5rem)] leading-tight font-medium text-balance">{it.value}</span>
                     {it.detail && <span className="text-sm text-ink-muted sm:text-base">{it.detail}</span>}
                   </span>
-                  <span className="text-sm leading-relaxed text-ink-muted text-pretty">{it.desc}</span>
+                  {/* The way in, said out loud: the answer is filled in already, and this is where to change it. */}
+                  <span className="flex items-end justify-between gap-4">
+                    <span className="text-sm leading-relaxed text-ink-muted text-pretty max-sm:sr-only">{it.desc}</span>
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white py-1.5 pr-3 pl-3.5 text-sm font-medium text-black max-sm:ml-auto">
+                      Change
+                      <ArrowRightIcon aria-hidden weight="bold" className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                    </span>
+                  </span>
                 </button>
               </div>
             </li>
@@ -242,7 +251,7 @@ export function Deck({
                 type="button"
                 onClick={() => go(i)}
                 aria-current={i === front ? 'step' : undefined}
-                aria-label={`Question ${i + 1}: ${it.title}`}
+                aria-label={`Question ${i + 1}: ${it.title}${it.seen ? ' (checked)' : ''}`}
                 title={it.title}
                 className="group grid h-9 w-11 cursor-pointer place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-white"
               >
@@ -252,7 +261,7 @@ export function Deck({
                     i === front ? 'w-10 bg-white text-black' : 'w-7 border border-white/40 bg-black/60 text-ink group-hover:border-white'
                   }`}
                 >
-                  {i + 1}
+                  {it.seen && i !== front ? <CheckIcon weight="bold" /> : i + 1}
                 </span>
               </button>
             </li>
