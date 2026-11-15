@@ -51,7 +51,7 @@ There are two copies of the raw inputs, both gitignored: `ds/data/` for the pipe
 
 **Pipeline data** downloads itself on first use (step 5): the five NAIF kernels, `LDEM_80S_80MPP_ADJ.TIF` (189 MB), `LDEM_60S_240MPP_ADJ.TIF` (219 MB), and the two PGDA product 69 visibility maps. The 20 m and 30 m polar grids are never downloaded whole. Only the windows around each site are read over HTTP range requests and cached in `ds/data/windows/`. `ds/pipeline/fetch.py` checks every file against `ds/pipeline/checksums.json` and stops if a hash differs. A mismatch means the upstream file changed, which can change results: investigate before re-pinning.
 
-**Engine data:** run the nine `wget` commands in [README.md, "Scientific data download"](../README.md#scientific-data-download), then:
+**Engine data:** run the `wget` commands in [README.md, "Download the NASA data"](../README.md#download-the-nasa-data), then:
 
 ```bash
 python3 scripts/prepareScienceAssets.py
