@@ -1,5 +1,6 @@
 import { ArrowCounterClockwiseIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState } from 'react'
+import { SPIN_DEG_S } from '~/components/horizon'
 import { gliding, type PlannerView, plannerBridge } from '~/components/moonBridge'
 import { loadMoonEphemeris } from '~/lib/data'
 import { ephemerisHours, subPoints, whenAt } from '~/lib/moonLight'
@@ -25,18 +26,9 @@ const NARROW = 560
 const DIST_NARROW = 6
 const LIFT = 44
 const NO_AIM = [0, 0] as const
-/**
- * `sway`: the camera drifts around the polar axis by up to this much either side, over this period: about 1.5° a
- * second at its fastest, close to the front door's turning Moon, so the terminator creeps across the face.
- */
-const SWAY_DEG = 30
-const SWAY_S = 120
 /** The camera looks up at the south pole from this latitude, so the polar sites sit in the lower half of the disc. */
 const VIEW_LAT = -52
-/**
- * And this far west of the Sun: with the sway, 40° to 100°, so the terminator always crosses the visible face and the
- * craters near it throw long shadows, as on the front door.
- */
+/** And this far west of the Sun, so the terminator crosses the visible face and the craters near it throw shadows. */
 const SUN_OFFSET = 70
 const PAD = 12
 const GAP = 8
@@ -245,12 +237,17 @@ export default function MissionMoon({
       let sunLon = 0
       const t0 = eph ? Date.parse(eph.start.length === 10 ? `${eph.start}T00:00:00Z` : eph.start) : 0
       const facing = () => toVec(VIEW_LAT, sunLon - SUN_OFFSET, distance())
-      // While following, the camera is `base` (facing the sunlit side) turned around the polar axis by the sway.
+      // While following, the camera is `base` (facing the sunlit side) turned around the polar axis by `spin`, and so is
+      // the Sun (`sunAt`, its landing direction): the Moon seems to turn eastward under a still Sun, as on the front door.
       const base = camera.position.clone()
       const Y = new THREE.Vector3(0, 1, 0)
+      const sunAt = new THREE.Vector3(1, 0, 0)
       let swayGain = 0
-      // Seconds of sway so far: the drift starts from the facing pose instead of wherever the clock happens to be.
-      let swayT = 0
+      let spin = 0
+      const turnSun = () => {
+        sunDir.value.copy(sunAt).applyAxisAngle(Y, (-spin * Math.PI) / 180)
+        sun.position.copy(sunDir.value).multiplyScalar(10)
+      }
       let tween: {
         from: InstanceType<typeof THREE.Vector3>
         turn: InstanceType<typeof THREE.Quaternion>
@@ -281,12 +278,16 @@ export default function MissionMoon({
         if (follow) return
         follow = true
         swayGain = 0
-        base.copy(camera.position).setLength(distance())
+        // The loop turns `base` by the spin, so undo that here and the camera stays where it is.
+        base
+          .copy(camera.position)
+          .applyAxisAngle(Y, (spin * Math.PI) / 180)
+          .setLength(distance())
       }
       const light = (snap = false) => {
         if (!eph) {
           // No ephemeris: an even side light, and the caption says it is not the real one.
-          sunDir.value.set(-0.6, 0.15, 0.8).normalize()
+          sunAt.set(-0.6, 0.15, 0.8).normalize()
           sunLon = -127
           setCaption('Illustrative lighting')
         } else {
@@ -294,13 +295,14 @@ export default function MissionMoon({
           const raw = (latest.current.at - t0) / 3_600_000
           const hours = Math.max(0, Math.min(span, raw))
           const sub = subPoints(eph, hours)
-          sunDir.value.copy(toVec(sub.sun.lat, sub.sun.lon)).normalize()
+          sunAt.copy(toVec(sub.sun.lat, sub.sun.lon)).normalize()
           sunLon = sub.sun.lon
           const when = whenAt(eph, hours)
           const stamp = `${shortDate(when.date)} ${when.date.slice(0, 4)}, ${minuteLabel(when.minute)} UTC`
-          setCaption(raw === hours ? `Sunlight at landing · ${stamp}` : `Sunlight as on ${stamp}`)
+          const lit = raw === hours ? `Sunlight at landing · ${stamp}` : `Sunlight as on ${stamp}`
+          setCaption(latest.current.sway ? `${lit}, the Moon turning slowly under it` : lit)
         }
-        sun.position.copy(sunDir.value).multiplyScalar(10)
+        turnSun()
         if (follow) aim(facing(), snap)
         requestDraw()
       }
@@ -420,14 +422,16 @@ export default function MissionMoon({
         }
         let unzoomed = tween && !tween.onBase ? camera.position.length() : distance()
         if (follow) {
-          // Sway eases in and out, so turning it on or off never jumps.
+          // The turn eases up to speed and back down, so starting or stopping it never jumps.
           const swayOn = latest.current.sway && !motion.matches
           swayGain += ((swayOn ? 1 : 0) - swayGain) * Math.min(1, dt * 1.2)
           if (swayGain < 1e-3 && !swayOn) swayGain = 0
-          if (swayOn) swayT += dt
-          const turn = swayGain * SWAY_DEG * Math.sin((swayT * 2 * Math.PI) / SWAY_S)
-          if (swayGain > 0) moving = true
-          camera.position.copy(base).applyAxisAngle(Y, (turn * Math.PI) / 180)
+          if (swayGain > 0) {
+            spin = (spin + swayGain * SPIN_DEG_S * dt) % 360
+            turnSun()
+            moving = true
+          }
+          camera.position.copy(base).applyAxisAngle(Y, (-spin * Math.PI) / 180)
           unzoomed = base.length()
         }
         // Damping keeps changing the camera after a drag; `change` asks for the next frame while it does.
@@ -527,6 +531,8 @@ export default function MissionMoon({
         turn: (direction) => {
           if (direction === 'reset') {
             rejoin()
+            spin = 0
+            turnSun()
             aim(facing())
             return
           }
