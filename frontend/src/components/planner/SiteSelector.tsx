@@ -102,7 +102,6 @@ export function siteAnswer(s: SitePlan, plan: Plan, day: number) {
     const r = siteResult(s)
     return { works: r.works, computed: !!s.checks, why: r.why }
   }
-  if (plan.baseline) return { works: false, computed: false, why: 'Select this date to evaluate the mission' }
   const status = statusAt(s, day)
   return { works: status === 'go', computed: status !== 'outside', why: WHY[status] }
 }
@@ -263,7 +262,7 @@ export function Year({ plan, day, playing, nextGood, onPlay, onNext, onHover, on
             aria-valuemin={0}
             aria-valuemax={n - 1}
             aria-valuenow={day}
-            aria-valuetext={`${longDate(date)}: ${worksHere.length ? `works at ${worksHere.join(', ')}` : plan.baseline ? 'select to evaluate' : 'no site works'}`}
+            aria-valuetext={`${longDate(date)}: ${worksHere.length ? `works at ${worksHere.join(', ')}` : 'no site works'}`}
             onKeyDown={onKey}
             onPointerDown={(e) => {
               e.currentTarget.setPointerCapture(e.pointerId)

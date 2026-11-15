@@ -15,3 +15,6 @@ services/relayAdapter/data/*
 
 # External INT-4 engine checkout for the optional legacy profile
 external/
+
+# Local browser-automation logs
+.playwright-cli/

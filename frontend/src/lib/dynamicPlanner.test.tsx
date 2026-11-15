@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeAll, expect, test, vi } from 'vitest'
+import { LiveEngine } from '~/components/planner/LiveEngine'
 import { type Plan, planSearch } from '~/components/planner/plan'
 import { resolvePlan } from '~/components/planner/resolvePlan'
-import { ScientificBaseline } from '~/components/planner/ScientificBaseline'
 import { siteAnswer } from '~/components/planner/SiteSelector'
 import computedExample from '../../../examples/scientificResponse.computed.json'
 import { loadSummary, MOON_SITES, type Summary } from './data'
@@ -13,6 +13,7 @@ import {
   type PlannerRows,
   plannerHeadline,
   plannerInputs,
+  readableReason,
   runPlannerRequests,
   scientificMeasure,
   scientificPlan,
@@ -35,19 +36,22 @@ beforeAll(async () => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-test('pending, failed and unsupported missions clear every annual baseline value', () => {
+test('without a live answer every site keeps its precomputed stay, labelled as such', () => {
+  const base = selected.sites[0]!
   for (const state of ['loading', 'not_computed', 'unsupported', 'unavailable', 'failed'] as const) {
     const rows: PlannerRows = { 'connecting-ridge': { state, message: 'Scientific state fixture' } }
     const plan = scientificPlan(selected, rows)
     const site = plan.sites[0]!
-    expect(site).toMatchObject({ stay: null, checks: null, was: null, wasGo: null, nextGo: null, goDays: 0, runs: [] })
-    const html = renderToStaticMarkup(<ScientificBaseline plan={plan} rows={rows} refresh={() => {}} />)
-    expect(html).toContain(state)
-    expect(html).toContain('Scientific state fixture')
-    expect(html).not.toContain('0.0 %')
-    expect(buildScientificBrief(plan, rows)).toContain(`Scientific state ${state}`)
-    expect(buildScientificBrief(plan, rows)).not.toContain('```json')
+    expect(site).toMatchObject({ source: 'precomputed', stay: base.stay, checks: base.checks, runs: base.runs, nextGo: base.nextGo })
+    const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
+    // The reader sees words, never the contract's state codes.
+    expect(html).not.toContain(state === 'loading' ? 'loading<' : `>${state}<`)
+    expect(html).toContain(state === 'loading' || state === 'not_computed' ? 'Checking' : 'Precomputed')
+    const brief = buildScientificBrief(plan, rows)
+    expect(brief).toContain('Source: precomputed site file')
+    expect(brief).not.toContain('```json')
   }
+  expect(scientificPlan(selected, { 'connecting-ridge': { state: 'failed', message: 'x' } }).live).toMatchObject({ state: 'offline' })
 })
 
 test('request identity covers date, duration, observer height, site, profile and user limits', () => {
@@ -169,13 +173,16 @@ test('sequential API responses populate the baseline, verdict and complete prove
   expect(fetch.mock.calls[0]![0]).toBe('/api/mission-science/v1/scientific-evaluations')
   const plan = scientificPlan(selected, rows)
   expect(plan.sites[0]!.stay).toEqual(scientificMeasure(response()))
+  expect(plan.sites[0]!.source).toBe('live')
   expect(plan.sites[0]!.was).toBeNull()
-  expect(plan.sites[0]!.runs).toHaveLength(1)
-  expect(siteAnswer(plan.sites[0]!, plan, plan.index + 1)).toMatchObject({ computed: false })
-  const html = renderToStaticMarkup(<ScientificBaseline plan={plan} rows={rows} refresh={() => {}} />)
-  expect(html).toContain(computedExample.scenarioId)
-  expect(html).toContain('SPICE ET seconds')
+  expect(plan.live).toMatchObject({ state: 'live', live: 1, total: 1 })
+  // The year strip keeps the precomputed days around the selected one.
+  expect(plan.sites[0]!.runs).toEqual(selected.sites[0]!.runs)
+  expect(siteAnswer(plan.sites[0]!, plan, plan.index + 1).why).not.toContain('Select this date')
+  const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
+  expect(html).toContain('Computed for this exact stay by the live engine.')
   const brief = buildScientificBrief(plan, rows)
+  expect(brief).toContain(computedExample.scenarioId)
   expect(brief).toContain(computedExample.provenance.algorithmVersion)
   expect(brief).toContain('"independentlyValidated": false')
   for (const hash of Object.values(computedExample.provenance.kernels)) expect(brief).toContain(hash)
@@ -207,7 +214,7 @@ test('late replies from superseded missions cannot publish or start another site
   expect(fetch).toHaveBeenCalledTimes(1)
 })
 
-test('service downtime produces an explicit failed state and no annual fallback', async () => {
+test('service downtime produces an explicit failed state and falls back to the precomputed stay', async () => {
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Connection refused')))
   const rows: PlannerRows = {}
   await runPlannerRequests(
@@ -218,8 +225,8 @@ test('service downtime produces an explicit failed state and no annual fallback'
     () => true,
   )
   expect(rows['connecting-ridge']).toEqual({ state: 'failed', message: 'Connection refused' })
-  expect(scientificPlan(selected, rows).sites[0]!.stay).toBeNull()
-  expect(plannerHeadline(rows, selected)).toContain('0 of 1 sites evaluated')
+  expect(scientificPlan(selected, rows).sites[0]!.stay).toEqual(selected.sites[0]!.stay)
+  expect(plannerHeadline(rows, selected)).toContain('0 of 1 sites checked by the live engine')
 })
 
 test.each(['unsupported', 'not_computed', 'unavailable', 'failed'] as const)('preserves the API %s state', async (state) => {
@@ -282,3 +289,31 @@ test.runIf(Boolean(liveUrl)).each(['CR1', 'GR1', 'SR1'])(
   },
   180000,
 )
+
+test('engine failures read as a short reason, never a schema dump', async () => {
+  const dump = JSON.stringify([{ code: 'invalid_union', errors: [[{ expected: 'object', path: [], message: 'Invalid input' }]] }])
+  expect(readableReason(dump)).toBe('it sent back an unexpected reply')
+  expect(readableReason('Connection refused.')).toBe('connection refused')
+  // An older backend without the route answers 404 with no JSON; the planner reports that, then falls back.
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() => Promise.resolve(new Response('Not Found', { status: 404 }))),
+  )
+  const rows: PlannerRows = {}
+  await runPlannerRequests(
+    [{ siteId: 'connecting-ridge', request: request() }],
+    (id, row) => (rows[id] = row),
+    () => true,
+  )
+  expect(rows['connecting-ridge']).toEqual({ state: 'failed', message: 'The service answered HTTP 404.' })
+  expect(scientificPlan(selected, rows).sites[0]!.source).toBe('precomputed')
+})
+
+test('the merged live engine keeps exploratory qualification visible before opening provenance details', () => {
+  const value = response()
+  value.provenance.limitations.push('Exploratory site evaluation has no independent site-specific visibility validation')
+  const rows: PlannerRows = { 'connecting-ridge': { state: 'computed', response: value } }
+  const plan = scientificPlan(selected, rows)
+  const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
+  expect(html).toContain('Exploratory scientific result. Independent site-specific visibility validation is incomplete.')
+})

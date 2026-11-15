@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Summary } from '~/lib/data'
+import type { LiveSummary } from '~/lib/dynamicPlanner'
 import type { MissionWindow, Requirements, SitePlan } from '~/lib/mission'
 import { PROFILE_IDS, type Profile } from '~/lib/profiles'
 import { SCENARIO_PIECES } from '~/lib/scenarios'
@@ -38,7 +39,8 @@ export const planSearch = z.object({
 export type PlanSearch = z.infer<typeof planSearch>
 
 export type Plan = {
-  baseline?: { headline: string }
+  /** The live engine's state for the selected stay; absent until the planner has asked. */
+  live?: LiveSummary
   profile: Profile
   /** The user changed something the profile set. */
   edited: boolean

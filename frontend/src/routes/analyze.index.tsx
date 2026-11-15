@@ -3,9 +3,10 @@ import { useMemo } from 'react'
 import { useMoonScene } from '~/components/MoonStage'
 import type { MoonScene } from '~/components/ParallaxMoon'
 import { AddonsStep } from '~/components/planner/AddonsStep'
+import { DatesStep } from '~/components/planner/DatesStep'
 import { type Plan, type PlanActions, type PlanSearch, planSearch, type StepId, stepOf } from '~/components/planner/plan'
+import { ResultStep } from '~/components/planner/ResultStep'
 import { resolvePlan } from '~/components/planner/resolvePlan'
-import { ScientificBaseline, ScientificDates } from '~/components/planner/ScientificBaseline'
 import { SetupStep } from '~/components/planner/SetupStep'
 import { missionShort, SlipButtons, StepBar } from '~/components/planner/StepBar'
 import { Shell } from '~/components/Shell'
@@ -47,7 +48,8 @@ function PlannerPage() {
   const go = (s: Partial<PlanSearch>) => navigate({ search: (prev) => ({ ...prev, ...s }), replace: true, resetScroll: false })
   const p = useMemo(() => (hydrated ? params : ({} as PlanSearch)), [hydrated, params])
   const selected: Plan = useMemo(() => resolvePlan(all, p), [all, p])
-  const { plan, rows, refresh } = useScientificPlan(selected, hydrated, p.focus)
+  // Each site's stay comes from the live engine once it answers; until then, or without it, from the precomputed files.
+  const { plan, rows, refresh } = useScientificPlan(selected, hydrated)
   const { dates, index, date, sites } = plan
   const chosenIds = sites.map((s) => s.data.site.id)
   // The step lives in the URL, so it is the same on the server: read it before hydration too, or a link to Set up
@@ -74,8 +76,6 @@ function PlannerPage() {
     downloadBrief: () => saveText(buildScientificBrief(plan, rows)),
   }
 
-  const baseline = <ScientificBaseline plan={plan} rows={rows} refresh={refresh} />
-
   return (
     <Shell>
       <h1 className="sr-only">Analyze a landing</h1>
@@ -87,24 +87,9 @@ function PlannerPage() {
         </main>
       ) : (
         <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
-          {step === 'result' && (
-            <>
-              {baseline}
-              <button type="button" className="cursor-pointer underline" onClick={() => actions.setStep('dates')}>
-                Try another date
-              </button>
-              <button type="button" className="cursor-pointer underline" onClick={() => actions.setStep('addons')}>
-                Explore add-ons
-              </button>
-            </>
-          )}
-          {step === 'dates' && (
-            <>
-              <ScientificDates plan={plan} actions={actions} />
-              {baseline}
-            </>
-          )}
-          {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} scientificBaseline={baseline} />}
+          {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} live={{ rows, refresh }} />}
+          {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
+          {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} />}
         </main>
       )}
       {step !== 'setup' && (

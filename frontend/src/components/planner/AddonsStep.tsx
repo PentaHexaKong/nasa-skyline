@@ -2,7 +2,7 @@ import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { Link as KLink } from '@cloudflare/kumo/components/link'
 import { Select } from '@cloudflare/kumo/components/select'
 import { BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
-import { type KeyboardEvent, lazy, type ReactNode, Suspense } from 'react'
+import { type KeyboardEvent, lazy, Suspense } from 'react'
 import { RelayLadder } from '~/components/addons/RelayLadder'
 import { RoverPanel } from '~/components/addons/RoverPanel'
 import { SiteProvenance } from '~/components/Evidence'
@@ -128,17 +128,7 @@ function ScenarioTabIcon({ piece }: { piece: ScenarioPiece }) {
 }
 
 /** The fourth step: the follow-up tools (mast, relay, rover), each opened on the plan and the site in focus. */
-export function AddonsStep({
-  plan,
-  actions,
-  search,
-  scientificBaseline,
-}: {
-  plan: Plan
-  actions: PlanActions
-  search: PlanSearch
-  scientificBaseline?: ReactNode
-}) {
+export function AddonsStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
   const site = plan.sites.find((s) => s.data.site.id === plan.focus) ?? plan.sites[0]
   if (!site) return null
   const suggested = scenarioGuidance(site).priority
@@ -222,7 +212,9 @@ export function AddonsStep({
           <Collapsible.Root>
             <Collapsible.DefaultTrigger>Compare with your plan as it stands</Collapsible.DefaultTrigger>
             <Collapsible.DefaultPanel>
-              <div className="pt-2">{scientificBaseline ?? <Baseline plan={plan} />}</div>
+              <div className="pt-2">
+                <Baseline plan={plan} />
+              </div>
             </Collapsible.DefaultPanel>
           </Collapsible.Root>
         </div>
@@ -234,14 +226,12 @@ export function AddonsStep({
             Try another date
           </KLink>
         </div>
-        {!scientificBaseline && (
-          <Collapsible.Root>
-            <Collapsible.DefaultTrigger>Starting point: sources and assumptions</Collapsible.DefaultTrigger>
-            <Collapsible.DefaultPanel>
-              <SiteProvenance sites={[site.data]} />
-            </Collapsible.DefaultPanel>
-          </Collapsible.Root>
-        )}
+        <Collapsible.Root>
+          <Collapsible.DefaultTrigger>Starting point: sources and assumptions</Collapsible.DefaultTrigger>
+          <Collapsible.DefaultPanel>
+            <SiteProvenance sites={[site.data]} />
+          </Collapsible.DefaultPanel>
+        </Collapsible.Root>
       </div>
     </>
   )

@@ -1,7 +1,7 @@
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeAll, expect, test, vi } from 'vitest'
-import { DynamicSiteReference, ReferenceVisibilityLanes } from '~/components/dynamicSiteReference'
+import { DynamicSiteReference } from '~/components/dynamicSiteReference'
 import backendRequest from '../../../contracts/referenceRequest.schema.json'
 import backendWindow from '../../../contracts/referenceWindow.schema.json'
 import computedExample from '../../../examples/scientificResponse.computed.json'
@@ -309,23 +309,4 @@ test('elapsed track and communication coordinates preserve leap-second samples',
   expect(referenceTrack(data).t_min[0]).toBe(1440)
   expect(referenceTrack(data).t_min.every(Number.isFinite)).toBe(true)
   expect(referenceEarth(data, value).lane!.flat().every(Number.isFinite)).toBe(true)
-})
-
-test('visibility lanes keep original leap-second UTC bounds and exact elapsed duration', () => {
-  const value = response()
-  value.result.period.durationS = 86401
-  value.result.sunlightIntervals.available = [
-    {
-      startUtc: '2016-12-31T23:59:60.000000Z',
-      endUtc: '2017-01-01T00:00:00.000000Z',
-      startS: 86400,
-      endS: 86401,
-      startClipped: false,
-      endClipped: true,
-    },
-  ]
-  const html = renderToStaticMarkup(createElement(ReferenceVisibilityLanes, { response: value }))
-  expect(html).toContain('2016-12-31T23:59:60.000000Z')
-  expect(html).toContain('24.000278')
-  expect(html).not.toContain('NaN')
 })
