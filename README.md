@@ -15,6 +15,25 @@ Team Hexakong built Skyline for a NASA hackathon challenge. The challenge asked 
 
 The south pole is where this gets hard. The Moon's axis tilts only about 1.54° to the ecliptic, so at the pole the Sun skims the horizon, and a ridge 100 km away decides whether a site is lit. [docs/solution/concept.md](docs/solution/concept.md) explains the problem in full. [docs/product/requirements.md](docs/product/requirements.md) maps every part of the challenge to what the app does.
 
+## Manuscript
+
+The method behind Skyline is written up in our manuscript:
+
+> Daffa Tarigan, Mohammad Ezzeddin Pratama, Paulus Billiardo Putrakedua, Louis Enggar Theo Dharma, Caroline Felicia, and Celine Stacia Tanijar (2026). *SKYLINE: A Terrain-Aware Computational Framework for Lunar South-Pole Illumination, Communication, and Mission Planning*. Unpublished manuscript. https://doi.org/10.13140/RG.2.2.13417.66404
+
+To cite Skyline, use this BibTeX entry:
+
+```bibtex
+@article{skyline2026,
+	title     = {SKYLINE: A Terrain-Aware Computational Framework for Lunar South-Pole Illumination, Communication, and Mission Planning},
+	author    = {{Daffa Tarigan} and {Mohammad Ezzeddin Pratama} and {Paulus Billiardo Putrakedua} and {Louis Enggar Theo Dharma} and {Caroline Felicia} and {Celine Stacia Tanijar}},
+	year      = {2026},
+	publisher = {Unpublished},
+	doi       = {10.13140/RG.2.2.13417.66404},
+	url       = {https://doi.org/10.13140/RG.2.2.13417.66404}
+}
+```
+
 ## What's in the app
 
 | Page | Path | What it does |
@@ -45,7 +64,39 @@ Every result is a geometric opportunity: the Sun or Earth is above the terrain. 
 | ML service | `ml/` | Python | A placeholder that returns `stub_only`. Nothing in the app depends on it. |
 | Contracts | `contracts/` | JSON Schema | The request and response formats every part agrees on. |
 
-[docs/architecture/overview.md](docs/architecture/overview.md) describes the data flow between these parts.
+## System design
+
+Skyline is static first. Every baseline number is computed ahead of time by the pipeline and shipped with the app as JSON, so the pages work with no server running. Live requests go through one gateway to the science services:
+
+```mermaid
+flowchart LR
+    browser["Browser"] --> nginx["frontend<br/>Nginx: static pages + /api proxy"]
+    nginx --> go["backend<br/>Go gateway: allow-list,<br/>deadlines, contract checks"]
+    go --> ms["mission-science<br/>Sun, Earth, mast"]
+    go --> ra["relay-adapter<br/>relay contact"]
+    go --> rv["rover-science<br/>rover reach"]
+    ms & ra & rv --> raw[("NASA data<br/>SPICE kernels + LOLA terrain<br/>read-only, hash-checked")]
+    pipe["ds pipeline<br/>offline"] -->|"yearly results,<br/>terrain tiles, textures"| nginx
+```
+
+The south-pole study sites run on the 80 m polar terrain and support every add-on. The other agencies' landing sites run on the 1.9 km global terrain and support the live check only.
+
+[docs/architecture/system-design.md](docs/architecture/system-design.md) is the full design, in 14 diagrams: containers, the gateway routing table, each live request in sequence, the data pipeline, the frontend structure, the contracts, deployment, and how each site is routed to its terrain.
+
+## How the engine calculates
+
+For each site and moment, the scientific engine answers one question: is the Sun or Earth above the terrain? It works in six steps:
+
+1. **Place the observer** on the Moon's 1 737.4 km reference sphere, at the terrain height under the site plus 2 m.
+2. **Build the skyline:** the highest terrain elevation in each of 1 440 azimuth sectors (0.25° each), searched out to 400 km on the NASA LOLA terrain maps.
+3. **Track the Sun and Earth** with NASA JPL SPICE (DE440 ephemeris, `MOON_ME_DE421` frame), as azimuth and elevation seen from the site.
+4. **Compare:** the clearance is the body's elevation minus the skyline in its sector. For the Sun, the visible part of the disk comes from the circular-segment area.
+5. **Find events:** every sunrise, sunset, earthrise, earthset and grazing pass is solved to 1 s with Brent's method.
+6. **Summarise:** sunlight and Earth availability, the longest darkness, the longest Earth blackout, and full provenance. Every input file is identified by its SHA-256 hash.
+
+The mast, rover and relay add-ons reuse the same calculation, for a raised observer, a grid of rover cells, or a relay satellite in place of Earth.
+
+[docs/science/engine.md](docs/science/engine.md) gives every formula, with its source file and line, the tests that check each step, and the engine's stated limits.
 
 ## Prerequisites
 
@@ -177,7 +228,7 @@ We built Skyline with AI coding assistants, and we want to be clear about where 
 
 - **What AI did:** Claude (Anthropic) and Codex (OpenAI) helped write and review code, tests and documentation, and helped with interface design.
 - **What AI did not do:** no scientific number in Skyline comes from a language model. Every elevation, sunlight share, Earth window and coordinate comes from the pipeline's own computation on NASA data, or from a cited source. A value we could not compute stays `null` or `not_computed`. Nothing fills the gap.
-- **How we checked it:** a person on the team reviewed every change. The science is checked against independent references. For example, the pipeline's Sun and Earth directions agree with NASA JPL Horizons within 0.01°, and its Apollo 11 terrain height matches the published LROC value to within a metre.
+- **How we checked it:** a person on the team reviewed every change. The engine's tests check each step against exact answers and independent code paths. For example, its Sun and Earth directions match SPICE's own `azlcpo` within 1e-8°, and its skyline over a perfectly smooth sphere matches the exact horizon dip within 1e-4°. The offline pipeline is also checked against outside references: its Sun and Earth directions agree with NASA JPL Horizons within 0.01°, and its terrain height at Apollo 11 matches the published LROC value to within a metre. No result has yet been validated site by site against an independent horizon, and every response says so (`independentlyValidated: false`).
 
 The `ml/` service is a placeholder, not a model, and the app makes no predictions with machine learning.
 

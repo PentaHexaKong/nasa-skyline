@@ -1,6 +1,8 @@
 # Geometry method
 
-Status: **proposed**. This is the reference design for the DS pipeline. Change it here first, then in code.
+Status: **proposed**. This is the reference design for the offline pipeline in `ds/`. Change it here first, then in code.
+
+The live scientific engine in `services/missionScience` differs from this design in a few places. [engine.md](engine.md) describes what it computes.
 
 ## Pipeline overview
 

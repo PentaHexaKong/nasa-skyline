@@ -134,7 +134,7 @@ services/relayAdapter/.venv/bin/python services/relayAdapter/scripts/validateRel
 ```bash
 cd frontend
 pnpm contracts      # contracts/feeds/*.schema.json and the feed manifest schemas, from src/lib/feed-schemas.ts
-pnpm build          # sync-data -> src/data/generated/, scientificClient, then a static build of 43 pages into dist/
+pnpm build          # sync-data -> src/data/generated/, scientificClient, then a static build of 44 pages into dist/
 pnpm check && pnpm test
 cd ..
 ```

@@ -1,6 +1,6 @@
 # Skyline system design
 
-Drawn from the code as of 2026-11-14 (`compose.yaml`, `frontend/nginx.conf`, `backend/*.go`, `services/*/api.py`, `ds/pipeline`, `frontend/src`). Where this disagrees with [overview.md](overview.md), the code wins: overview.md predates the mission-science, relay and rover services.
+Drawn from the code as of 2026-11-15, after the international site catalogue merged (`compose.yaml`, `frontend/nginx.conf`, `backend/*.go`, `services/*/api.py`, `ds/pipeline`, `frontend/src`). Where this disagrees with [overview.md](overview.md), the code wins: overview.md predates the mission-science, relay and rover services.
 
 1. [System context](#1-system-context)
 2. [Containers and runtime topology](#2-containers-and-runtime-topology)
@@ -9,12 +9,13 @@ Drawn from the code as of 2026-11-14 (`compose.yaml`, `frontend/nginx.conf`, `ba
 5. [Live check: scientific evaluation](#5-live-check-scientific-evaluation)
 6. [Relay comparison (Go orchestrates two services)](#6-relay-comparison-go-orchestrates-two-services)
 7. [Mast power and placement (long-running)](#7-mast-power-and-placement-long-running)
-8. [Rover reachability (optional profile)](#8-rover-reachability-optional-profile)
+8. [Rover reachability](#8-rover-reachability)
 9. [Scenario feed lifecycle](#9-scenario-feed-lifecycle)
 10. [Frontend structure](#10-frontend-structure)
 11. [Contracts and schema flow](#11-contracts-and-schema-flow)
 12. [Deployment: Compose services, volumes, profiles](#12-deployment-compose-services-volumes-profiles)
 13. [Planner user journey](#13-planner-user-journey)
+14. [Site routing: polar or global terrain](#14-site-routing-polar-or-global-terrain)
 
 ---
 
@@ -32,8 +33,8 @@ flowchart LR
     end
 
     naif[("NAIF SPICE kernels<br/>DE440, MOON_ME frame")]
-    lola[("LOLA / PGDA DEMs<br/>south-pole terrain")]
-    papers[("Published sources<br/>De Rosa 2012, IM relay paper,<br/>NASA imagery (GIBS, SVS, SDO)")]
+    lola[("LOLA terrain<br/>PGDA south-pole DEMs (80 m, 240 m)<br/>global LDEM_16 (~1.9 km)")]
+    papers[("Published sources<br/>De Rosa 2012, IM relay paper,<br/>LROC and mission landing coordinates,<br/>NASA imagery (GIBS, SVS, SDO)")]
 
     planner -->|"compare sites & dates,<br/>run scenarios"| app
     educator -->|"explore & lessons"| app
@@ -52,7 +53,7 @@ flowchart TB
 
     subgraph edge["frontend container (:80, published :8080)"]
         nginx["Nginx<br/>static files + /api reverse proxy<br/>legacy-URL 301s"]
-        static[("Static build<br/>43 pre-rendered pages<br/>generated JSON, terrain .bin,<br/>feeds, textures")]
+        static[("Static build<br/>44 pre-rendered pages<br/>generated JSON, terrain .bin,<br/>feeds, textures")]
     end
 
     subgraph gw["backend container (:8080, internal)"]
@@ -60,9 +61,9 @@ flowchart TB
     end
 
     subgraph sci["Scientific services (Python)"]
-        ms["mission-science :8014<br/>FastAPI · skyline_mission_science<br/>evaluate, scientific contract v1,<br/>mast power, mast placement, catalog"]
+        ms["mission-science :8014<br/>FastAPI · skyline_mission_science<br/>evaluate, compare, optimize,<br/>scientific contract v1, reference evaluations,<br/>mast power, mast placement, site catalogue<br/>polar 80 m + global exploratory terrain"]
         ra["relay-adapter :8015<br/>FastAPI · skyline_relay_adapter<br/>relay candidates + link evaluation"]
-        rv["rover-science :8016<br/>FastAPI · skyline_rover_science<br/>profile: rover"]
+        rv["rover-science :8016<br/>FastAPI · skyline_rover_science<br/>south-pole study sites only"]
         se["scientificengine :8003<br/>INT-4 adapter<br/>profile: legacy"]
     end
 
@@ -104,7 +105,7 @@ flowchart LR
     subgraph inputs["Pinned inputs"]
         k[("SPICE kernels")]
         dem[("LOLA DEMs")]
-        sites["ds/pipeline/sites.py<br/>CR1, GR1, SR1 (+ parked sites)"]
+        sites["ds/pipeline/sites.py<br/>CR1, GR1, SR1, Apollo 11,<br/>Shackleton ridge (+ parked sites)"]
         orbits["relay_orbits.json"]
     end
 
@@ -165,7 +166,7 @@ flowchart LR
     end
 
     subgraph go["Go handlers → upstream · deadline"]
-        g1["/api/mission-science/v1/*<br/>allow-list: GET sites, capabilities, site-catalog;<br/>POST evaluate, scientific-evaluations,<br/>mast-power-evaluations, mast-placement-evaluations<br/>90 s (mast routes 10 min)<br/>checks response contract version"]
+        g1["/api/mission-science/v1/*<br/>allow-list: GET sites, capabilities, site-catalog;<br/>POST evaluate, scientific-evaluations,<br/>reference-evaluations,<br/>mast-power-evaluations, mast-placement-evaluations<br/>90 s (mast routes 10 min)<br/>checks response contract version"]
         g2["GET /api/relay-engineering/candidates"]
         g3["POST /api/relay-engineering/compare<br/>POST /api/relay-engineering/v1/relay-feed"]
         g4["POST /api/rover-science/v1/reachability-evaluations<br/>envelope validation"]
@@ -197,6 +198,8 @@ flowchart LR
 ## 5. Live check: scientific evaluation
 
 `frontend/src/components/planner/LiveCheck.tsx` → `src/lib/missionScience.ts` / `scientificContract.ts`. Since commit `ae61eff`, an answer that arrives after its run was cancelled is dropped.
+
+The request carries `localResolutionM`, which picks the terrain: 80 for the south-pole sites, 1895.21 for every other site ([section 14](#14-site-routing-polar-or-global-terrain)). The per-site reference page (`/analyze/$siteId`, `components/dynamicSiteReference.tsx`) follows the same path through `src/lib/referenceScience.ts`, but posts to `/v1/reference-evaluations` for one UTC day at a time, and fills the year one day after another in the background.
 
 ```mermaid
 sequenceDiagram
@@ -284,14 +287,14 @@ sequenceDiagram
     MS-->>FE: skyline-mast-placement-response/1.0.0 (MastFeed)
 ```
 
-## 8. Rover reachability (optional profile)
+## 8. Rover reachability
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant FE as Rover scenario page
     participant GO as Go gateway
-    participant RV as rover-science (profile: rover)
+    participant RV as rover-science
     participant RA as relay-adapter
     participant MS as mission-science
 
@@ -359,15 +362,16 @@ flowchart TB
     root["routes/__root.tsx · Shell"]
 
     subgraph routes["Routes (TanStack Router, file-based)"]
-        home["/ Explore<br/>scrolling chapters 01-06 + lessons"]
-        lesson["/understand/$lessonId"]
+        home["/ Home<br/>three doors, one per audience"]
+        explore["/explore<br/>scrolling chapters, Moon to ridge"]
+        lesson["/understand<br/>lesson and simulation"]
         lab["/understand/lab"]
         analyze["/analyze<br/>planner: Set up → Result → Dates"]
         report["/analyze/$siteId<br/>per-site report"]
         scen["/analyze/scenario/$piece<br/>mast · relay · rover"]
         exp["/explore/$siteId<br/>3D landscape"]
         method["/method"]
-        proto["/prototypes/$piece (dev)"]
+        sites["/sites<br/>landing-site catalogue"]
     end
 
     subgraph comps["Components"]
@@ -392,7 +396,8 @@ flowchart TB
     api["/api/* via Nginx"]
 
     root --> routes
-    home --> moon & story & charts
+    home & explore --> moon & story & charts
+    sites --> data
     lesson & lab --> story
     analyze --> plan & charts
     report --> charts & panels
@@ -450,7 +455,7 @@ flowchart TB
         ml["ml :8002<br/>health: /healthz"]
     end
 
-    subgraph profRover["profile: rover"]
+    subgraph profRover["default profile, rover image"]
         rv["rover-science :8016<br/>same image as mission-science,<br/>different uvicorn entrypoint"]
     end
 
@@ -458,7 +463,7 @@ flowchart TB
         se["scientificengine :8003<br/>health: missionReady<br/>start_period 300 s"]
     end
 
-    raw[("SKYLINE_MISSION_ASSET_ROOT<br/>→ /app/data/raw (ro)")]
+    raw[("SKYLINE_MISSION_ASSET_ROOT<br/>→ /app/data/raw (ro)<br/>7 kernels + 2 polar DEMs,<br/>optional global LDEM_16")]
     states[("relayAdapter/data/states<br/>(ro)")]
     int4[("external/int4 checkout<br/>→ /science (ro)")]
     v1[("mission-science-cache")]
@@ -509,3 +514,31 @@ stateDiagram-v2
     RelayScenario --> Result
     RoverScenario --> Result
 ```
+
+## 14. Site routing: polar or global terrain
+
+The catalogue decides how each site is computed. `frontend/data/catalogue/sites.json` (13 sites, exported from `services/missionScience/src/skyline_mission_science/siteCatalog.json` by `exportSiteCatalogue.py`) gives every site a `liveEvaluation` status and a `terrainResolutionM`. The `/sites` page lists them, and `src/lib/missionScience.ts` turns them into requests.
+
+```mermaid
+flowchart TB
+    cat[("siteCatalog.json<br/>19 entries")]
+    cat --> q1{"liveEvaluation<br/>starts with 'supported'?"}
+    q1 -->|"no: unresolved or unverified<br/>coordinates, Earth test sites"| un["unsupported<br/>no request is sent"]
+    q1 -->|yes| q2{"terrainResolutionM"}
+    q2 -->|"80"| polar["Polar terrain<br/>LDEM_80S_80MPP 1-50 km<br/>LDEM_60S_240MPP 50-400 km"]
+    q2 -->|"1895.21"| global["Global terrain, exploratory<br/>LDEM_16 1-400 km<br/>refused near the poles"]
+    polar --> q3{"CR1, GR1 or SR1?"}
+    q3 -->|yes| addons["Add-ons allowed:<br/>mast power, mast placement,<br/>rover reach, relay"]
+    q3 -->|"no (Shackleton ridge)"| live["Live check only"]
+    global --> live2["Live check only,<br/>labelled exploratory"]
+```
+
+| Group | Sites | Terrain | What runs |
+| --- | --- | --- | --- |
+| Study sites | Connecting Ridge (CR1), de Gerlache Rim (GR1), Shackleton Rim (SR1) | 80 m polar | Precomputed year, live check, every add-on |
+| Polar comparison | Shackleton connecting ridge | 80 m polar | Precomputed year, live check |
+| Apollo 11 | Apollo 11, Tranquility Base | 1.9 km global for live checks | Precomputed year from the offline pipeline, live check |
+| Global, exploratory | Chang'e-4 (LROC 2019), Chang'e-6, Chandrayaan-3, SLIM (LROC 2024), Luna-25 target and impact | 1.9 km global | Live check and reference page |
+| Unresolved | Chang'e-4 (Liu 2019), SLIM (PGDA surface coordinate) | none | Listed with the reason, never computed |
+
+The engine itself switches on the request's `localResolutionM` (`engine.py:52-57`), not on the site. The add-on services enforce their own limits: mast power, mast placement and rover reach refuse any site outside CR1, GR1 and SR1, and accept only 20 or 80 m terrain. [docs/science/engine.md](../science/engine.md) describes the calculation on each kind of terrain.
