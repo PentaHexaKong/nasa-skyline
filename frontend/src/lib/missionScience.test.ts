@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { resolvePlan } from '~/components/planner/resolvePlan'
 import { loadSummary, MOON_SITES } from './data'
 import { DAY_MS } from './mission'
-import { buildRequest, evaluateAll, readResponse, SERVICE_SITE } from './missionScience'
+import { buildRequest, evaluateAll, readResponse, SERVICE_SITE, SITE_CAPABILITIES } from './missionScience'
 import { PROFILES } from './profiles'
 
 const examples = import.meta.glob<{ default: Record<string, unknown> }>(
@@ -49,10 +49,15 @@ test('profile, date, site and limit edits resolve into the bridge request withou
   }
 })
 
-test('every app site maps to the service catalogue entry at the same coordinates', async () => {
+test('live supported sites match catalog coordinates and unverified sites have no live request', async () => {
   const catalog = example('siteCatalog') as { sites: { canonicalId: string; latitudeDeg: number; longitudeDegEast: number }[] }
   for (const s of MOON_SITES) {
     const data = await loadSummary(s.id)
+    if (!SERVICE_SITE[s.id]) {
+      expect(SITE_CAPABILITIES[s.id]?.liveEvaluation).toBe('unverified')
+      expect(buildRequest(data, { start, end: start + DAY_MS }, limits)).toBeNull()
+      continue
+    }
     const entry = catalog.sites.find((c) => c.canonicalId === SERVICE_SITE[s.id])
     expect(entry, s.id).toBeDefined()
     expect(Math.abs((entry?.latitudeDeg ?? 0) - data.site.lat_deg)).toBeLessThan(1e-3)
@@ -103,7 +108,7 @@ test('unavailable answers and broken bodies become errors, never readings', () =
 })
 
 test('each site goes to the service in order, one call at a time, and each answer comes back to its own site', async () => {
-  const data = await Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))
+  const data = await Promise.all(MOON_SITES.filter((s) => SERVICE_SITE[s.id]).map((s) => loadSummary(s.id)))
   const computed = example('scientificResponse.computed')
   const calls: { url: string; body: { site: string } }[] = []
   const envelope = (code: string) => ({
@@ -139,7 +144,7 @@ test('each site goes to the service in order, one call at a time, and each answe
 })
 
 test('an unreachable bridge is reported for every site, never as a number', async () => {
-  const data = await Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))
+  const data = await Promise.all(MOON_SITES.filter((s) => SERVICE_SITE[s.id]).map((s) => loadSummary(s.id)))
   const real = globalThis.fetch
   globalThis.fetch = (async () => {
     throw new TypeError('fetch failed')
@@ -154,7 +159,7 @@ test('an unreachable bridge is reported for every site, never as a number', asyn
 })
 
 test('a run cancelled while an answer is arriving reports nothing for the old plan', async () => {
-  const data = await Promise.all(MOON_SITES.map((s) => loadSummary(s.id)))
+  const data = await Promise.all(MOON_SITES.filter((s) => SERVICE_SITE[s.id]).map((s) => loadSummary(s.id)))
   const c = new AbortController()
   const real = globalThis.fetch
   globalThis.fetch = (async () =>

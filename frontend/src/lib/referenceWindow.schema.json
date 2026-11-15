@@ -1,0 +1,70 @@
+{
+  "$defs": {
+    "ReferenceDay": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "title": "Date",
+          "type": "string"
+        },
+        "startS": {
+          "title": "Starts",
+          "type": "number"
+        },
+        "endS": {
+          "title": "Ends",
+          "type": "number"
+        }
+      },
+      "required": [
+        "date",
+        "startS",
+        "endS"
+      ],
+      "title": "ReferenceDay",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-reference-window/1.0.0",
+      "default": "skyline-reference-window/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "startUtc": {
+      "title": "Startutc",
+      "type": "string"
+    },
+    "endUtc": {
+      "title": "Endutc",
+      "type": "string"
+    },
+    "startEt": {
+      "title": "Startet",
+      "type": "number"
+    },
+    "endEt": {
+      "title": "Endet",
+      "type": "number"
+    },
+    "days": {
+      "items": {
+        "$ref": "#/$defs/ReferenceDay"
+      },
+      "title": "Days",
+      "type": "array"
+    }
+  },
+  "required": [
+    "startUtc",
+    "endUtc",
+    "startEt",
+    "endEt",
+    "days"
+  ],
+  "title": "ReferenceWindow",
+  "type": "object"
+}

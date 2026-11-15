@@ -6,7 +6,9 @@ import {
   ArrowUpRightIcon,
   CalendarBlankIcon,
   CheckIcon,
+  CircleNotchIcon,
   DownloadSimpleIcon,
+  InfoIcon,
   LinkSimpleIcon,
   XIcon,
 } from '@phosphor-icons/react'
@@ -16,11 +18,12 @@ import { Lanes } from '~/components/Lanes'
 import { changeReadout, earthChangeReadout, moment, PhaseBadge, Readouts, sunReadout } from '~/components/Moment'
 import { Panorama } from '~/components/Panorama'
 import { DeeperAnalysis } from '~/components/planner/DeeperAnalysis'
-import { LiveCheck } from '~/components/planner/LiveCheck'
+import { LiveEngine } from '~/components/planner/LiveEngine'
 import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { RecommendedPlan } from '~/components/planner/RecommendedPlan'
 import { Eyebrow } from '~/components/Shell'
+import type { PlannerRows } from '~/lib/dynamicPlanner'
 import { isPolar, type Measure, REQUIREMENTS, type SitePlan, shortName, siteResult, type VerdictRow, verdict, whyNote } from '~/lib/mission'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
@@ -160,6 +163,7 @@ function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
             {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
           </p>
           <SlipChange plan={plan} />
+          <SourceNote plan={plan} />
           <div className="flex flex-wrap items-center gap-3 pt-1">
             <button
               type="button"
@@ -283,6 +287,12 @@ function SiteBoardColumn({ site, plan, n }: { site: SitePlan; plan: Plan; n: num
         <h3 className="text-[clamp(1.4rem,1.1rem+1vw,1.9rem)] leading-tight font-medium">{data.site.name}</h3>
         <p className="readout text-2xs text-ink-faint">
           {Math.abs(data.site.lat_deg).toFixed(2)}°{data.site.lat_deg < 0 ? 'S' : 'N'} · {data.site.lon_deg_east.toFixed(1)}°E
+          {site.source && plan.live?.state !== 'checking' && (
+            <span title={site.source === 'live' ? 'Computed for this stay by the live engine' : 'From the site’s precomputed file'}>
+              {' '}
+              · {site.source === 'live' ? 'live' : 'precomputed'}
+            </span>
+          )}
         </p>
         {/* Every column has its reason line, so the skylines below line up across the board. */}
         <p className="min-h-[2.5em] text-sm text-ink-muted text-pretty">
@@ -433,6 +443,37 @@ function MarkerKey({ mixedScales }: { mixedScales: boolean }) {
   )
 }
 
+/** One line under the verdict when it rests on precomputed files rather than the live engine. */
+function SourceNote({ plan }: { plan: Plan }) {
+  const live = plan.live
+  if (!live || live.state === 'live') return null
+  const text =
+    live.state === 'checking'
+      ? 'Checking this stay with the live engine. The verdict may update in a moment.'
+      : live.state === 'offline'
+        ? 'The live engine isn’t answering, so this verdict uses the sites’ precomputed files.'
+        : `${live.live} of ${live.total} sites were checked by the live engine. The others use precomputed files.`
+  return (
+    <p role="status" className="flex max-w-[64ch] items-start gap-2 text-sm text-ink-muted text-pretty">
+      <span className="flex h-lh items-center">
+        {live.state === 'checking' ? (
+          <CircleNotchIcon aria-hidden className="animate-spin" />
+        ) : (
+          <InfoIcon aria-hidden className="text-ink-faint" />
+        )}
+      </span>
+      <span>
+        {text}{' '}
+        {live.state !== 'checking' && (
+          <a href="#live-engine-panel" className="underline decoration-line-strong underline-offset-3 hover:decoration-ink">
+            Details
+          </a>
+        )}
+      </span>
+    </p>
+  )
+}
+
 function CopyLink() {
   const [copied, setCopied] = useState(false)
   return (
@@ -490,8 +531,18 @@ function BeforeYouDecide({ plan }: { plan: Plan }) {
   )
 }
 
-/** Result and the way forward on one page: the answer, the sites side by side, what to do next, and the detail. */
-export function ResultStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
+/** Result and the way forward on one page: summary, the sites, the table, what to do next, the live check, the brief. */
+export function ResultStep({
+  plan,
+  actions,
+  search,
+  live,
+}: {
+  plan: Plan
+  actions: PlanActions
+  search: PlanSearch
+  live: { rows: PlannerRows; refresh: () => void }
+}) {
   const polar = plan.sites.map((s) => isPolar(s.data))
   return (
     <div className="grid gap-16 pb-8">
@@ -542,7 +593,9 @@ export function ResultStep({ plan, actions, search }: { plan: Plan; actions: Pla
             See every date <ArrowRightIcon aria-hidden />
           </button>
         </div>
-        <LiveCheck plan={plan} />
+        <div id="live-engine-panel" className="scroll-mt-32">
+          <LiveEngine plan={plan} rows={live.rows} refresh={live.refresh} />
+        </div>
       </section>
 
       <section aria-labelledby="appendix-title" className="grid gap-4 border-t border-line pt-12">

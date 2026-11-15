@@ -7,10 +7,8 @@ import type { MissionWindow, Requirements } from './mission'
  * reached through the Go backend's pass-through (`backend/missionScience.go`, `/api/mission-science/v1/...`). The service
  * evaluates one request at a time, so the sites are sent one after another.
  *
- * The app's own numbers come from the pipeline files in `data/`. This client asks the service to evaluate the same
- * landing window again, live, and returns its answer next to them. The two are computed differently (the service uses
- * the 80 m LOLA grid, the DE421 Moon frame and hourly search samples refined to 1 s events; the pipeline uses the 20 m
- * grid near the site and the DE440 ME frame), so they are shown side by side and never merged or averaged.
+ * The main planner uses the complete versioned response through dynamicPlanner.ts. This older reduced
+ * client remains available to reference pages that explicitly compare their annual files with a live evaluation.
  *
  * Contract: `contracts/scientificRequest.schema.json` and `contracts/scientificResponse.schema.json` (v1.0.0). Only the
  * fields the app reads are parsed here; anything else in the response is ignored.
@@ -30,12 +28,35 @@ export const SERVICE_SITE: Record<string, string> = {
   'connecting-ridge': 'CR1',
   'de-gerlache-rim': 'GR1',
   'shackleton-rim': 'SR1',
-  'shackleton-ridge': 'shackleton-ridge',
-  apollo11: 'apollo11',
 }
 
 /** Hourly search samples, refined to 1 s at each event: inside the service's 6000-interval and 3600 s cadence limits for any stay up to 60 days. */
 export const CADENCE_S = 3600
+
+export const SITE_CAPABILITIES: Record<
+  string,
+  { liveEvaluation: 'supported' | 'unverified'; staticDataState: 'computed'; reason: string | null }
+> = {
+  'connecting-ridge': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
+  'de-gerlache-rim': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
+  'shackleton-rim': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
+  'shackleton-ridge': {
+    liveEvaluation: 'unverified',
+    staticDataState: 'computed',
+    reason:
+      'The hill-top observer has static pipeline data. Its coordinate realization and live terrain capabilities require verification.',
+  },
+  apollo11: {
+    liveEvaluation: 'unverified',
+    staticDataState: 'computed',
+    reason:
+      'Apollo 11 has static pipeline data. The live engine requires a verified equatorial terrain profile and coordinate realization.',
+  },
+}
+
+export function scientificUnavailableReason(siteId: string) {
+  return SITE_CAPABILITIES[siteId]?.reason ?? 'This site has no verified live scientific mapping.'
+}
 
 const scientificRequest = z.object({
   schemaVersion: z.literal('skyline-scientific-request/1.0.0'),
@@ -64,7 +85,11 @@ export type ScientificRequest = z.infer<typeof scientificRequest>
  * counts as in view (`anyDisk`), Earth counts when its centre clears the skyline (`center`), no horizon margin,
  * geometric (airless) directions. The user's limits travel as the request's constraints, converted to fractions and seconds.
  */
-export function buildRequest(site: Summary, window: MissionWindow, requirements: Requirements): ScientificRequest | null {
+export function buildRequest(
+  site: { site: Pick<Summary['site'], 'id' | 'observer_height_m'> },
+  window: MissionWindow,
+  requirements: Requirements,
+): ScientificRequest | null {
   const id = SERVICE_SITE[site.site.id]
   if (!id) return null
   const durationS = Math.round((window.end - window.start) / 1000)
@@ -252,7 +277,7 @@ export async function evaluateAll(
   const sendable = sites.flatMap((s) => {
     const request = buildRequest(s, window, requirements)
     if (!request) {
-      onEach(s.site.id, { error: `${s.site.name} has no identifier in the service's catalogue.` })
+      onEach(s.site.id, { error: scientificUnavailableReason(s.site.id) })
       return []
     }
     return [{ id: s.site.id, request }]

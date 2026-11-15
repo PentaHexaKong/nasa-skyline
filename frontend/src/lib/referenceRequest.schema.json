@@ -1,0 +1,93 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": "skyline-reference-request/1.0.0",
+      "default": "skyline-reference-request/1.0.0",
+      "title": "Schemaversion",
+      "type": "string"
+    },
+    "site": {
+      "title": "Site",
+      "type": "string"
+    },
+    "startUtc": {
+      "format": "date-time",
+      "title": "Startutc",
+      "type": "string"
+    },
+    "endUtc": {
+      "format": "date-time",
+      "title": "Endutc",
+      "type": "string"
+    },
+    "observerHeightM": {
+      "default": 2,
+      "minimum": 0,
+      "title": "Observerheightm",
+      "type": "number"
+    },
+    "profile": {
+      "default": "geometric",
+      "enum": [
+        "geometric",
+        "apparent"
+      ],
+      "title": "Profile",
+      "type": "string"
+    },
+    "solarDefinition": {
+      "default": "anyDisk",
+      "enum": [
+        "anyDisk",
+        "center",
+        "fullDisk"
+      ],
+      "title": "Solardefinition",
+      "type": "string"
+    },
+    "earthDefinition": {
+      "const": "center",
+      "default": "center",
+      "title": "Earthdefinition",
+      "type": "string"
+    },
+    "horizonOffsetDeg": {
+      "default": 0,
+      "maximum": 5,
+      "minimum": -5,
+      "title": "Horizonoffsetdeg",
+      "type": "number"
+    },
+    "localResolutionM": {
+      "default": 80,
+      "enum": [
+        20,
+        80
+      ],
+      "title": "Localresolutionm",
+      "type": "integer"
+    },
+    "cadenceS": {
+      "default": 3600,
+      "maximum": 3600,
+      "minimum": 30,
+      "title": "Cadences",
+      "type": "number"
+    },
+    "eventToleranceS": {
+      "default": 1,
+      "maximum": 30,
+      "minimum": 0.01,
+      "title": "Eventtolerances",
+      "type": "number"
+    }
+  },
+  "required": [
+    "site",
+    "startUtc",
+    "endUtc"
+  ],
+  "title": "ReferenceRequest",
+  "type": "object"
+}

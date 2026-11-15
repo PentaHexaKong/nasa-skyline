@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import request_validation_exception_handler
 from starlette.responses import JSONResponse
 from .scientificModels import ScientificRequest, ScientificResponse
+from .referenceEvaluations import ReferenceRequest, evaluateReference
 from .scientificContract import evaluateScientific, stateResponse
 from .mastPower import evaluateMastPower, mastFailure
 from .mastPowerModels import MastPowerRequest, MastPowerResponse
@@ -36,6 +37,7 @@ async def boundRequest(request, callNext):
 
                 if request.url.path in {
                     '/v1/scientific-evaluations',
+                    '/v1/reference-evaluations',
                     '/v1/mast-power-evaluations',
                     '/v1/mast-placement-evaluations',
                 }:
@@ -58,6 +60,7 @@ async def boundRequest(request, callNext):
 
             if request.url.path in {
                 '/v1/scientific-evaluations',
+                    '/v1/reference-evaluations',
                 '/v1/mast-power-evaluations',
                     '/v1/mast-placement-evaluations',
             }:
@@ -182,7 +185,7 @@ def siteCatalog():
 
 @app.exception_handler(RequestValidationError)
 async def scientificValidationError(request, error):
-    if request.url.path in {'/v1/scientific-evaluations', '/v1/mast-power-evaluations', '/v1/mast-placement-evaluations'}:
+    if request.url.path in {'/v1/reference-evaluations', '/v1/scientific-evaluations', '/v1/mast-power-evaluations', '/v1/mast-placement-evaluations'}:
         return JSONResponse(
             failureForPath(
                 request.url.path,
@@ -216,3 +219,8 @@ def mastPowerEvaluation(request: MastPowerRequest):
 @app.post('/v1/mast-placement-evaluations', response_model=MastPlacementResponse)
 def mastPlacementEvaluation(request: MastPlacementRequest):
     return evaluateMastPlacement(engine, request)
+
+
+@app.post('/v1/reference-evaluations', response_model=ScientificResponse)
+def referenceEvaluation(request: ReferenceRequest):
+    return evaluateReference(engine, request)

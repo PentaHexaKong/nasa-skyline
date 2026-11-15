@@ -6,10 +6,10 @@ from pathlib import Path
 import numpy as np
 import spiceypy as sp
 
-SUN_RADIUS_KM = 696_000.0  # IAU 2015 nominal solar radius
+SUN_RADIUS_KM = 695_700.0  # IAU 2015 nominal solar radius
 EARTH_MEAN_RADIUS_KM = 6371.0
 MOON_RADIUS_KM = 1737.4
-ME_FRAME = "MOON_ME_DE440_ME421"  # DE440 mean-Earth/polar-axis frame aligned to DE421's, as defined by moon_de440_250416.tf
+ME_FRAME = 'MOON_ME_DE421'  # Published ROI coordinates and the polar DEM use this explicit realization.
 BODY_RADIUS_KM = {"SUN": SUN_RADIUS_KM, "EARTH": EARTH_MEAN_RADIUS_KM}
 
 

@@ -17,6 +17,9 @@ async function post(path: string, body: unknown): Promise<unknown> {
       body: JSON.stringify(body),
     })
     const reply: unknown = await response.json().catch(() => null)
+    // A reply that isn't JSON (a 404 from an older backend, a proxy error page) has nothing to parse: say what happened.
+    if (reply === null)
+      throw new Error(response.ok ? 'The service sent back an unreadable reply.' : `The service answered HTTP ${response.status}.`)
     if (!isBusy(reply) || attempt === ATTEMPTS) return reply
     await new Promise((resolve) => setTimeout(resolve, RETRY_MS))
   }
