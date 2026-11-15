@@ -1,6 +1,6 @@
 import type { Plan } from '~/components/planner/plan'
 import { evaluate, intersect, type Measure, REQUIREMENTS, type Span, type Touchdown } from './mission'
-import { buildRequest, type ScientificRequest, scientificUnavailableReason } from './missionScience'
+import { buildRequest, liveTerrainIsCoarser, type ScientificRequest, scientificUnavailableReason } from './missionScience'
 import { postScience } from './scienceRequest'
 import { parseScientificResponse } from './scientificContract'
 import type { ComputedResponse, Interval } from './scientificContract.generated'
@@ -123,11 +123,16 @@ export function scientificTouchdown(response: ComputedResponse): Touchdown {
       : 'neither'
 }
 
+/** Whether a site's live answer replaces its precomputed stay: it must have answered, on terrain no coarser than the file's. */
+const replacesPrecomputed = (siteId: string, row: PlannerRow | undefined) => row?.state === 'computed' && !liveTerrainIsCoarser(siteId)
+
 export function plannerHeadline(rows: PlannerRows, plan: Plan) {
   const selected = plan.sites.map((site) => rows[site.data.site.id])
   if (selected.some((row) => !row || row.state === 'loading' || row.state === 'not_computed'))
     return 'Checking the selected stay with the live engine…'
-  const computed = selected.filter((row) => row?.state === 'computed')
+  const computed = plan.sites
+    .filter((site) => replacesPrecomputed(site.data.site.id, rows[site.data.site.id]))
+    .map((site) => rows[site.data.site.id])
   const works = computed.filter(
     (row) =>
       row?.state === 'computed' &&
@@ -135,13 +140,16 @@ export function plannerHeadline(rows: PlannerRows, plan: Plan) {
       evaluate(scientificMeasure(row.response), plan.requirements).passed,
   ).length
   if (computed.length !== selected.length)
-    return `${computed.length} of ${selected.length} sites checked by the live engine, and ${works} of those meet the touchdown and mission requirements. The others use precomputed files.`
+    return `${computed.length} of ${selected.length} sites use the live engine’s numbers, and ${works} of those meet the touchdown and mission requirements. ${selected.length - computed.length === 1 ? 'The other uses its precomputed file.' : 'The others use precomputed files.'}`
   return `${works} of ${selected.length} sites meet the touchdown and mission requirements.`
 }
 
 export type LiveSummary = {
-  /** checking: a reply is pending; live: every site answered; partial: some did; offline: none could. */
-  state: 'checking' | 'live' | 'partial' | 'offline'
+  /**
+   * checking: a reply is pending; live: every site's numbers are live; partial: some are; crosscheck: the engine answered, but only
+   * for sites where its terrain is coarser than the precomputed file, so none replaced it; offline: no site could be checked.
+   */
+  state: 'checking' | 'live' | 'partial' | 'crosscheck' | 'offline'
   /** Sites whose numbers come from the live engine. */
   live: number
   total: number
@@ -149,10 +157,12 @@ export type LiveSummary = {
 
 export function liveSummary(rows: PlannerRows, plan: Plan): LiveSummary {
   const selected = plan.sites.map((site) => rows[site.data.site.id])
-  const live = selected.filter((row) => row?.state === 'computed').length
+  const live = plan.sites.filter((site) => replacesPrecomputed(site.data.site.id, rows[site.data.site.id])).length
+  const answered = selected.filter((row) => row?.state === 'computed').length
   const total = selected.length
   const checking = selected.some((row) => !row || row.state === 'loading' || row.state === 'not_computed')
-  return { state: checking ? 'checking' : live === total ? 'live' : live > 0 ? 'partial' : 'offline', live, total }
+  const state = checking ? 'checking' : live === total ? 'live' : live > 0 ? 'partial' : answered > 0 ? 'crosscheck' : 'offline'
+  return { state, live, total }
 }
 
 /** A failure message short and plain enough to show; schema dumps and stack-like text become a generic phrase. */
@@ -162,9 +172,17 @@ export function readableReason(message: string) {
 }
 
 /** One site's live state in the reader's words. */
-export function liveLabel(row: PlannerRow | undefined): { short: string; detail: string } {
+export function liveLabel(row: PlannerRow | undefined, siteId: string): { short: string; detail: string } {
   if (!row || row.state === 'loading' || row.state === 'not_computed')
     return { short: 'Checking', detail: 'Asking the live engine about this stay. The numbers shown meanwhile are precomputed.' }
+  if (row.state === 'computed' && liveTerrainIsCoarser(siteId)) {
+    const { sunlightAvailabilityFraction: sun, directEarthAvailabilityFraction: earth } = row.response.result.metrics
+    const share = (value: number) => `${(value * 100).toFixed(1)} %`
+    return {
+      short: 'Cross-check',
+      detail: `The live engine has only 1.9 km global terrain here, coarser than the precomputed file, which misses small ridges. The numbers above are precomputed. Live answer: Sun ${share(sun)}, Earth ${share(earth)}.`,
+    }
+  }
   if (row.state === 'computed') return { short: 'Live', detail: 'Computed for this exact stay by the live engine.' }
   if (row.state === 'unsupported')
     return { short: 'Precomputed', detail: `The live engine doesn’t cover this site yet, so its precomputed file is shown. ${row.message}` }
@@ -175,13 +193,13 @@ export function liveLabel(row: PlannerRow | undefined): { short: string; detail:
 }
 
 /**
- * The plan with each site's selected stay taken from the live engine where it answered. Sites it could not evaluate keep their
- * precomputed numbers and say so (`source`). A live stay drops the slip comparison, which would compare two different models.
+ * The plan with each site's selected stay taken from the live engine where it answered on terrain at least as sharp as the
+ * precomputed file's. Other sites keep their precomputed numbers and say so (`source`). A live stay drops the slip comparison, which would compare two different models.
  */
 export function scientificPlan(plan: Plan, rows: PlannerRows): Plan {
   const sites = plan.sites.map((site) => {
     const row = rows[site.data.site.id]
-    if (row?.state !== 'computed') return { ...site, source: 'precomputed' as const }
+    if (row?.state !== 'computed' || !replacesPrecomputed(site.data.site.id, row)) return { ...site, source: 'precomputed' as const }
     const stay = scientificMeasure(row.response)
     return {
       ...site,
@@ -209,8 +227,12 @@ export function buildScientificBrief(plan: Plan, rows: PlannerRows): string {
   for (const site of plan.sites) {
     const row = rows[site.data.site.id]
     lines.push(`## ${site.data.site.name}`, '')
-    if (row?.state !== 'computed') {
-      lines.push(`Source: precomputed site file, pipeline ${site.data.provenance.algorithm_version}. ${liveLabel(row).detail}`, '')
+    if (row?.state !== 'computed' || !replacesPrecomputed(site.data.site.id, row)) {
+      lines.push(
+        `Source: precomputed site file, pipeline ${site.data.provenance.algorithm_version}. ${liveLabel(row, site.data.site.id).detail}`,
+        '',
+      )
+      if (row?.state === 'computed') lines.push(`Live engine cross-check: scenario ${row.response.scenarioId}`, '')
       if (site.stay) {
         const stay = site.stay
         for (const requirement of REQUIREMENTS) {

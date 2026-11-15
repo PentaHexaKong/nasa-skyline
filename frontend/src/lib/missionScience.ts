@@ -34,6 +34,14 @@ export function relaySite(siteId: string): string | undefined {
   return entry?.relayStatus === 'supported' ? SERVICE_SITE[siteId] : undefined
 }
 
+/**
+ * Sites where the live engine reads the 1.9 km global map. Their precomputed years come from sharper terrain (60 to 118 m), so
+ * the planner keeps the precomputed numbers there and shows the live answer as a cross-check.
+ */
+export function liveTerrainIsCoarser(siteId: string): boolean {
+  return REFERENCE_SITES.find((site) => site.id === siteId)?.terrainResolutionM === GLOBAL_TERRAIN_M
+}
+
 /** A catalogue site the rover service serves: it has qualified scenarios for the three south-polar study sites only. */
 export function roverSite(siteId: string): string | undefined {
   const site = SERVICE_SITE[siteId]

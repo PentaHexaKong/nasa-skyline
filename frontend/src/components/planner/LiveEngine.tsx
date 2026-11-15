@@ -1,6 +1,7 @@
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { ArrowsClockwiseIcon, CircleNotchIcon, CloudCheckIcon, CloudSlashIcon } from '@phosphor-icons/react'
 import type { Plan } from '~/components/planner/plan'
+import { requiresScientificRefresh } from '~/lib/data'
 import { liveLabel, type PlannerRows } from '~/lib/dynamicPlanner'
 import { shortName } from '~/lib/mission'
 
@@ -9,6 +10,8 @@ const LEAD: Record<NonNullable<Plan['live']>['state'], string> = {
     'Asking the mission-science engine about this exact stay. Until it answers, the numbers above come from each site’s precomputed file.',
   live: 'Every number above was computed for this exact stay by the mission-science engine, from pinned SPICE kernels and LOLA terrain.',
   partial: 'Sites marked Live were computed for this exact stay by the engine. The rest show their precomputed files.',
+  crosscheck:
+    'The numbers above come from each site’s precomputed file, made on sharper terrain than the engine has for these sites. The engine’s answers are listed below as a cross-check.',
   offline: 'The engine could not be reached, so every number above comes from the sites’ precomputed files.',
 }
 
@@ -20,7 +23,10 @@ export function LiveEngine({ plan, rows, refresh }: { plan: Plan; rows: PlannerR
   const state = plan.live?.state ?? 'checking'
   const checking = state === 'checking'
   const precomputed = plan.sites.filter((site) => site.source !== 'live')
-  const versions = [...new Set(precomputed.map((site) => site.data.provenance.algorithm_version))]
+  // Only files from an earlier pipeline differ from the engine in model; current ones differ only in terrain, said per site.
+  const versions = [
+    ...new Set(precomputed.filter((site) => requiresScientificRefresh(site.data)).map((site) => site.data.provenance.algorithm_version)),
+  ]
   return (
     <section aria-labelledby="live-engine" aria-busy={checking} className="grid gap-4 rounded-lg border border-line px-5 py-4">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -51,7 +57,7 @@ export function LiveEngine({ plan, rows, refresh }: { plan: Plan; rows: PlannerR
       <ul className="grid text-sm">
         {plan.sites.map((site) => {
           const row = rows[site.data.site.id]
-          const label = liveLabel(row)
+          const label = liveLabel(row, site.data.site.id)
           const tone = label.short === 'Live' ? 'text-go' : 'text-ink-muted'
           return (
             <li
@@ -59,7 +65,7 @@ export function LiveEngine({ plan, rows, refresh }: { plan: Plan; rows: PlannerR
               className="grid gap-x-4 gap-y-0.5 border-t border-line py-2.5 sm:grid-cols-[minmax(9rem,14rem)_6.5rem_minmax(0,1fr)]"
             >
               <span className="font-medium">{shortName(site.data)}</span>
-              <span className={`inline-flex items-center gap-1.5 ${tone}`}>
+              <span className={`inline-flex items-center gap-1.5 self-start ${tone}`}>
                 {label.short === 'Checking' && <CircleNotchIcon aria-hidden className="animate-spin" />}
                 {label.short}
               </span>

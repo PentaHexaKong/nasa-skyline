@@ -226,7 +226,7 @@ test('service downtime produces an explicit failed state and falls back to the p
   )
   expect(rows['connecting-ridge']).toEqual({ state: 'failed', message: 'Connection refused' })
   expect(scientificPlan(selected, rows).sites[0]!.stay).toEqual(selected.sites[0]!.stay)
-  expect(plannerHeadline(rows, selected)).toContain('0 of 1 sites checked by the live engine')
+  expect(plannerHeadline(rows, selected)).toContain('0 of 1 sites use the live engine’s numbers')
 })
 
 test.each(['unsupported', 'not_computed', 'unavailable', 'failed'] as const)('preserves the API %s state', async (state) => {
@@ -316,4 +316,28 @@ test('the merged live engine keeps exploratory qualification visible before open
   const plan = scientificPlan(selected, rows)
   const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
   expect(html).toContain('Exploratory scientific result. Independent site-specific visibility validation is incomplete.')
+})
+
+test('where the live engine only has coarse global terrain, its answer is a cross-check and the precomputed stay stands', () => {
+  const plan0 = resolvePlan(all, planSearch.parse({ sites: 'chandrayaan3', stay: 1 }))
+  const base = plan0.sites[0]!
+  const rows: PlannerRows = { chandrayaan3: { state: 'computed', response: response() } }
+  const plan = scientificPlan(plan0, rows)
+  expect(plan.sites[0]).toMatchObject({ source: 'precomputed', stay: base.stay, checks: base.checks })
+  expect(plan.live).toMatchObject({ state: 'crosscheck', live: 0, total: 1 })
+  expect(plannerHeadline(rows, plan0)).toContain('0 of 1 sites use the live engine’s numbers')
+  const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
+  expect(html).toContain('Cross-check')
+  expect(html).toContain('1.9 km')
+  expect(html).not.toContain('Every number above was computed')
+  const brief = buildScientificBrief(plan, rows)
+  expect(brief).toContain('Source: precomputed site file')
+  expect(brief).toContain('Live engine cross-check')
+})
+
+test('at the south-pole study sites the live answer still replaces the precomputed stay', () => {
+  const rows: PlannerRows = { 'connecting-ridge': { state: 'computed', response: response() } }
+  const plan = scientificPlan(selected, rows)
+  expect(plan.sites[0]!.source).toBe('live')
+  expect(plan.live).toMatchObject({ state: 'live', live: 1, total: 1 })
 })

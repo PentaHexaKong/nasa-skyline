@@ -452,7 +452,9 @@ function SourceNote({ plan }: { plan: Plan }) {
       ? 'Checking this stay with the live engine. The verdict may update in a moment.'
       : live.state === 'offline'
         ? 'The live engine isn’t answering, so this verdict uses the sites’ precomputed files.'
-        : `${live.live} of ${live.total} sites were checked by the live engine. The others use precomputed files.`
+        : live.state === 'crosscheck'
+          ? 'This verdict uses the sites’ precomputed files, made on sharper terrain than the live engine has for them.'
+          : `${live.live} of ${live.total} sites use the live engine’s numbers. ${live.total - live.live === 1 ? 'The other uses its precomputed file.' : 'The others use precomputed files.'}`
   return (
     <p role="status" className="flex max-w-[64ch] items-start gap-2 text-sm text-ink-muted text-pretty">
       <span className="flex h-lh items-center">
