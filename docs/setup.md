@@ -65,7 +65,8 @@ From `ds/`. The site runs are independent, so run them in parallel.
 
 ```bash
 cd ds
-for s in connecting-ridge de-gerlache-rim shackleton-rim; do
+for s in connecting-ridge de-gerlache-rim shackleton-rim shackleton-ridge apollo11 \
+         change4-lroc change6 chandrayaan3 slim luna25-target luna25-impact; do
   uv run python -m pipeline.run $s --start 2026-11-14 --days 365 &
 done; wait
 for s in connecting-ridge de-gerlache-rim shackleton-rim; do uv run python -m pipeline.island $s; done

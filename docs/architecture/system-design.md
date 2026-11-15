@@ -529,16 +529,19 @@ flowchart TB
     q2 -->|"1895.21"| global["Global terrain, exploratory<br/>LDEM_16 1-400 km<br/>refused near the poles"]
     polar --> q3{"CR1, GR1 or SR1?"}
     q3 -->|yes| addons["Add-ons allowed:<br/>mast power, mast placement,<br/>rover reach, relay"]
-    q3 -->|"no (Shackleton ridge)"| live["Live check only"]
-    global --> live2["Live check only,<br/>labelled exploratory"]
+    q3 -->|"no (Shackleton ridge)"| live["Live check, no add-ons"]
+    global --> live2["Live check,<br/>labelled exploratory"]
 ```
 
 | Group | Sites | Terrain | What runs |
 | --- | --- | --- | --- |
 | Study sites | Connecting Ridge (CR1), de Gerlache Rim (GR1), Shackleton Rim (SR1) | 80 m polar | Precomputed year, live check, every add-on |
 | Polar comparison | Shackleton connecting ridge | 80 m polar | Precomputed year, live check |
-| Apollo 11 | Apollo 11, Tranquility Base | 1.9 km global for live checks | Precomputed year from the offline pipeline, live check |
-| Global, exploratory | Chang'e-4 (LROC 2019), Chang'e-6, Chandrayaan-3, SLIM (LROC 2024), Luna-25 target and impact | 1.9 km global | Live check and reference page |
+| Apollo 11 | Apollo 11, Tranquility Base | 118 m global for the year, 1.9 km global for live checks | Precomputed year, live check |
+| Other agencies' landings | Chang'e-4 (LROC 2019), Chang'e-6, SLIM (LROC 2024), Luna-25 impact | 118 m global for the year, 1.9 km global for live checks | Precomputed year, live check labelled exploratory |
+| Other agencies' landings near 69°S | Chandrayaan-3, Luna-25 target | 60 m and 240 m polar for the year, 1.9 km global for live checks | Precomputed year, live check labelled exploratory |
 | Unresolved | Chang'e-4 (Liu 2019), SLIM (PGDA surface coordinate) | none | Listed with the reason, never computed |
+
+The table's "for the year" terrain is the offline pipeline's (`ds/pipeline/moon.py`, `terrain_for`): the 20 m to 240 m polar maps poleward of 75°S, the 60 m polar map to 100 km and the 240 m map to 200 km between 60° and 75°S, and the 118 m global map elsewhere, read across the ±180° seam when a site needs it.
 
 The engine itself switches on the request's `localResolutionM` (`engine.py:52-57`), not on the site. The add-on services enforce their own limits: mast power, mast placement and rover reach refuse any site outside CR1, GR1 and SR1, and accept only 20 or 80 m terrain. [docs/science/engine.md](../science/engine.md) describes the calculation on each kind of terrain.

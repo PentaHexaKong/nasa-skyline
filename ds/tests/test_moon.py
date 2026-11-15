@@ -8,7 +8,7 @@ import pytest
 from rasterio.crs import CRS
 
 from pipeline import fetch
-from pipeline.sites import SITES
+from pipeline.sites import SITES, Site
 from pipeline.sun import ME_FRAME, Ephemeris, utc_to_et
 from pipeline.terrain import MOON_RADIUS_M, Layer, PolarDem, heightmap, skyline
 from tests.test_geometry import DEG_M, LAT, LON, flat_dem
@@ -185,6 +185,9 @@ from rasterio.warp import transform as warp_transform
 from pipeline import moon, run as pipeline_run, terrain
 from pipeline.moon import MoonTerrain
 
+# The synthetic_runs fixture swaps moon.terrain_for for the whole module; tests of the real routing call this.
+REAL_TERRAIN_FOR = moon.terrain_for
+
 START, DAYS = "2026-11-14", 30
 WINDOW_S = DAYS * 86400
 
@@ -332,12 +335,14 @@ def test_known_limits_name_the_dem_each_layer_supplied_at_the_site():
 
 
 def global_map(tmp_path, cell_m=5000.0):
+    """A whole-Moon equirectangular map whose height is 1000 cos(lon) m, so it is continuous across the +-180 seam."""
     crs = CRS.from_proj4(f"+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +R={MOON_RADIUS_M} +units=m +no_defs")
     cols, rows = round(2 * math.pi * MOON_RADIUS_M / cell_m), round(math.pi * MOON_RADIUS_M / 2 / cell_m) * 2
     path = tmp_path / "global.tif"
     tf = from_origin(-math.pi * MOON_RADIUS_M, rows / 2 * cell_m, cell_m, cell_m)
+    lon = np.radians(-180.0 + (np.arange(cols) + 0.5) * 360.0 / cols)
     with rasterio.open(path, "w", driver="GTiff", height=rows, width=cols, count=1, dtype="float32", crs=crs, transform=tf) as d:
-        d.write(np.zeros((rows, cols), dtype="float32"), 1)
+        d.write(np.broadcast_to(1000.0 * np.cos(lon), (rows, cols)).astype("float32"), 1)
     return str(path)
 
 
@@ -351,9 +356,42 @@ def test_global_map_window_widens_east_west_by_one_over_cos_lat(tmp_path, lat):
     assert not np.isnan(dem.sample(east_lat, east_lon)).any()
 
 
-def test_global_map_window_refuses_a_box_across_the_seam(tmp_path):
-    with pytest.raises(ValueError, match="seam"):
-        terrain.load_polar(global_map(tmp_path), 50.0, 179.0, 200.0)
+@pytest.mark.parametrize("lon", [177.59, 181.0, 359.0, 1.0])
+def test_global_map_window_stitches_a_box_across_the_seam(tmp_path, lon):
+    """Chang'e-4 sits at 177.6 E: its 200 km box runs past 180 E, so the window wraps to the other edge of the map."""
+    dem = terrain.load_polar(global_map(tmp_path), -45.0, lon, 200.0)
+    lat, lons = terrain._destination(-45.0, lon, np.radians([90.0, 270.0]), np.array([199_000.0 / MOON_RADIUS_M]))
+    heights = dem.sample(lat, lons)
+    assert not np.isnan(heights).any()
+    np.testing.assert_allclose(heights, 1000.0 * np.cos(np.radians(lons)), atol=15.0)  # bilinear on 5 km cells
+
+
+def test_a_site_between_60_and_75_s_reads_the_60_m_polar_map_then_the_240_m_map(monkeypatch):
+    calls = []
+    monkeypatch.setattr(moon, "_windowed", lambda url, site, box, role, rng, read_url=None: (calls.append(url), (terrain.Layer(None, rng * 1000), {"role": role}))[1])
+    monkeypatch.setattr(moon, "_local", lambda name, site, box, role, rng: (calls.append(name), (terrain.Layer(None, rng * 1000), {"role": role}))[1])
+    chandrayaan3 = Site("cy3", "Chandrayaan-3", -69.3741, 32.32, 2.0, "test", "test")
+    t = REAL_TERRAIN_FOR(chandrayaan3)
+    assert calls == [moon.LOLA_60S_60M, "LDEM_60S_240MPP_ADJ.TIF"]
+    assert [layer.range_m for layer in t.layers] == [moon.MID_KM * 1000, moon.FAR_KM * 1000]
+    assert t.inner == t.layers[:1] and t.outer == t.layers[-1:]
+    assert not moon.is_global(chandrayaan3) and moon.is_global(Site("l25", "Luna-25 impact", -57.865, 61.36, 2.0, "t", "t"))
+
+
+def test_a_tile_read_that_ends_early_is_retried(tmp_path, monkeypatch):
+    path = global_map(tmp_path)
+    real_open, calls = rasterio.open, []
+
+    def flaky_open(*args, **kw):
+        calls.append(1)
+        if len(calls) == 1:
+            raise rasterio.errors.RasterioIOError("TIFFReadEncodedStrip: got 130119 bytes, expected 184320")
+        return real_open(*args, **kw)
+
+    monkeypatch.setattr(terrain.rasterio, "open", flaky_open)
+    monkeypatch.setattr(terrain.time, "sleep", lambda s: None)
+    tile = terrain._read_tile(path, terrain.Window(0, 0, 4, 4))
+    assert tile.shape == (4, 4) and len(calls) == 2
 
 
 def test_window_cache_key_changes_with_the_etag():

@@ -20,10 +20,16 @@ test('the Moon ephemeris covers the computed window hourly', async () => {
   expect(e.subsolar_lat_deg).toHaveLength(365 * 24)
   expect(MOON_SITES.map((s) => s.id).sort()).toEqual([
     'apollo11',
+    'chandrayaan3',
+    'change4-lroc',
+    'change6',
     'connecting-ridge',
     'de-gerlache-rim',
+    'luna25-impact',
+    'luna25-target',
     'shackleton-ridge',
     'shackleton-rim',
+    'slim',
   ])
   expect(MAP_SITES.map((s) => s.id).sort()).toEqual(['connecting-ridge', 'de-gerlache-rim', 'shackleton-rim'])
 })
@@ -48,6 +54,6 @@ test('the sunniest spot on Connecting Ridge is its near neighbour, 212 m away', 
 test('earlier scientific feeds require regeneration', async () => {
   const { requiresScientificRefresh } = await import('./data')
   const summary = await loadSummary('connecting-ridge')
-  expect(requiresScientificRefresh(summary)).toBe(true)
-  expect(requiresScientificRefresh({ ...summary, provenance: { ...summary.provenance, algorithm_version: '0.5.0' } })).toBe(false)
+  expect(requiresScientificRefresh(summary)).toBe(false)
+  expect(requiresScientificRefresh({ ...summary, provenance: { ...summary.provenance, algorithm_version: '0.4.0' } })).toBe(true)
 })

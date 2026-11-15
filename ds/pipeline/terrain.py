@@ -3,6 +3,7 @@
 import hashlib
 import math
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -61,12 +62,19 @@ class PolarDem:
     dy: float  # metres per row (positive; rows go -y)
     crs: CRS
     source: dict = field(default_factory=dict, compare=False)  # provenance of the file this came from
+    # Width of the whole global map in CRS metres, set when the window wraps across the +-180 seam; 0 otherwise.
+    wrap_x_m: float = 0.0
 
     def to_xy(self, lat: np.ndarray, lon: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         lat, lon = np.asarray(lat, dtype=float), np.asarray(lon, dtype=float)
         lon = (lon + 180.0) % 360.0 - 180.0  # the global map is centred on 0 and runs -180..180
         x, y = warp_transform(self.crs.geodetic_crs, self.crs, lon.ravel().tolist(), lat.ravel().tolist())
-        return np.reshape(x, lat.shape), np.reshape(y, lat.shape)
+        x = np.reshape(x, lat.shape)
+        if self.wrap_x_m:
+            # A window across the seam runs past +-180: put each x on the same side of the seam as the window's centre.
+            centre = self.x0 + (self.heights_m.shape[1] - 1) * self.dx / 2
+            x = centre + (x - centre + self.wrap_x_m / 2) % self.wrap_x_m - self.wrap_x_m / 2
+        return x, np.reshape(y, lat.shape)
 
     def to_latlon(self, x: np.ndarray, y: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         x, y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
@@ -99,10 +107,18 @@ GDAL_REMOTE = dict(
 )
 
 
-def _read_tile(path: str, win: Window, chunk: int | None = None) -> np.ndarray:
+def _read_tile(path: str, win: Window, chunk: int | None = None, attempts: int = 4) -> np.ndarray:
     env = {**GDAL_REMOTE, **({"CPL_VSIL_CURL_CHUNK_SIZE": str(chunk)} if chunk else {})}
-    with rasterio.Env(**env), rasterio.open(path) as d:
-        return d.read(1, window=win)
+    # A busy host sometimes ends a range response early ("got 130119 bytes, expected 184320"). GDAL retries HTTP errors
+    # but not a short body, so retry the tile here; the bytes are the same on every attempt, so a retry cannot change a result.
+    for attempt in range(attempts):
+        try:
+            with rasterio.Env(**env), rasterio.open(path) as d:
+                return d.read(1, window=win)
+        except rasterio.errors.RasterioIOError:
+            if attempt == attempts - 1:
+                raise
+            time.sleep(2 * (attempt + 1))
 
 
 def _read_window(path: str, win: Window, block: tuple[int, int], workers: int = 16) -> np.ndarray:
@@ -133,6 +149,17 @@ def _read_window(path: str, win: Window, block: tuple[int, int], workers: int = 
     return out
 
 
+def _read_columns(path: str, r0: int, r1: int, c0: int, c1: int, width: int, block: tuple[int, int]) -> np.ndarray:
+    """Read rows r0..r1 and columns c0..c1, where the columns may run past either edge of a map that wraps in longitude."""
+    pieces, c = [], c0
+    while c < c1:
+        start = c % width
+        n = min(c1 - c, width - start)
+        pieces.append(_read_window(path, Window(start, r0, n, r1 - r0), block))
+        c += n
+    return pieces[0] if len(pieces) == 1 else np.concatenate(pieces, axis=1)
+
+
 def window_cache_path(source: str, etag: str | None, r0: int, c0: int, rows: int, cols: int) -> Path | None:
     """Cache file of one window. The server's ETag is in the key, so a republished file never reuses old bytes; no ETag, no cache."""
     if not etag:
@@ -159,13 +186,14 @@ def load_polar(source: str, lat: float, lon: float, radius_km: float, source_inf
     inv = ~tf
     ca, ra = inv * (x[0] - rx, y[0] + r)
     cb, rb = inv * (x[0] + rx, y[0] - r)
-    if rx != r and (ca < 0 or cb > shape[1]):
-        raise ValueError(f"{source}: the {radius_km} km box around {lat}, {lon} crosses the +-180 deg seam of the global map")
+    wraps = rx != r and (ca < 0 or cb > shape[1])  # the box crosses the +-180 seam of the global map
+    if wraps and cb - ca >= shape[1]:
+        raise ValueError(f"{source}: the {radius_km} km box around {lat}, {lon} is wider than the whole map")
     r0, r1 = max(0, math.floor(ra) - 1), min(shape[0], math.ceil(rb) + 2)
-    c0, c1 = max(0, math.floor(ca) - 1), min(shape[1], math.ceil(cb) + 2)
+    # Across the seam the columns run past the map's edge (c0 < 0 or c1 > width); _read_columns wraps them.
+    c0, c1 = (math.floor(ca) - 1, math.ceil(cb) + 2) if wraps else (max(0, math.floor(ca) - 1), min(shape[1], math.ceil(cb) + 2))
     if r1 <= r0 or c1 <= c0:
         raise ValueError(f"{source}: the {radius_km} km box around {lat}, {lon} is outside the grid")
-    win = Window(c0, r0, c1 - c0, r1 - r0)
     ref_radius = crs.to_dict().get("R") or crs.to_dict().get("a")
     if ref_radius is None or abs(float(ref_radius) - MOON_RADIUS_M) > 1.0:
         raise ValueError(f"{source}: reference radius {ref_radius} m in the CRS is not {MOON_RADIUS_M} m")
@@ -181,7 +209,7 @@ def load_polar(source: str, lat: float, lon: float, radius_km: float, source_inf
     if cache and cache.exists():
         raw = np.load(cache)
     else:
-        raw = _read_window(_remote(source), win, block)
+        raw = _read_columns(_remote(source), r0, r1, c0, c1, shape[1], block)
         if cache:
             cache.parent.mkdir(parents=True, exist_ok=True)
             tmp = cache.with_name(f".{os.getpid()}.{cache.name}")
@@ -199,6 +227,7 @@ def load_polar(source: str, lat: float, lon: float, radius_km: float, source_inf
         dy=-tf.e,
         crs=crs,
         source=info,
+        wrap_x_m=shape[1] * tf.a if wraps else 0.0,
     )
 
 

@@ -2,6 +2,7 @@ import { PauseIcon, PlayIcon, SkipForwardIcon } from '@phosphor-icons/react'
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from 'react'
 import type { Plan, PlanActions } from '~/components/planner/plan'
 import { StatusWord } from '~/components/planner/Section'
+import { REFERENCE_SITES } from '~/lib/data'
 import { type LandingStatus, type SitePlan, shortName, siteResult } from '~/lib/mission'
 import { longDate, shortDate } from '~/lib/time'
 
@@ -112,47 +113,60 @@ export function siteAnswer(s: SitePlan, plan: Plan, day: number) {
  */
 export function SiteList({ plan, actions, day, verdicts = true }: { plan: Plan; actions: PlanActions; day: number; verdicts?: boolean }) {
   const selected = new Set(plan.sites.map((s) => s.data.site.id))
+  // The same two groups as /sites: a catalogue entry that names an agency is another mission's landing.
+  const agency = new Set(REFERENCE_SITES.filter((entry) => entry.agency).map((entry) => entry.id))
+  const groups = [
+    { title: 'Landings by other agencies', sites: plan.all.filter((data) => agency.has(data.site.id)) },
+    { title: 'Skyline’s own sites', sites: plan.all.filter((data) => !agency.has(data.site.id)) },
+  ].filter((group) => group.sites.length > 0)
   return (
-    <ul className="grid gap-2">
-      {plan.all.map((data) => {
-        const id = data.site.id
-        const site = plan.sites.find((s) => s.data.site.id === id)
-        const last = !!site && selected.size === 1
-        const a = verdicts && site ? siteAnswer(site, plan, day) : undefined
-        return (
-          <li key={id}>
-            <label
-              title={last ? 'Keep at least one site in the plan' : undefined}
-              className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 rounded-lg border px-3 py-2.5 transition-colors ${site ? 'border-white/40 bg-white/[0.04]' : 'border-line hover:border-line-strong'} ${last ? 'cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-              <input
-                type="checkbox"
-                checked={!!site}
-                disabled={last}
-                onChange={() => actions.toggleSite(id, !site)}
-                className="mt-1 size-4 cursor-pointer accent-white disabled:cursor-not-allowed"
-              />
-              <span className="grid min-w-0">
-                <span className="truncate font-medium">{shortName(data)}</span>
-                <span className="readout text-2xs text-ink-faint">
-                  {Math.abs(data.site.lat_deg).toFixed(2)}°{data.site.lat_deg < 0 ? 'S' : 'N'} · {data.site.lon_deg_east.toFixed(1)}°E
-                </span>
-              </span>
-              <span className="text-xs">
-                {a ? (
-                  <StatusWord works={a.works} computed={a.computed} />
-                ) : site ? (
-                  <span className="text-ink-muted">In plan</span>
-                ) : (
-                  <span className="text-ink-faint">Not in plan</span>
-                )}
-              </span>
-              {a && !a.works && a.why && <span className="col-start-2 col-end-4 text-xs text-ink-muted text-pretty">{a.why}.</span>}
-            </label>
-          </li>
-        )
-      })}
-    </ul>
+    <div className="grid gap-5">
+      {groups.map((group) => (
+        <section key={group.title} aria-label={groups.length > 1 ? group.title : undefined} className="grid gap-2">
+          {groups.length > 1 && <h3 className="text-xs font-medium tracking-wide text-ink-muted uppercase">{group.title}</h3>}
+          <ul className="grid gap-2">
+            {group.sites.map((data) => {
+              const id = data.site.id
+              const site = plan.sites.find((s) => s.data.site.id === id)
+              const last = !!site && selected.size === 1
+              const a = verdicts && site ? siteAnswer(site, plan, day) : undefined
+              return (
+                <li key={id}>
+                  <label
+                    title={last ? 'Keep at least one site in the plan' : undefined}
+                    className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1 rounded-lg border px-3 py-2.5 transition-colors ${site ? 'border-white/40 bg-white/[0.04]' : 'border-line hover:border-line-strong'} ${last ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!site}
+                      disabled={last}
+                      onChange={() => actions.toggleSite(id, !site)}
+                      className="mt-1 size-4 cursor-pointer accent-white disabled:cursor-not-allowed"
+                    />
+                    <span className="grid min-w-0">
+                      <span className="truncate font-medium">{shortName(data)}</span>
+                      <span className="readout text-2xs text-ink-faint">
+                        {Math.abs(data.site.lat_deg).toFixed(2)}°{data.site.lat_deg < 0 ? 'S' : 'N'} · {data.site.lon_deg_east.toFixed(1)}°E
+                      </span>
+                    </span>
+                    <span className="text-xs">
+                      {a ? (
+                        <StatusWord works={a.works} computed={a.computed} />
+                      ) : site ? (
+                        <span className="text-ink-muted">In plan</span>
+                      ) : (
+                        <span className="text-ink-faint">Not in plan</span>
+                      )}
+                    </span>
+                    {a && !a.works && a.why && <span className="col-start-2 col-end-4 text-xs text-ink-muted text-pretty">{a.why}.</span>}
+                  </label>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ))}
+    </div>
   )
 }
 

@@ -47,8 +47,10 @@ To cite Skyline, use this BibTeX entry:
 
 Skyline covers two kinds of site:
 
-- **Three south-pole study sites** (Connecting Ridge, de Gerlache Rim, Shackleton Rim), plus Apollo 11 and Shackleton connecting ridge for comparison. These sites have a full precomputed year on the 80 m polar terrain map.
-- **Other agencies' landings**: Chang'e-4 and Chang'e-6 (CNSA), Chandrayaan-3 (ISRO), SLIM (JAXA), and Luna-25 (Roscosmos). These sites are computed on request from NASA's global terrain map at about 1.9 km spacing. Small ridges are missed at that spacing, so the app labels these results exploratory.
+- **Three south-pole study sites** (Connecting Ridge, de Gerlache Rim, Shackleton Rim), plus Apollo 11 and Shackleton connecting ridge for comparison.
+- **Other agencies' landings**: Chang'e-4 and Chang'e-6 (CNSA), Chandrayaan-3 (ISRO), SLIM (JAXA), and Luna-25 (Roscosmos), both where it aimed and where it crashed.
+
+Every site has a full precomputed year, so all of them work in the planner. The offline pipeline picks the sharpest NASA terrain that covers each site: 20 m to 240 m maps near the pole, a 60 m map between 60° and 75°S, and the 118 m global map elsewhere. Live checks of the other agencies' landings use the engine's 1.9 km global map. Small ridges are missed at that spacing, so the app labels those live results exploratory.
 
 Every result is a geometric opportunity: the Sun or Earth is above the terrain. It does not promise delivered power, a working radio link, or guaranteed contact. [docs/science/claims.md](docs/science/claims.md) sets out exactly what the app may and may not claim.
 
@@ -79,7 +81,7 @@ flowchart LR
     pipe["ds pipeline<br/>offline"] -->|"yearly results,<br/>terrain tiles, textures"| nginx
 ```
 
-The south-pole study sites run on the 80 m polar terrain and support every add-on. The other agencies' landing sites run on the 1.9 km global terrain and support the live check only.
+Every site has a precomputed year for the planner. Only the three south-pole study sites support the add-ons, because those run on the 80 m polar terrain.
 
 [docs/architecture/system-design.md](docs/architecture/system-design.md) is the full design, in 14 diagrams: containers, the gateway routing table, each live request in sequence, the data pipeline, the frontend structure, the contracts, deployment, and how each site is routed to its terrain.
 

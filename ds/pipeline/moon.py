@@ -15,6 +15,8 @@ FAR_KM = 200.0
 
 LOLA_20M = fetch.LOLA_20M_URL
 LOLA_75S_30M = f"{fetch.PGDA}/LDEM_75S_30MPP_ADJ.TIF"
+LOLA_60S_60M = f"{fetch.PGDA}/LDEM_60S_60MPP_ADJ.TIF"
+POLAR_FINE_EDGE_DEG = 75.0  # the finest polar grids (20 m to 80 S, 30 m to 75 S) end here
 GLOBAL_118M = "https://planetarymaps.usgs.gov/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif"
 # planetarymaps.usgs.gov answers every range request with a redirect (about 2 s each); the redirect target serves the same bytes directly.
 GLOBAL_118M_READ = "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif"
@@ -58,10 +60,19 @@ def _local(name: str, site: Site, box_km: float, role: str, range_km: float):
 
 
 def terrain_for(site: Site) -> MoonTerrain:
-    """Polar sites: 20 m to 15 km, 80 m to 100 km, 240 m to 200 km. Equatorial: the global 118 m map to 200 km."""
+    """Polar sites: 20 m to 15 km, 80 m to 100 km, 240 m to 200 km. 60 to 75 S: 60 m to 100 km, 240 m to 200 km.
+    Equatorial: the global 118 m map to 200 km."""
     if is_global(site):
         near, p = _windowed(GLOBAL_118M, site, FAR_KM + 1, "global map, all ranges", FAR_KM, GLOBAL_118M_READ)
         return MoonTerrain([near], [near], [near], [p], "LOLA global DEM 118 m (USGS Astrogeology, Mar 2014)")
+    if abs(site.lat_deg) < POLAR_FINE_EDGE_DEG:
+        # Chandrayaan-3 and Luna-25 near 69 S: past the 20 m and 30 m grids, inside the 60 m grid to 60 S.
+        near, p_near = _windowed(LOLA_60S_60M, site, MID_KM + 1, "near and mid field", MID_KM)
+        far, p_far = _local("LDEM_60S_240MPP_ADJ.TIF", site, FAR_KM + 1, "far field", FAR_KM)
+        return MoonTerrain(
+            [near, far], [near], [far], [p_near, p_far],
+            "LOLA PGDA product 90 (Barker et al. 2023), south polar stereographic 60 m and 240 m, heights above the 1737.4 km sphere, ME frame",
+        )
     layer, p = _windowed(LOLA_20M, site, NEAR_KM + 1, "near field", NEAR_KM)
     layers, prov, inner_count = [layer], [p], 1
     if _pole_distance_km(site) + NEAR_KM > SOUTH_POLAR_EDGE_KM:

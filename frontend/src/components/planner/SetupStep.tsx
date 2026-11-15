@@ -22,7 +22,12 @@ const OPTIONS: { id: OptionId; label: string; title: string; desc: string }[] = 
     title: 'What kind of mission?',
     desc: 'Pick an example mission. It fills in the other three answers, and you can still change them.',
   },
-  { id: 'sites', label: 'Where', title: 'Where do you land?', desc: 'Pick which south-pole sites to compare.' },
+  {
+    id: 'sites',
+    label: 'Where',
+    title: 'Where do you land?',
+    desc: 'Pick the sites to compare, at the south pole or where other missions landed.',
+  },
   {
     id: 'when',
     label: 'When',
