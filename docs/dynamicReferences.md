@@ -69,3 +69,5 @@ For CR1 at 2 m above terrain, calendar year 2026, geometric directions, an 80 m 
 The production report completed the same 365-day CR1 evaluation in 330.79 seconds. Independent aggregation of all 27 captured responses reproduced its displayed fractions and longest blackouts. A delayed exact-instant response could not overwrite a newer selected time. The linked 3D view displayed API-backed Sun/Earth readouts, and Apollo 11 displayed unsupported annual capability with missing metrics.
 
 The historical UTC leap-second day 2015-06-30 was also evaluated through the real Go/Python route. Its duration was 86400.99997204542 ET seconds and the source included the sample 2015-06-30T23:59:60.000028Z. Regression tests verify finite renderer coordinates and preservation of original leap-second UTC interval labels.
+
+The final production build also passed the 2015-06-30 leap-second UI replay. Its plots retained finite elapsed-time coordinates, the exact UTC interval labels and the real SPICE sample ending in 23:59:60.000028Z. The final production build prerendered 34 pages.
