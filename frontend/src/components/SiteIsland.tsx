@@ -863,6 +863,8 @@ export default function SiteIsland(props: SiteIslandProps) {
           continue
         }
         const { x, y, behind } = project(a)
+        // A body out of frame has nothing on screen to label: clamped to the edge, its label would sit on the page's text.
+        const outside = x < 0 || x > w || y < 0 || y > h
         const bw = node.offsetWidth
         const bh = node.offsetHeight
         const compass = k.length === 1
@@ -886,6 +888,10 @@ export default function SiteIsland(props: SiteIslandProps) {
                 : y - bh / 2
         x0 = clamp(x0, 4, w - bw - 4)
         const covers = (b: (typeof boxes)[number]) => x0 < b.x1 && x0 + bw > b.x0 && y0 < b.y1 && y0 + bh > b.y0
+        if (outside) {
+          node.style.opacity = '0'
+          continue
+        }
         if (!compass) {
           for (let moved = true; moved; ) {
             moved = false
