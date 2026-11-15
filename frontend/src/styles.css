@@ -45,6 +45,127 @@
 :root[data-header="hidden"] .site-header:not(:focus-within) {
   translate: 0 -100%;
 }
+/* Analyze's step bands tuck away with the header and come back with it. */
+.plan-stepbar {
+  transition:
+    top 300ms cubic-bezier(0.23, 1, 0.32, 1),
+    translate 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  @variant motion-reduce {
+    transition: none;
+  }
+}
+:root[data-header="hidden"] .plan-stepbar:not(:focus-within) {
+  translate: 0 -100%;
+}
+
+/*
+  Add-on loading (components/addons/Computing.tsx). Constant motion runs linear; the reach rings ease out as they
+  spread. Under reduced motion nothing moves: the drawing breathes in opacity and the placeholder rows hold still.
+*/
+.computing-orbit {
+  transform-box: view-box;
+  transform-origin: 48px 40px;
+  animation: computing-orbit 2.4s linear infinite;
+}
+.computing-orbit-slow {
+  animation-duration: 4s;
+}
+.computing-ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: computing-ping 2s var(--ease-out-strong) infinite;
+}
+.computing-ping-late {
+  animation-delay: 1s;
+}
+@keyframes computing-orbit {
+  from {
+    rotate: -70deg;
+  }
+  to {
+    rotate: 290deg;
+  }
+}
+@keyframes computing-ping {
+  from {
+    scale: 0.12;
+    opacity: 1;
+  }
+  to {
+    scale: 1;
+    opacity: 0;
+  }
+}
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+  background: rgb(255 255 255 / 0.05);
+}
+.skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  translate: -100% 0;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.07), transparent);
+  animation: skeleton-sweep 1.6s linear infinite;
+}
+@keyframes skeleton-sweep {
+  to {
+    translate: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .computing-orbit,
+  .computing-ping,
+  .skeleton-line::after {
+    animation: none;
+  }
+  .computing-ping {
+    scale: 0.6;
+    opacity: 0.5;
+  }
+  .computing-mark {
+    animation: computing-breathe 2.4s ease-in-out infinite;
+  }
+}
+@keyframes computing-breathe {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/*
+  An add-on's answer arriving: its parts come in one after another, 100 ms apart, each lifting 12 px out of a 4 px blur.
+  It runs once, when the answer mounts. Under reduced motion they only fade.
+*/
+.reveal > * {
+  animation: reveal-in 300ms var(--ease-out-strong) both;
+}
+.reveal > :nth-child(2) {
+  animation-delay: 100ms;
+}
+.reveal > :nth-child(3) {
+  animation-delay: 200ms;
+}
+.reveal > :nth-child(n + 4) {
+  animation-delay: 300ms;
+}
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    translate: 0 12px;
+  }
+}
+/* Switching add-on: the new panel fades in quickly, without movement, since this happens often. */
+.addon-panel-in {
+  animation: fade-in 150ms ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal > * {
+    animation-name: fade-in;
+  }
+}
 
 /*
   Kumo is the base design system: its semantic tokens (kumo-canvas, kumo-line,

@@ -87,11 +87,14 @@ export function Shell({
   children,
   tools,
   bare = false,
+  solid = false,
   active,
 }: {
   children: ReactNode
   tools?: ReactNode
   bare?: boolean
+  /** A black header, for pages whose content scrolls under it (Analyze). */
+  solid?: boolean
   /** Highlight this way in instead of the one the path belongs to: a page reached from another way in keeps that way lit. */
   active?: (typeof SECTIONS)[number]['to']
 }) {
@@ -102,7 +105,7 @@ export function Shell({
       <TooltipProvider>
         <div className="isolate min-h-dvh">
           {!bare && (
-            <header className="site-header sticky top-0 z-(--z-sticky)">
+            <header className={`site-header sticky top-0 z-(--z-sticky) ${solid ? 'bg-bg' : ''}`}>
               <div className="mx-auto flex h-14 max-w-7xl items-center gap-x-2 px-4 sm:gap-x-4 sm:px-6">
                 <Link to="/" className="shrink-0 py-2.5 sm:pr-2" aria-label="Skyline, choose your journey">
                   {/* The Y's loop rises above and dips below the letters, so shift up to centre the letters with the nav labels. */}

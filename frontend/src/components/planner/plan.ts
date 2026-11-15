@@ -35,6 +35,8 @@ export const planSearch = z.object({
   focus: forgiving(z.string()),
   /** The Add-ons tool on show. */
   piece: forgiving(z.enum(SCENARIO_PIECES)),
+  /** The site Add-ons shows, once the reader picked it there or opened one of its tools from Result. */
+  addonSite: forgiving(z.string()),
 })
 export type PlanSearch = z.infer<typeof planSearch>
 

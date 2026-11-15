@@ -37,7 +37,11 @@ export type RelayTrack = {
   earthKm?: number[][]
 }
 
-export type RelayLoad = { status: 'loading' } | { status: 'ready'; ladder: RelayLadder } | { status: 'unavailable'; message: string }
+/** `retryable`: the service failed to answer, so asking again may work; a site it does not serve never will. */
+export type RelayLoad =
+  | { status: 'loading' }
+  | { status: 'ready'; ladder: RelayLadder }
+  | { status: 'unavailable'; message: string; retryable?: boolean }
 
 const vector = z.tuple([z.number(), z.number(), z.number()])
 const reply = z.object({
@@ -142,8 +146,8 @@ export function readRelayReply(body: unknown, stayS: number): RelayLoad {
   }
 }
 
-/** Asks the relay comparison once per site and window; a result for an older ask is dropped. */
-export function useRelayLadder(siteId: string, startMs: number, stayS: number): RelayLoad {
+/** Asks the relay comparison once per site, window and `attempt` (bump it to ask again); a result for an older ask is dropped. */
+export function useRelayLadder(siteId: string, startMs: number, stayS: number, attempt = 0): RelayLoad {
   const [load, setLoad] = useState<RelayLoad>({ status: 'loading' })
   // Before hydration the planner renders its default plan; asking for it would hold the one-at-a-time service.
   const hydrated = useHydrated()
@@ -168,11 +172,15 @@ export function useRelayLadder(siteId: string, startMs: number, stayS: number): 
       })
       .catch((error: unknown) => {
         if (current)
-          setLoad({ status: 'unavailable', message: error instanceof Error ? error.message : 'The relay comparison could not be reached.' })
+          setLoad({
+            status: 'unavailable',
+            message: error instanceof Error ? error.message : 'The relay comparison could not be reached.',
+            retryable: true,
+          })
       })
     return () => {
       current = false
     }
-  }, [hydrated, siteId, startMs, stayS])
+  }, [hydrated, siteId, startMs, stayS, attempt])
   return load
 }

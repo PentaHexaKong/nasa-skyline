@@ -1,12 +1,15 @@
 import { Badge } from '@cloudflare/kumo/components/badge'
+import { Button } from '@cloudflare/kumo/components/button'
 import { Tabs } from '@cloudflare/kumo/components/tabs'
 import { WarningCircleIcon } from '@phosphor-icons/react'
 import { lazy, Suspense, useEffect, useState } from 'react'
 import type { Plan } from '~/components/planner/plan'
 import { type RelayLadder as Ladder, RELAY_MAX_S, type RelayStep, suggestedRelays, useRelayLadder } from '~/lib/relayLive'
 import { shortDate } from '~/lib/time'
+import { ComputingMark, SkeletonRows } from './Computing'
 import { RelayDial, RelayFill, RelayGaps } from './RelayViews'
 import { COUNT, duration, pct } from './relayTrack'
+import { useArrival } from './useArrival'
 
 const Relay3D = lazy(() => import('./Relay3D'))
 
@@ -149,8 +152,10 @@ function Views({ ladder, plan }: { ladder: Ladder; plan: Plan }) {
 export function RelayLadder({ plan }: { plan: Plan }) {
   const siteId = plan.focus ?? ''
   const stayS = Math.round((plan.window.end - plan.window.start) / 1000)
-  const load = useRelayLadder(siteId, plan.window.start, stayS)
+  const [attempt, setAttempt] = useState(0)
+  const load = useRelayLadder(siteId, plan.window.start, stayS, attempt)
   const elapsed = useElapsed(load.status === 'loading')
+  const arrival = useArrival(load.status === 'loading')
 
   if (load.status === 'unavailable')
     return (
@@ -158,11 +163,23 @@ export function RelayLadder({ plan }: { plan: Plan }) {
         <span className="flex h-lh items-center">
           <WarningCircleIcon aria-hidden className="size-5 shrink-0 text-ink-muted" />
         </span>
-        <div className="grid gap-1">
+        <div className="grid justify-items-start gap-1">
           <h2 id="relay-result" className="font-medium">
             Relay coverage is unavailable right now
           </h2>
-          <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">{load.message}</p>
+          {load.retryable ? (
+            <>
+              <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
+                The relay service didn’t answer. Try again in a moment, or pick a shorter stay in Set up.
+              </p>
+              <p className="readout text-2xs text-ink-faint">{load.message}</p>
+              <Button size="sm" variant="secondary" className="mt-2" onClick={() => setAttempt((a) => a + 1)}>
+                Try again
+              </Button>
+            </>
+          ) : (
+            <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">{load.message}</p>
+          )}
         </div>
       </section>
     )
@@ -174,54 +191,59 @@ export function RelayLadder({ plan }: { plan: Plan }) {
 
   return (
     <section aria-labelledby="relay-result" aria-busy={!ladder} className="grid gap-5 rounded-xl border border-line px-5 py-4 lg:py-5">
-      <div className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">
-            {!ladder ? `Computing · ${elapsed} s` : verified ? 'Verified replay' : 'Computed · not validated'}
-          </Badge>
+      <div className="flex items-start gap-5">
+        {!ladder && <ComputingMark kind="relay" className="mt-1 max-sm:hidden" />}
+        <div className="grid gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">
+              {!ladder ? (
+                <>
+                  Computing · <span className="tabular">{elapsed}</span> s
+                </>
+              ) : verified ? (
+                'Verified replay'
+              ) : (
+                'Computed · not validated'
+              )}
+            </Badge>
+          </div>
+          <h2 id="relay-result" className="max-w-[48ch] text-xl leading-snug font-medium text-balance">
+            {ladder ? headline(ladder.steps, n) : 'Working out what relays add to your stay…'}
+          </h2>
+          <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
+            {!ladder
+              ? `The relay service follows each relay over ${days < 1 ? 'your stay' : `${Math.round(days)} days`}, then checks every moment against the site's skyline. Long stays take up to a minute.`
+              : n > 0 && ladder.steps[n + 1]
+                ? `After ${n === 1 ? 'the first relay' : `${COUNT[n]?.toLowerCase()}`}, each one more adds under half a point of contact.`
+                : `Your stay from ${shortDate(plan.date)}${ladder.truncated ? `, first ${Math.round(days)} days of ${plan.stay}` : ''}, checked every ${ladder.cadenceS / 60} min.`}
+          </p>
         </div>
-        <h2 id="relay-result" className="max-w-[48ch] text-xl leading-snug font-medium text-balance">
-          {ladder ? headline(ladder.steps, n) : 'Working out what relays add to your stay…'}
-        </h2>
-        <p className="max-w-[72ch] text-sm text-ink-muted text-pretty">
-          {!ladder
-            ? `The relay service follows each relay over ${days < 1 ? 'your stay' : `${Math.round(days)} days`}, then checks every moment against the site's skyline. Long stays take up to a minute.`
-            : n > 0 && ladder.steps[n + 1]
-              ? `After ${n === 1 ? 'the first relay' : `${COUNT[n]?.toLowerCase()}`}, each one more adds under half a point of contact.`
-              : `Your stay from ${shortDate(plan.date)}${ladder.truncated ? `, first ${Math.round(days)} days of ${plan.stay}` : ''}, checked every ${ladder.cadenceS / 60} min.`}
-        </p>
       </div>
 
-      {ladder && <Views ladder={ladder} plan={plan} />}
-
-      {ladder ? (
-        <div className="grid gap-3 border-t border-line pt-4">
-          <h3 className="text-sm font-medium">Contact for each number of relays</h3>
-          <Rows ladder={ladder} minEarth={plan.requirements.minEarth} />
-        </div>
-      ) : (
-        <div aria-hidden className="grid gap-3">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-5 rounded bg-white/[0.05] motion-safe:animate-pulse" />
-          ))}
-        </div>
-      )}
+      {!ladder && <SkeletonRows rows={5} />}
 
       {ladder && (
-        <div className="grid max-w-[72ch] gap-2 border-t border-line pt-4 text-sm text-ink-muted text-pretty">
-          <p>
-            <span className="max-sm:hidden">
-              The tick on each bar is your limit, Earth in view at least {plan.requirements.minEarth} % of the stay.{' '}
-            </span>
-            Contact means a straight line of sight, site to relay to Earth, sampled every {ladder.cadenceS / 60} min
-            {ladder.truncated ? `, over the first ${Math.round(days)} days of your ${plan.stay}-day stay` : ''}. It is not a radio link,
-            capacity or guaranteed contact.
-          </p>
-          <p>
-            {verified
-              ? 'These relays fly the saved Candidate 2 orbit for January 2025, replayed from its verified file.'
-              : 'These relays fly the verified Candidate 2 orbit, run forward to your dates with the Moon’s gravity alone. Earth’s pull on the orbit is left out, so accuracy away from January 2025 is not validated. Relays three and four are extra spacecraft on the same orbit.'}
-          </p>
+        <div className={`grid gap-5 ${arrival}`}>
+          <Views ladder={ladder} plan={plan} />
+          <div className="grid gap-3 border-t border-line pt-4">
+            <h3 className="text-sm font-medium">Contact for each number of relays</h3>
+            <Rows ladder={ladder} minEarth={plan.requirements.minEarth} />
+          </div>
+          <div className="grid max-w-[72ch] gap-2 border-t border-line pt-4 text-sm text-ink-muted text-pretty">
+            <p>
+              <span className="max-sm:hidden">
+                The tick on each bar is your limit, Earth in view at least {plan.requirements.minEarth} % of the stay.{' '}
+              </span>
+              Contact means a straight line of sight, site to relay to Earth, sampled every {ladder.cadenceS / 60} min
+              {ladder.truncated ? `, over the first ${Math.round(days)} days of your ${plan.stay}-day stay` : ''}. It is not a radio link,
+              capacity or guaranteed contact.
+            </p>
+            <p>
+              {verified
+                ? 'These relays fly the saved Candidate 2 orbit for January 2025, replayed from its verified file.'
+                : 'These relays fly the verified Candidate 2 orbit, run forward to your dates with the Moon’s gravity alone. Earth’s pull on the orbit is left out, so accuracy away from January 2025 is not validated. Relays three and four are extra spacecraft on the same orbit.'}
+            </p>
+          </div>
         </div>
       )}
     </section>

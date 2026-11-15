@@ -10,6 +10,7 @@ import { ROVER_TERMS } from '~/lib/roverLive'
 import { areaByDay, type RoverSimInput, type RoverSimResult, skySamples } from '~/lib/roverSim'
 import { useRoverSim } from '~/lib/useRoverSim'
 import { useTracks } from '~/lib/useTracks'
+import { ComputingMark } from './Computing'
 
 const WHOLE: View = { east: 0, north: 0, half: 10000 }
 const km = (x: number) => (x < 10 ? x.toFixed(1) : x.toFixed(0))
@@ -84,38 +85,45 @@ function RoverResult({ plan }: { plan: Plan }) {
 
   return (
     <section aria-labelledby="rover-result" aria-busy={!ready} className="grid gap-5 rounded-xl border border-line px-5 py-4 lg:py-5">
-      <div className="grid gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline">Computed from LOLA terrain, not validated</Badge>
-        </div>
-        <h2 id="rover-result" className="text-xl leading-snug font-medium text-balance">
-          {!ready
-            ? 'Working out how far a rover could go…'
-            : ready.summary.cellsReached <= 1
-              ? 'A rover can’t set off from this landing'
-              : `Over the ${days}-day stay a rover could reach ground across ${km(ready.summary.areaKm2)} km², up to ${km(ready.summary.farthestKm)} km from the landing`}
-        </h2>
-        <p className="max-w-[68ch] text-sm text-ink-muted text-pretty">
-          {!ready ? (
-            <>
-              Simulating every cell of the 20 km terrain tile, hour by hour ·{' '}
-              <span className="tabular">{Math.round(progress * 100)} %</span>
-            </>
-          ) : ready.summary.cellsReached <= 1 ? (
-            'The landing spot is never both lit and in contact with Earth long enough to leave, so this model keeps the rover there. Try another landing time from Dates.'
-          ) : (
-            <>
-              {!ready.startAdmitted && 'At landing the spot is not yet both lit and in contact, so the rover waits before it sets off. '}
-              On the way to the farthest point it drives for {hrs(ready.summary.drivingH)} and waits {hrs(ready.summary.waitingH)} for
-              sunlight and contact.
-            </>
-          )}
-        </p>
-        {!ready && (
-          <div aria-hidden className="h-0.5 max-w-64 bg-line">
-            <div className="h-full bg-ink" style={{ width: `${Math.round(progress * 100)}%` }} />
+      <div className="flex items-start gap-5">
+        {!ready && <ComputingMark kind="rover" className="mt-1 max-sm:hidden" />}
+        <div className="grid min-w-0 gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="outline">Computed from LOLA terrain, not validated</Badge>
           </div>
-        )}
+          <h2 id="rover-result" className="text-xl leading-snug font-medium text-balance">
+            {!ready
+              ? 'Working out how far a rover could go…'
+              : ready.summary.cellsReached <= 1
+                ? 'A rover can’t set off from this landing'
+                : `Over the ${days}-day stay a rover could reach ground across ${km(ready.summary.areaKm2)} km², up to ${km(ready.summary.farthestKm)} km from the landing`}
+          </h2>
+          <p className="max-w-[68ch] text-sm text-ink-muted text-pretty">
+            {!ready ? (
+              <>
+                Simulating every cell of the 20 km terrain tile, hour by hour ·{' '}
+                <span className="tabular">{Math.round(progress * 100)} %</span>
+              </>
+            ) : ready.summary.cellsReached <= 1 ? (
+              'The landing spot is never both lit and in contact with Earth long enough to leave, so this model keeps the rover there. Try another landing time from Dates.'
+            ) : (
+              <>
+                {!ready.startAdmitted && 'At landing the spot is not yet both lit and in contact, so the rover waits before it sets off. '}
+                On the way to the farthest point it drives for {hrs(ready.summary.drivingH)} and waits {hrs(ready.summary.waitingH)} for
+                sunlight and contact.
+              </>
+            )}
+          </p>
+          {!ready && (
+            <div aria-hidden className="h-0.5 max-w-64 overflow-hidden rounded-full bg-line">
+              {/* Grows by scale, not width, so each step of the simulation glides instead of jumping. */}
+              <div
+                className="h-full origin-left bg-ink transition-[scale] duration-300 ease-out motion-reduce:transition-none"
+                style={{ scale: `${progress} 1` }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-end gap-x-8 gap-y-3">
@@ -142,7 +150,7 @@ function RoverResult({ plan }: { plan: Plan }) {
       ) : view === 'days' && ready ? (
         <ReachDays direct={ready} days={days} />
       ) : (
-        <div className="aspect-square w-full max-w-[36rem] outline -outline-offset-1 outline-line" />
+        <div aria-hidden className="skeleton-line aspect-square w-full max-w-[36rem] rounded-md" />
       )}
 
       <div className="grid gap-1.5 border-t border-line pt-4">

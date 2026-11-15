@@ -85,4 +85,5 @@ export const addonsSearch = (search: PlanSearch, piece?: PlanSearch['piece'], fo
   step: 'addons',
   piece,
   focus: focus ?? search.focus,
+  addonSite: focus ?? search.addonSite,
 })

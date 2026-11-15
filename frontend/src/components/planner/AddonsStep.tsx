@@ -1,8 +1,9 @@
+import { Button } from '@cloudflare/kumo/components/button'
 import { Collapsible } from '@cloudflare/kumo/components/collapsible'
-import { Link as KLink } from '@cloudflare/kumo/components/link'
 import { Select } from '@cloudflare/kumo/components/select'
-import { BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
+import { ArrowLeftIcon, ArrowRightIcon, BroadcastIcon, CarIcon, SolarPanelIcon, XIcon } from '@phosphor-icons/react'
 import { type KeyboardEvent, lazy, Suspense } from 'react'
+import { ComputingMark, SkeletonRows } from '~/components/addons/Computing'
 import { RelayLadder } from '~/components/addons/RelayLadder'
 import { RoverPanel } from '~/components/addons/RoverPanel'
 import { SiteProvenance } from '~/components/Evidence'
@@ -10,9 +11,9 @@ import { Lanes } from '~/components/Lanes'
 import { MastPanel } from '~/components/PowerPanels'
 import { SiteThumb } from '~/components/planner/Illustrations'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
-import { Eyebrow } from '~/components/Shell'
+import { StatusWord } from '~/components/planner/Section'
 import { useFeed } from '~/lib/feeds'
-import { REQUIREMENTS, shortName, TOUCHDOWN_LABEL } from '~/lib/mission'
+import { REQUIREMENTS, shortName, siteResult, TOUCHDOWN_LABEL } from '~/lib/mission'
 import { matchesScenario, SCENARIO_PIECES, SCENARIOS, type ScenarioPiece, scenarioGuidance } from '~/lib/scenarios'
 
 const MastExample = lazy(() => import('~/components/addons/MastExample'))
@@ -115,23 +116,46 @@ function ScenarioResult({ plan, piece }: { plan: Plan; piece: ScenarioPiece }) {
           <MastPanel siteId={siteId} />
         </section>
       )}
-      <Suspense fallback={<p aria-busy="true">Loading the mast example…</p>}>
+      <Suspense fallback={<MastLoading />}>
         <MastExample />
       </Suspense>
     </div>
   )
 }
 
-function ScenarioTabIcon({ piece }: { piece: ScenarioPiece }) {
-  const I = piece === 'mast' ? SolarPanelIcon : piece === 'relay' ? BroadcastIcon : CarIcon
-  return <I aria-hidden className="size-4" />
+/** While the mast example's code and terrain load: the same frame as the answer, so nothing jumps when it arrives. */
+function MastLoading() {
+  return (
+    <section aria-busy="true" aria-label="Loading the mast example" className="grid gap-5 rounded-xl border border-line px-5 py-4 lg:py-5">
+      <div className="flex items-center gap-4">
+        <ComputingMark kind="sun" />
+        <p className="text-ink-muted">Loading the mast example…</p>
+      </div>
+      <SkeletonRows rows={4} />
+    </section>
+  )
 }
 
+const ICON = { mast: SolarPanelIcon, relay: BroadcastIcon, rover: CarIcon } as const
+/** Each add-on keeps the colour of what it is about: the Sun for a mast, Earth contact for relays. */
+const TONE = { mast: 'text-sun', relay: 'text-comms', rover: 'text-ink' } as const
+
 /** The fourth step: the follow-up tools (mast, relay, rover), each opened on the plan and the site in focus. */
-export function AddonsStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
-  const site = plan.sites.find((s) => s.data.site.id === plan.focus) ?? plan.sites[0]
+export function AddonsStep({ plan: planned, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
+  // Add-ons are for the sites that need help: with no site asked for, open on the first one that doesn't work (the plan
+  // itself focuses the first one that does, which suits Result). A site picked here, or a tool opened for one on
+  // Result, is kept (`addonSite`); Result's own site switch is not a request for add-ons.
+  const asked = search.addonSite ? planned.sites.find((s) => s.data.site.id === search.addonSite) : undefined
+  const site =
+    asked ??
+    planned.sites.find((s) => !siteResult(s).works) ??
+    planned.sites.find((s) => s.data.site.id === planned.focus) ??
+    planned.sites[0]
   if (!site) return null
-  const suggested = scenarioGuidance(site).priority
+  // Every panel below reads the site from `plan.focus`.
+  const plan: Plan = { ...planned, focus: site.data.site.id }
+  const guidance = scenarioGuidance(site)
+  const suggested = guidance.priority
   const piece: ScenarioPiece = search.piece ?? suggested[0] ?? 'relay'
   const choose = (next: ScenarioPiece) => actions.go({ piece: next })
 
@@ -156,83 +180,99 @@ export function AddonsStep({ plan, actions, search }: { plan: Plan; actions: Pla
   }
 
   return (
-    <>
-      <header className="grid gap-3">
-        <Eyebrow pip>Add-ons · {shortName(site.data)}</Eyebrow>
-        <h2 className="text-[clamp(1.75rem,1.3rem+1.8vw,2.75rem)] leading-[1.08] font-medium text-balance">
-          What would help this landing?
-        </h2>
-        <p className="max-w-[60ch] text-ink-muted text-pretty">
-          A mast for more Sun, relay satellites for more contact with Earth, a rover to go further. Each opens on your plan and site.
-        </p>
-      </header>
-      <div className="grid gap-8">
-        <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line">
-          <div role="tablist" aria-label="Add-ons" className="flex flex-wrap gap-x-6">
-            {SCENARIO_PIECES.map((value) => {
-              const selected = value === piece
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  role="tab"
-                  id={tabId(value)}
-                  aria-selected={selected}
-                  aria-controls={PANEL_ID}
-                  tabIndex={selected ? 0 : -1}
-                  onClick={() => choose(value)}
-                  onKeyDown={onTabKey}
-                  className={`-mb-px flex cursor-pointer items-center gap-2 border-b-2 py-3 font-medium whitespace-nowrap ${
-                    selected ? 'border-brand text-ink' : 'border-transparent text-ink-muted hover:text-ink'
-                  }`}
-                >
-                  <ScenarioTabIcon piece={value} />
-                  {SCENARIOS[value].name}
-                  {suggested.includes(value) && <span className="readout text-xs text-ink-muted">Suggested</span>}
-                </button>
-              )
-            })}
+    <div className="grid gap-10">
+      <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4">
+        <div className="grid max-w-[44rem] gap-2">
+          <h2 className="text-[clamp(1.75rem,1.3rem+1.8vw,2.75rem)] leading-[1.08] font-medium text-balance">
+            What would help at <span className="text-story-ink">{shortName(site.data)}</span>?
+          </h2>
+          <p className="text-ink-muted text-pretty">{guidance.headline} Pick an add-on to see what it changes.</p>
+        </div>
+        {plan.sites.length > 1 && (
+          <div className="flex items-center gap-3">
+            <span id="addon-site" className="text-sm text-ink-muted">
+              Site
+            </span>
+            <Select
+              aria-labelledby="addon-site"
+              value={site.data.site.id}
+              items={Object.fromEntries(plan.sites.map((s) => [s.data.site.id, shortName(s.data)]))}
+              onValueChange={(v) => actions.go({ addonSite: String(v) })}
+            />
+            {/* The status beside the picker, in the planner's own ✓/× words, not squeezed into the option text. */}
+            <span className="text-sm">
+              <StatusWord works={siteResult(site).works} computed={!!site.checks} />
+            </span>
           </div>
-          {plan.sites.length > 1 && (
-            <div className="flex items-center gap-2 pb-2">
-              <span id="addon-site" className="text-ink-muted">
-                Site
-              </span>
-              <Select
-                aria-labelledby="addon-site"
-                value={site.data.site.id}
-                items={Object.fromEntries(plan.sites.map((s) => [s.data.site.id, shortName(s.data)]))}
-                onValueChange={(v) => actions.go({ focus: String(v) })}
-              />
-            </div>
-          )}
+        )}
+      </header>
+
+      <div className="grid gap-6">
+        {/* The three add-ons as cards: what each one asks, and which ones this site's misses point to. */}
+        <div role="tablist" aria-label="Add-ons" className="grid gap-3 sm:grid-cols-3">
+          {SCENARIO_PIECES.map((value) => {
+            const selected = value === piece
+            const Icon = ICON[value]
+            return (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                id={tabId(value)}
+                aria-selected={selected}
+                aria-controls={PANEL_ID}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => choose(value)}
+                onKeyDown={onTabKey}
+                className={`grid cursor-pointer content-start gap-2 rounded-xl border px-4 py-3.5 text-left transition-[background-color,border-color] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                  selected ? 'border-white/45 bg-white/[0.06]' : 'border-line hover:border-line-strong hover:bg-white/[0.025]'
+                }`}
+              >
+                <span className="flex items-center justify-between gap-3">
+                  <span className={`flex items-center gap-2.5 font-medium ${selected ? 'text-ink' : 'text-ink/85'}`}>
+                    <Icon aria-hidden weight={selected ? 'fill' : 'regular'} className={`size-5 shrink-0 ${TONE[value]}`} />
+                    {SCENARIOS[value].name}
+                  </span>
+                  {suggested.includes(value) && (
+                    <span className="shrink-0 rounded-full bg-story/20 px-2 py-0.5 text-xs font-medium text-story-ink">Suggested</span>
+                  )}
+                </span>
+                <span className="text-sm text-ink-muted text-pretty">{SCENARIOS[value].question}</span>
+              </button>
+            )
+          })}
         </div>
-        <div role="tabpanel" id={PANEL_ID} aria-labelledby={tabId(piece)} className="grid gap-8">
-          <ScenarioResult key={`${piece}-${plan.focus}`} plan={plan} piece={piece} />
-          <Collapsible.Root>
-            <Collapsible.DefaultTrigger>Compare with your plan as it stands</Collapsible.DefaultTrigger>
-            <Collapsible.DefaultPanel>
-              <div className="pt-2">
-                <Baseline plan={plan} />
-              </div>
-            </Collapsible.DefaultPanel>
-          </Collapsible.Root>
+
+        <div key={`${piece}-${plan.focus}`} role="tabpanel" id={PANEL_ID} aria-labelledby={tabId(piece)} className="addon-panel-in">
+          <ScenarioResult plan={plan} piece={piece} />
         </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-3 border-t border-line pt-4">
-          <KLink render={<button type="button" onClick={() => actions.setStep('result')} />} className="cursor-pointer">
-            Back to the result
-          </KLink>
-          <KLink render={<button type="button" onClick={() => actions.setStep('dates')} />} className="cursor-pointer">
-            Try another date
-          </KLink>
-        </div>
+      </div>
+
+      <footer className="grid gap-6 border-t border-line pt-6">
         <Collapsible.Root>
-          <Collapsible.DefaultTrigger>Starting point: sources and assumptions</Collapsible.DefaultTrigger>
+          <Collapsible.DefaultTrigger>Compare with your plan without add-ons</Collapsible.DefaultTrigger>
           <Collapsible.DefaultPanel>
-            <SiteProvenance sites={[site.data]} />
+            <div className="grid gap-8 pt-3">
+              <Baseline plan={plan} />
+              <section aria-labelledby="addon-sources" className="grid gap-3">
+                <h3 id="addon-sources" className="font-medium">
+                  Sources and assumptions
+                </h3>
+                <SiteProvenance sites={[site.data]} />
+              </section>
+            </div>
           </Collapsible.DefaultPanel>
         </Collapsible.Root>
-      </div>
-    </>
+        <nav aria-label="Other steps" className="flex flex-wrap justify-between gap-3">
+          <Button variant="secondary" icon={ArrowLeftIcon} onClick={() => actions.setStep('result')}>
+            Back to the result
+          </Button>
+          <Button variant="secondary" onClick={() => actions.setStep('dates')}>
+            Try another date
+            <ArrowRightIcon aria-hidden />
+          </Button>
+        </nav>
+      </footer>
+    </div>
   )
 }

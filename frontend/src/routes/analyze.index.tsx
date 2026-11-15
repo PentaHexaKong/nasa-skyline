@@ -77,7 +77,7 @@ function PlannerPage() {
   }
 
   return (
-    <Shell>
+    <Shell solid>
       <h1 className="sr-only">Analyze a landing</h1>
       <StepBar step={step} plan={plan} actions={actions} />
       {step === 'setup' ? (
