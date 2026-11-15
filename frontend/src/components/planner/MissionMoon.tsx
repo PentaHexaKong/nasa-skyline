@@ -25,15 +25,19 @@ const NARROW = 560
 const DIST_NARROW = 6
 const LIFT = 44
 const NO_AIM = [0, 0] as const
-/** `sway`: the camera turns back and forth around the polar axis by this much, over this period. */
-const SWAY_DEG = 26
-const SWAY_S = 24
-/** `spin`: one full turn around the polar axis, this long. */
-const SPIN_MS = 1500
+/**
+ * `sway`: the camera drifts around the polar axis by up to this much either side, over this period: about 1.5° a
+ * second at its fastest, close to the front door's turning Moon, so the terminator creeps across the face.
+ */
+const SWAY_DEG = 30
+const SWAY_S = 120
 /** The camera looks up at the south pole from this latitude, so the polar sites sit in the lower half of the disc. */
 const VIEW_LAT = -52
-/** And this far west of the Sun, so the lit side faces the reader while the terminator still throws shadows. */
-const SUN_OFFSET = 35
+/**
+ * And this far west of the Sun: with the sway, 40° to 100°, so the terminator always crosses the visible face and the
+ * craters near it throw long shadows, as on the front door.
+ */
+const SUN_OFFSET = 70
 const PAD = 12
 const GAP = 8
 
@@ -60,7 +64,6 @@ export default function MissionMoon({
   zoom = 1,
   aim = NO_AIM,
   sway = false,
-  spin = 0,
   handoff = false,
   footClassName = 'right-3 bottom-2.5 left-3 justify-between',
   className = '',
@@ -73,11 +76,10 @@ export default function MissionMoon({
   zoom?: number
   aim?: readonly [number, number]
   /**
-   * The Moon seems to turn: the camera sways around the polar axis, and each change of `spin` turns it once all the way
-   * round. The camera moves, not the Moon, so the sunlit side stays the SPICE one for the landing time.
+   * The Moon seems to turn: the camera drifts slowly around the polar axis. The camera moves, not the Moon, so the
+   * sunlit side stays the SPICE one for the landing time.
    */
   sway?: boolean
-  spin?: number
   /** Take over from the shared page Moon, and let it glide on from here when the reader leaves. */
   handoff?: boolean
   /** Where the caption line sits in the box. */
@@ -93,7 +95,7 @@ export default function MissionMoon({
   const labels = useRef<Record<string, HTMLElement | null>>({})
   const latest = useRef({ markers, at, showLabels, zoom, aim, sway, handoff })
   latest.current = { markers, at, showLabels, zoom, aim, sway, handoff }
-  const api = useRef({ redraw: () => {}, light: () => {}, turn: (_: string) => {}, spin: () => {} })
+  const api = useRef({ redraw: () => {}, light: () => {}, turn: (_: string) => {} })
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const [caption, setCaption] = useState('')
@@ -106,12 +108,6 @@ export default function MissionMoon({
   useEffect(() => {
     api.current.light()
   }, [at])
-  const spun = useRef(spin)
-  useEffect(() => {
-    if (spin === spun.current) return
-    spun.current = spin
-    api.current.spin()
-  }, [spin])
   // A new zoom, aim or label mode only needs the render loop to run.
   useEffect(() => {
     api.current.redraw()
@@ -249,11 +245,12 @@ export default function MissionMoon({
       let sunLon = 0
       const t0 = eph ? Date.parse(eph.start.length === 10 ? `${eph.start}T00:00:00Z` : eph.start) : 0
       const facing = () => toVec(VIEW_LAT, sunLon - SUN_OFFSET, distance())
-      // While following, the camera is `base` (facing the sunlit side) turned around the polar axis by the sway and spin.
+      // While following, the camera is `base` (facing the sunlit side) turned around the polar axis by the sway.
       const base = camera.position.clone()
       const Y = new THREE.Vector3(0, 1, 0)
       let swayGain = 0
-      let spinT0: number | null = null
+      // Seconds of sway so far: the drift starts from the facing pose instead of wherever the clock happens to be.
+      let swayT = 0
       let tween: {
         from: InstanceType<typeof THREE.Vector3>
         turn: InstanceType<typeof THREE.Quaternion>
@@ -423,18 +420,13 @@ export default function MissionMoon({
         }
         let unzoomed = tween && !tween.onBase ? camera.position.length() : distance()
         if (follow) {
-          // Sway eases in and out, so turning it on or off never jumps; a spin runs one turn with an ease at both ends.
+          // Sway eases in and out, so turning it on or off never jumps.
           const swayOn = latest.current.sway && !motion.matches
           swayGain += ((swayOn ? 1 : 0) - swayGain) * Math.min(1, dt * 1.2)
           if (swayGain < 1e-3 && !swayOn) swayGain = 0
-          let turn = swayGain * SWAY_DEG * Math.sin(((now / 1000) * 2 * Math.PI) / SWAY_S)
-          if (spinT0 != null) {
-            const p = Math.min(1, (now - spinT0) / SPIN_MS)
-            const e = p < 0.5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2
-            turn += 360 * (1 - e)
-            if (p >= 1) spinT0 = null
-          }
-          if (swayGain > 0 || spinT0 != null) moving = true
+          if (swayOn) swayT += dt
+          const turn = swayGain * SWAY_DEG * Math.sin((swayT * 2 * Math.PI) / SWAY_S)
+          if (swayGain > 0) moving = true
           camera.position.copy(base).applyAxisAngle(Y, (turn * Math.PI) / 180)
           unzoomed = base.length()
         }
@@ -501,7 +493,6 @@ export default function MissionMoon({
       const onMotion = () => {
         orbit.enableDamping = !motion.matches
         if (motion.matches) {
-          spinT0 = null
           swayGain = 0
           if (tween) tween.t = 1
         }
@@ -533,12 +524,6 @@ export default function MissionMoon({
       api.current = {
         redraw: requestDraw,
         light: () => light(),
-        spin: () => {
-          if (motion.matches) return
-          rejoin()
-          spinT0 = performance.now()
-          requestDraw()
-        },
         turn: (direction) => {
           if (direction === 'reset') {
             rejoin()
@@ -578,7 +563,7 @@ export default function MissionMoon({
         })
         for (const map of textures) map.dispose()
         renderer.dispose()
-        api.current = { redraw: () => {}, light: () => {}, turn: () => {}, spin: () => {} }
+        api.current = { redraw: () => {}, light: () => {}, turn: () => {} }
       }
       light(true)
     }
