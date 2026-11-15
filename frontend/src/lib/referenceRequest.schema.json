@@ -29,20 +29,13 @@
     },
     "profile": {
       "default": "geometric",
-      "enum": [
-        "geometric",
-        "apparent"
-      ],
+      "enum": ["geometric", "apparent"],
       "title": "Profile",
       "type": "string"
     },
     "solarDefinition": {
       "default": "anyDisk",
-      "enum": [
-        "anyDisk",
-        "center",
-        "fullDisk"
-      ],
+      "enum": ["anyDisk", "center", "fullDisk"],
       "title": "Solardefinition",
       "type": "string"
     },
@@ -61,12 +54,8 @@
     },
     "localResolutionM": {
       "default": 80,
-      "enum": [
-        20,
-        80
-      ],
-      "title": "Localresolutionm",
-      "type": "integer"
+      "enum": [20, 80, 1895.21],
+      "title": "Localresolutionm"
     },
     "cadenceS": {
       "default": 3600,
@@ -83,11 +72,7 @@
       "type": "number"
     }
   },
-  "required": [
-    "site",
-    "startUtc",
-    "endUtc"
-  ],
+  "required": ["site", "startUtc", "endUtc"],
   "title": "ReferenceRequest",
   "type": "object"
 }

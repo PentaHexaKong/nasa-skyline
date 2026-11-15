@@ -65,10 +65,14 @@ def main():
         type=Path,
         default=appRoot / 'services/missionScience/data/raw',
     )
+    parser.add_argument('--global-terrain', action='store_true', help='Also verify or provision the coarse global LOLA image and label')
     args = parser.parse_args()
     manifest = json.loads(
         (appRoot / 'services/scienceAssets.manifest.json').read_text()
     )
+    if args.global_terrain:
+        globalManifest = json.loads((appRoot / 'services/globalScienceAssets.manifest.json').read_text())
+        manifest['files'].extend(globalManifest['files'])
     count = prepareAssets(args.sourceRoot, args.destinationRoot, manifest)
     print(
         f'Verified {count} pinned scientific assets at {args.destinationRoot.resolve()}'

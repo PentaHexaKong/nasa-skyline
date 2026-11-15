@@ -13,6 +13,7 @@ from .scientificModels import (
 
 
 class MastPowerRequest(ScientificRequest):
+    localResolutionM: Literal[20, 80] = 80
     schemaVersion: Literal['skyline-mast-power-request/1.0.0'] = (
         'skyline-mast-power-request/1.0.0'
     )

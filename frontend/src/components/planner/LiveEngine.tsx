@@ -63,7 +63,14 @@ export function LiveEngine({ plan, rows, refresh }: { plan: Plan; rows: PlannerR
                 {label.short === 'Checking' && <CircleNotchIcon aria-hidden className="animate-spin" />}
                 {label.short}
               </span>
-              <span className="text-ink-muted text-pretty">{label.detail}</span>
+              <span className="text-ink-muted text-pretty">
+                {label.detail}
+                {row?.state === 'computed' && row.response.provenance.limitations.some((limitation) => /exploratory/i.test(limitation)) && (
+                  <span className="mt-1 block">
+                    Exploratory scientific result. Independent site-specific visibility validation is incomplete.
+                  </span>
+                )}
+              </span>
             </li>
           )
         })}

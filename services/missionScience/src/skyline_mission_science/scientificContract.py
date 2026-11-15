@@ -12,7 +12,7 @@ from .schemas import EvaluationRequest
 from .scientificModels import ComputedResponse, ScientificRequest, StateResponse
 from .siteCatalog import resolveSite
 from .spiceGeometry import loadSpice
-from .terrainHorizon import LunarDem, TerrainCoverageError
+from .terrainHorizon import LunarDem, TerrainCoverageError, openDem
 
 
 def stateResponse(state, code, message, request=None, coverage=None):
@@ -166,12 +166,12 @@ def adaptScientificResponse(engine, request, native):
         )
     dems = []
     for filename, sha256 in provenance['dems'].items():
-        with LunarDem(filename) as dem:
+        with openDem(filename) as dem:
             metadata = dem.metadata()
             dems.append(
                 dict(
                     filename=Path(filename).name,
-                    sourceUrl='https://pgda.gsfc.nasa.gov/products/90',
+                    sourceUrl=('https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/'+Path(filename).name if Path(filename).suffix.upper() in {'.IMG','.LBL'} else 'https://pgda.gsfc.nasa.gov/products/90'),
                     sha256=sha256,
                     resolutionM=metadata['resolutionM'],
                     boundsM=metadata['boundsM'],
@@ -374,7 +374,7 @@ def evaluateScientific(engine, request):
                 if isinstance(error, TerrainCoverageError)
                 and 'NoData' in str(error)
                 or isinstance(error, FileNotFoundError)
-                and '.TIF' in str(error)
+                and any(extension in str(error).upper() for extension in ['.TIF', '.IMG', '.LBL'])
                 else None,
                 boundaryChecked=False,
                 reason=str(error),

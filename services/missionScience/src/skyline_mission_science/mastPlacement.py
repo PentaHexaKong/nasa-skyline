@@ -97,6 +97,8 @@ def evaluateMastPlacement(engine, request, clock=time.perf_counter):
         reference = resolveSite(request.site)
     except ValueError as error:
         return placementFailure('unsupported', 'site_unsupported', str(error), request)
+    if reference.siteId not in engine.sites:
+        return placementFailure('unsupported', 'site_unsupported', 'This observer has no qualified mast-placement terrain scenario', request)
     if reference.siteId != request.site:
         return placementFailure(
             'unsupported',

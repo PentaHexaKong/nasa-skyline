@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "files": [
+    {
+      "path": "lola/LDEM_16.LBL",
+      "sizeBytes": 5121,
+      "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+      "url": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+    },
+    {
+      "path": "lola/LDEM_16.IMG",
+      "sizeBytes": 33177600,
+      "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+      "url": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+    }
+  ]
+}

@@ -24,6 +24,7 @@ class PlacementBudget(ContractModel):
 
 
 class MastPlacementRequest(ScientificRequest):
+    localResolutionM: Literal[20, 80] = 80
     schemaVersion: Literal['skyline-mast-placement-request/1.0.0'] = (
         'skyline-mast-placement-request/1.0.0'
     )

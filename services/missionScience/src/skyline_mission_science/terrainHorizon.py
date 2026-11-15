@@ -12,6 +12,7 @@ import rasterio
 from rasterio.windows import Window
 
 from .spiceGeometry import siteFrame
+from .terrainProfiles import GLOBAL_TERRAIN_M
 
 LUNAR_RADIUS_M = 1737400.0
 DEM_FRAME = siteFrame
@@ -27,6 +28,13 @@ def contentHash(path):
 
 class TerrainCoverageError(ValueError):
     '''Required terrain is missing, invalid, or outside the supported model.'''
+
+
+def openDem(path):
+    if Path(path).suffix.upper() in {'.IMG', '.LBL'}:
+        from .globalLola import GlobalLolaDem
+        return GlobalLolaDem(path)
+    return LunarDem(path)
 
 
 def unitVector(latitudeDeg, longitudeDeg):
@@ -186,6 +194,8 @@ class TerrainHorizon:
 
 def _accumulateGrid(dem, site, position, basis, innerM, outerM, horizon, config):
     '''Visit every pixel center in the annulus, in bounded-memory row strips.'''
+    if hasattr(dem, 'accumulateHorizon'):
+        return dem.accumulateHorizon(site, position, basis, innerM, outerM, horizon, config)
     ds = dem.dataset
     # A conservative projected box encloses the spherical cap, checked in full.
     x, y = dem.xy(site.latitudeDeg, site.longitudeDeg)
@@ -266,6 +276,8 @@ def buildHorizon(site, localDem, extendedDem, config=HorizonConfig()):
                     minimumTargetRangeM=2*maxRadius*np.sin(theta/2) + 2*config.globalMaxHeightM,
                     localPixelCount=localCount, extendedPixelCount=extendedCount,
                     status='supported', model='pixel-center sector envelope plus near-field bilinear rays')
+    if hasattr(localDem, 'accumulateHorizon'):
+        metadata.update(quality='exploratory', model='coarse global LOLA pixel-center envelope plus bilinear rays', nominalResolutionM=GLOBAL_TERRAIN_M, subpixelTerrain='unresolved')
     return TerrainHorizon(site.siteId, position, basis, horizon, metadata)
 
 
@@ -274,12 +286,17 @@ def cachedHorizon(site, localPath=None, extendedPath=None, cacheRoot=DEFAULT_CAC
     localPath = Path(localPath or DEFAULT_DEM_ROOT / 'LDEM_80S_80MPP_ADJ.TIF')
     extendedPath = Path(extendedPath or DEFAULT_DEM_ROOT / 'LDEM_60S_240MPP_ADJ.TIF')
     sources = []
-    for path in (localPath, extendedPath):
+    demPaths = list(dict.fromkeys([localPath, extendedPath]))
+    labelPaths = [path.with_suffix('.LBL') for path in demPaths if path.suffix.upper() == '.IMG']
+    for path in demPaths + labelPaths:
         if not path.is_file():
             raise TerrainCoverageError(f'Missing required terrain raster: {path}')
         stat = path.stat()
         sources.append(dict(path=str(path.resolve()), size=stat.st_size, mtimeNs=stat.st_mtime_ns, sha256=contentHash(path)))
-    identity = dict(version=3, site=asdict(site), config=asdict(config), sources=sources,
+    readerPaths = [Path(__file__)]
+    if labelPaths:
+        readerPaths.append(Path(__file__).with_name('globalLola.py'))
+    identity = dict(version=4, readers={path.name: contentHash(path) for path in readerPaths}, site=asdict(site), config=asdict(config), sources=sources,
                     radiusM=LUNAR_RADIUS_M, frame=DEM_FRAME)
     key = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
     root = Path(cacheRoot)
@@ -294,7 +311,7 @@ def cachedHorizon(site, localPath=None, extendedPath=None, cacheRoot=DEFAULT_CAC
                                       cached['elevationDeg'], metadata)
         except (OSError, ValueError, KeyError) as error:
             raise TerrainCoverageError(f'Invalid terrain cache {path}: {error}') from error
-    with LunarDem(localPath) as local, LunarDem(extendedPath) as extended:
+    with openDem(localPath) as local, openDem(extendedPath) as extended:
         profile = buildHorizon(site, local, extended, config)
     profile.metadata.update(cacheKey=key, cacheIdentity=identity, cachePath=str(path.resolve()))
     root.mkdir(parents=True, exist_ok=True)

@@ -735,9 +735,8 @@
           "type": "number"
         },
         "localResolutionM": {
-          "enum": [20, 80],
-          "title": "Localresolutionm",
-          "type": "integer"
+          "enum": [20, 80, 1895.21],
+          "title": "Localresolutionm"
         },
         "eventToleranceS": {
           "maximum": 30,

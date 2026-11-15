@@ -1,6 +1,11 @@
+import { createMemoryHistory, RouterContextProvider } from '@tanstack/react-router'
+import { createElement, type ReactNode } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { afterEach, beforeAll, expect, test, vi } from 'vitest'
+import { DynamicSiteReference } from '~/components/dynamicSiteReference'
 import backendRequest from '../../../contracts/referenceRequest.schema.json'
 import backendWindow from '../../../contracts/referenceWindow.schema.json'
+import { getRouter } from '~/router'
 import computedExample from '../../../examples/scientificResponse.computed.json'
 import { loadReferenceSite, loadSummary, type Summary } from './data'
 import frontendRequest from './referenceRequest.schema.json'
@@ -124,7 +129,7 @@ test.each([2026, 2028])('annual %i windows are bounded, contiguous and include e
 })
 
 test('unsupported sites do not acquire scientific mappings', async () => {
-  expect(referenceRequest(await loadSummary('apollo11'), Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 2))).toBeNull()
+  expect(referenceRequest(await loadReferenceSite('change4'), Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 2))).toBeNull()
 })
 
 test('reference request retains height, epoch and scientific settings', () => {
@@ -252,6 +257,30 @@ test('obsolete queued requests are dropped before starting a scientific evaluati
   const run = vi.fn(async () => 1)
   expect(await queueReference(run, () => false)).toBeNull()
   expect(run).not.toHaveBeenCalled()
+})
+
+const withRouter = (node: ReactNode) => {
+  const router = getRouter()
+  router.update({ ...router.options, history: createMemoryHistory() })
+  return createElement(RouterContextProvider, { router, children: node })
+}
+
+test('the actual annual report renders pending states and unknown days before hydration', () => {
+  const html = renderToStaticMarkup(withRouter(createElement(DynamicSiteReference, { site, search: {}, go: () => {}, onSite: () => {} })))
+  expect(html).toContain('The year 2026')
+  expect(html).toContain('Computing…')
+  expect(html).toContain('0 of 365 days computed so far')
+  expect(html).not.toContain('Annual sunlight</dt>')
+  expect(html).not.toContain('0.0 %')
+})
+
+test('an unsupported annual observer stays visible without percentages or a flat horizon', async () => {
+  const unsupported = await loadReferenceSite('change4')
+  const html = renderToStaticMarkup(withRouter(createElement(DynamicSiteReference, { site: unsupported, search: {}, go: () => {}, onSite: () => {} })))
+  expect(html).toContain('Not available for this site')
+  expect(html).toContain('unresolved coordinate realization')
+  expect(html).not.toContain('Annual sunlight</dt>')
+  expect(html).not.toContain('Live scientific skyline')
 })
 
 test('calendar construction preserves years below 100 and delegates uncovered epochs to the engine', () => {

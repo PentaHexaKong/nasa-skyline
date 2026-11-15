@@ -8,11 +8,15 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/api.py",
-      "sha256": "58caff4119d0ec1796a92a63b7025e307e80cf57742ad178bc7609c08c9f56ea"
+      "sha256": "17665ce3f3b10e652d30480c805604f9006a3417ec3802cd46980b7e607b962b"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/engine.py",
-      "sha256": "e09482c4c551d5dc88f81054c19154389d87e8c3c58fea60c49016d98e72f208"
+      "sha256": "7507bf298a4be3c4b67d952ce920a4ab54891b719a284785a271a537558aa1a6"
+    },
+    {
+      "path": "services/missionScience/src/skyline_mission_science/globalLola.py",
+      "sha256": "edcd4cb2182504783d8f94c558ed5c8c0401ef6bce4d54466e5c5d00edf3fbb9"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/intermediateCache.py",
@@ -28,11 +32,11 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/mastPlacement.py",
-      "sha256": "45962702e49ed9fe49729238d7394ac7d80fcec106cd05a1d1b0d128b5d53f47"
+      "sha256": "59d26aa95efef8a9bdec98aacba1e90cd6dd917bf0ab76856eec78f0edd84d6e"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/mastPlacementModels.py",
-      "sha256": "6e1358bc635a66a7fcbffc210c606a98d227d1c077489957b243a6a8f5ca957f"
+      "sha256": "3e2583bd6442935e14615791f34bf9ecf240b17248ee62c6dfca7b0c8425cbfe"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/mastPlacementSelection.py",
@@ -44,11 +48,11 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/mastPower.py",
-      "sha256": "98461f645d2c2fc50b80e1289caed04258aa3f57d873434d58c94ace6a7c1623"
+      "sha256": "7e7afb9bfae539028b0013b65a81af2aa72a094c0135fdc45ba7dd2cd1201387"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/mastPowerModels.py",
-      "sha256": "41a6d3ced5f0f0040b239fe4e7972f36d4662659e84358bba6949cedd1b81f56"
+      "sha256": "299f2fed08871bcc2e71b89f6129d5d9a16316c4ba9c68e3fa966d0b4cbc0013"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/optimization.py",
@@ -64,15 +68,15 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/referenceEvaluations.py",
-      "sha256": "460f181686f59b3a0b50617644472560538d84aba68c02b745b18cbf086bcb5a"
+      "sha256": "b8133343ed997ccdd38c3e17ebb2d461d3ad846c19b97d2eaf6fa0ba0d706461"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/schemas.py",
-      "sha256": "98f246e344e31144c198c05fa0d9d2b4524d9427a30104f7c64884a0e3425751"
+      "sha256": "bb82ac046838b677c0e92c5b57666f640072083297767ab6c3459523c92cc949"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/scientificContract.py",
-      "sha256": "074cb441375b411e3eb21d9a162d755e104f2b61193d97e6445d796d0962ca4c"
+      "sha256": "2f35c83f4e4932a6beaea8a41c40b2553a6ce1ab847e2184af7f0ebf6dc84a5f"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/scientificFeeds.py",
@@ -84,7 +88,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/siteCatalog.json",
-      "sha256": "ce81145549d1eaf8663f6d0a058c3831fd0769febd509a856275cba9c62d8a02"
+      "sha256": "b639ad042438a4ae38c26e4058154a0e32486062280fcd0f2d70a39f38fe9dfe"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/siteCatalog.py",
@@ -96,7 +100,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/terrainHorizon.py",
-      "sha256": "14a8e2f5b24aaf7277187efd59d1acbc579204589ad8f1dfadd75238277107ff"
+      "sha256": "8046fd4ecfc383d93cd97237e273dc37ee7f02d24e0e99fed428c0641d6d5504"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/visibility.py",
@@ -112,7 +116,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_rover_science/roverEvaluation.py",
-      "sha256": "abe85d895c51e9238557f674ea6e8512feb2ae841b3ea46eaaa14c6cf6c4911a"
+      "sha256": "94cc6b696f6191e20c4aa65b007bcd3680d6080bb31f3de10a3615da1aa4d8b3"
     },
     {
       "path": "services/missionScience/src/skyline_rover_science/roverGraph.py",

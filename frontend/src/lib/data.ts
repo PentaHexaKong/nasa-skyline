@@ -1,7 +1,17 @@
 import { z } from 'zod'
+import referenceCatalogueJson from '../data/generated/catalogue/sites.json'
 import sitesJson from '../data/generated/sites.json'
 
 const isoDate = z.iso.date()
+
+/**
+ * The two terrain maps the live engine reads, by their nominal spacing in metres (`localResolutionM`). Polar: LOLA's
+ * 80 m south-polar map. Global: LOLA's LDEM_16, 16 pixels a degree on the 1737.4 km sphere, about 1895 m at the
+ * equator, coarse and exploratory. The engine and its schemas use the same two numbers.
+ */
+export const POLAR_TERRAIN_M = 80
+export const GLOBAL_TERRAIN_M = 1895.21
+export type TerrainResolutionM = typeof POLAR_TERRAIN_M | typeof GLOBAL_TERRAIN_M
 
 export const DaySchema = z.object({
   date: isoDate,
@@ -129,27 +139,37 @@ export const SITES = z
   .array(z.object({ id: z.string(), name: z.string(), body: z.literal('moon').default('moon') }))
   .min(1)
   .parse(sitesJson)
+export const REFERENCE_SITES = referenceCatalogueJson
 export type SiteId = string
 export const MOON_SITES = SITES.filter((s) => s.body === 'moon')
 
 /** Metadata for live scientific pages, with results obtained from the versioned API. */
 export type ReferenceSite = {
-  site: { id: string; name: string; observer_height_m: number }
+  site: { id: string; name: string; observer_height_m: number; terrainResolutionM?: TerrainResolutionM }
   params: { start: string }
+  catalogue?: (typeof REFERENCE_SITES)[number]
 }
 
 const referenceSiteSchema = z.object({
-  site: z.object({ id: z.string(), name: z.string(), observer_height_m: z.number().nonnegative() }),
+  site: z.object({
+    id: z.string(),
+    name: z.string(),
+    observer_height_m: z.number().nonnegative(),
+    terrainResolutionM: z.union([z.literal(POLAR_TERRAIN_M), z.literal(GLOBAL_TERRAIN_M)]).optional(),
+  }),
   params: z.object({ start: isoDate }),
 })
 
 export async function loadReferenceSite(id: SiteId): Promise<ReferenceSite> {
-  const entry = sitesJson.find((site) => site.id === id)
+  const entry = REFERENCE_SITES.find((site) => site.id === id)
   if (!entry) throw new Error(`No reference catalogue entry for site "${id}"`)
-  return referenceSiteSchema.parse({
-    site: { id: entry.id, name: entry.name, observer_height_m: entry.observerHeightM },
-    params: { start: entry.referenceStartUtc },
-  })
+  return {
+    ...referenceSiteSchema.parse({
+      site: { id: entry.id, name: entry.name, observer_height_m: entry.observerHeightM, terrainResolutionM: entry.terrainResolutionM },
+      params: { start: entry.referenceStartUtc },
+    }),
+    catalogue: entry,
+  }
 }
 
 const summaries = import.meta.glob<{ default: unknown }>('../data/generated/*.summary.json')

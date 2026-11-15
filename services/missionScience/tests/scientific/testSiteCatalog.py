@@ -12,13 +12,12 @@ from skyline_mission_science.terrainHorizon import LunarDem, TerrainCoverageErro
 
 def testCatalogRetainsEveryDistinctLocation():
     sites = {site['canonicalId']: site for site in loadCatalog()['sites']}
-    assert len(sites) == 11
+    assert len(sites) == 19
     assert loadCatalog()['aliases'] == {}
     assert sites['apollo11']['latitudeDeg'] == 0.67416
     assert sites['apollo11']['relay']['status'] == 'unsupported'
-    assert sites['shackleton-ridge']['scientificCanonicalId'] is None
-    with pytest.raises(ValueError, match='unresolved'):
-        resolveSite('shackleton-ridge')
+    assert sites['shackleton-ridge']['scientificCanonicalId'] == 'shackleton-ridge'
+    assert resolveSite('shackleton-ridge') != resolveSite('CR1')
     for identifier, latitude, longitude in [
         ('CR1', -89.4679, -137.411),
         ('GR1', -88.6952, -68.2846),
@@ -88,7 +87,7 @@ def testVersionedEndpointPreservesOldList():
     assert isinstance(client.get('/v1/sites').json(), list)
     result = client.get('/v1/site-catalog').json()
     assert result['schemaVersion'] == 'site-catalog/1.0.0'
-    assert len(result['sites']) == 11
+    assert len(result['sites']) == 19
 
 
 def testNumericalToleranceEdges():
@@ -118,7 +117,7 @@ def testUnsupportedIdsAndMissingDemAtEntryPoint(tmp_path):
     from skyline_mission_science.engine import Engine
 
     engine = Engine(tmp_path, tmp_path / 'cache')
-    for identifier in ['apollo11', 'shackleton-ridge', 'missing-site']:
+    for identifier in ['CE4', 'SLIM_PGDA101', 'missing-site']:
         result = engine.evaluate(dict(site=identifier, startUtc='2025-01-01T00:00:00Z'))
         assert result.dataState == 'unavailable'
         assert identifier in result.error['message']
@@ -155,7 +154,7 @@ def testCatalogContractAndCanonicalResolution():
 
     catalog = loadCatalog()
     CatalogResponse.model_validate(catalog)
-    assert len({entry['canonicalId'] for entry in catalog['sites']}) == 11
+    assert len({entry['canonicalId'] for entry in catalog['sites']}) == 19
     engine = Engine()
     assert all(
         resolveSite(identifier) == site for identifier, site in engine.sites.items()

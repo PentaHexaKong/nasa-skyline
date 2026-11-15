@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field
 from .engine import Engine
 from .siteCatalog import CatalogResponse, loadCatalog
 from .schemas import EvaluationRequest, EvaluationResponse
+from .terrainProfiles import GLOBAL_TERRAIN_M
 from .optimization import SearchRequest, search
 
 app = FastAPI(title='SKYLINE Mission Science', version='1.0')
@@ -100,6 +101,8 @@ def capabilities():
         maxCompare=16,
         maxSearchEvaluations=128,
         maxConcurrentRequests=1,
+        siteCatalog='/v1/site-catalog',
+        terrainProfiles=dict(polar=dict(localResolutionM=[20, 80], optionalResolutionM=20), globalExploratory=dict(localResolutionM=GLOBAL_TERRAIN_M, requiredAssets=['LDEM_16.IMG', 'LDEM_16.LBL'], independentlyValidated=False)),
         execution='synchronous bounded admission',
         arbitraryCoordinates='conditional on complete DEM search extent and DE421 kernel coverage',
         earthDefinition='center geometric visibility',

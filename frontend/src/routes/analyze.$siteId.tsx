@@ -5,6 +5,7 @@ import { CubeIcon } from '@phosphor-icons/react'
 import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { DayProfile, NoTrackNote } from '~/components/DayProfile'
+import { DynamicSiteReference } from '~/components/dynamicSiteReference'
 import { Intervals, intervalsOn } from '~/components/Intervals'
 import { LiveDay } from '~/components/LiveDay'
 import { changeReadout, earthChangeReadout, PhaseBadge, type Readout, Readouts, sunReadout } from '~/components/Moment'
@@ -13,21 +14,62 @@ import { Panorama, PanoramaKey } from '~/components/Panorama'
 import { Explain, Eyebrow, Shell } from '~/components/Shell'
 import { SiteDock } from '~/components/SiteDock'
 import { YearChart } from '~/components/YearChart'
-import { hasTerrain, loadSummary, NEIGHBOURS, readerReference, SITES, type Summary, surfaceMetres } from '~/lib/data'
+import {
+  hasTerrain,
+  loadReferenceSite,
+  loadSummary,
+  NEIGHBOURS,
+  REFERENCE_SITES,
+  type ReferenceSite,
+  readerReference,
+  SITES,
+  type SiteId,
+  type Summary,
+  surfaceMetres,
+} from '~/lib/data'
 import { DAY_MS, measure, siteSpans } from '~/lib/mission'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, minutes, shortDate } from '~/lib/time'
-import { headline, siteSearch, sunHud, useSiteView } from '~/lib/useSiteView'
+import { headline, type SiteSearch, siteSearch, sunHud, useSiteView } from '~/lib/useSiteView'
 
 export const Route = createFileRoute('/analyze/$siteId')({
   validateSearch: siteSearch,
+  // Sites with a precomputed year get the designed report. Catalogue-only sites (the international ones) have no year yet,
+  // so they get the live reference page, computed on request.
   loader: async ({ params }) => {
-    if (!SITES.some((s) => s.id === params.siteId)) throw notFound()
-    return loadSummary(params.siteId)
+    if (SITES.some((s) => s.id === params.siteId)) return { kind: 'report' as const, data: await loadSummary(params.siteId) }
+    if (REFERENCE_SITES.some((s) => s.id === params.siteId))
+      return { kind: 'reference' as const, site: await loadReferenceSite(params.siteId as SiteId) }
+    throw notFound()
   },
-  head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.site.name ?? 'Site'} · Analyze · Skyline` }] }),
-  component: VisualizePage,
+  head: ({ loaderData }) => {
+    const name = loaderData?.kind === 'report' ? loaderData.data.site.name : loaderData?.site.site.name
+    return { meta: [{ title: `${name ?? 'Site'} · Analyze · Skyline` }] }
+  },
+  component: SitePage,
 })
+
+function SitePage() {
+  const loaded = Route.useLoaderData()
+  return loaded.kind === 'report' ? <VisualizePage data={loaded.data} /> : <ReferencePage site={loaded.site} />
+}
+
+/** A catalogue site with no precomputed year: the live reference, computed for the day in view. */
+function ReferencePage({ site }: { site: ReferenceSite }) {
+  const search = Route.useSearch()
+  const navigate = useNavigate({ from: Route.fullPath })
+  const go = (next: SiteSearch) => navigate({ search: (previous) => ({ ...previous, ...next }), replace: true, resetScroll: false })
+  return (
+    <Shell>
+      <DynamicSiteReference
+        site={site}
+        search={search}
+        go={go}
+        onSite={(siteId) => navigate({ to: '/analyze/$siteId', params: { siteId }, search })}
+      />
+    </Shell>
+  )
+}
 
 function darkStretch(data: Summary) {
   const s = data.summary
@@ -153,8 +195,7 @@ function Nearby({ data, day, t }: { data: Summary; day: string; t: number }) {
   )
 }
 
-function VisualizePage() {
-  const data = Route.useLoaderData()
+function VisualizePage({ data }: { data: Summary }) {
   const { day, t } = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const go = (s: { day?: string; t?: number }) => navigate({ search: (prev) => ({ ...prev, ...s }), replace: true, resetScroll: false })

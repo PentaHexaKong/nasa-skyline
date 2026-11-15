@@ -134,6 +134,9 @@ export function Shell({
                 </nav>
                 <div className="-mr-2 ml-auto flex items-center gap-2 sm:-mr-3">
                   {tools}
+                  <Link to="/sites" className={`${navLink} max-sm:hidden`}>
+                    Sites
+                  </Link>
                   <Link to="/method" className={`${navLink} max-sm:hidden`}>
                     Method
                   </Link>

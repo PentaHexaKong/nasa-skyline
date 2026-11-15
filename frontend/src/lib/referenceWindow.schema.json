@@ -17,11 +17,7 @@
           "type": "number"
         }
       },
-      "required": [
-        "date",
-        "startS",
-        "endS"
-      ],
+      "required": ["date", "startS", "endS"],
       "title": "ReferenceDay",
       "type": "object"
     }
@@ -58,13 +54,7 @@
       "type": "array"
     }
   },
-  "required": [
-    "startUtc",
-    "endUtc",
-    "startEt",
-    "endEt",
-    "days"
-  ],
+  "required": ["startUtc", "endUtc", "startEt", "endEt", "days"],
   "title": "ReferenceWindow",
   "type": "object"
 }

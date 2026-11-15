@@ -80,9 +80,9 @@ test('request identity covers date, duration, observer height, site, profile and
   })
 })
 
-test('unverified sites remain visible, unsupported and never call the scientific API', async () => {
+test('unsupported inputs remain visible and never call the scientific API', async () => {
   const plan = resolvePlan(all, planSearch.parse({ sites: 'apollo11,shackleton-ridge' }))
-  const inputs = plannerInputs(plan)
+  const inputs = plannerInputs(plan).map((input) => ({ ...input, request: null }))
   const rows = initialPlannerRows(inputs, true)
   expect(Object.values(rows).map((row) => row.state)).toEqual(['unsupported', 'unsupported'])
   const fetch = vi.fn()
@@ -307,4 +307,13 @@ test('engine failures read as a short reason, never a schema dump', async () => 
   )
   expect(rows['connecting-ridge']).toEqual({ state: 'failed', message: 'The service answered HTTP 404.' })
   expect(scientificPlan(selected, rows).sites[0]!.source).toBe('precomputed')
+})
+
+test('the merged live engine keeps exploratory qualification visible before opening provenance details', () => {
+  const value = response()
+  value.provenance.limitations.push('Exploratory site evaluation has no independent site-specific visibility validation')
+  const rows: PlannerRows = { 'connecting-ridge': { state: 'computed', response: value } }
+  const plan = scientificPlan(selected, rows)
+  const html = renderToStaticMarkup(<LiveEngine plan={plan} rows={rows} refresh={() => {}} />)
+  expect(html).toContain('Exploratory scientific result. Independent site-specific visibility validation is incomplete.')
 })

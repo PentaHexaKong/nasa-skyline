@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator, field_validator
+from .terrainProfiles import GLOBAL_TERRAIN_M
 
 class Site(BaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
@@ -33,7 +34,7 @@ class EvaluationRequest(BaseModel):
     solarDefinition: Literal['center','anyDisk','fullDisk'] = 'anyDisk'
     earthDefinition: Literal['center'] = 'center'
     horizonOffsetDeg: float = Field(default=0, ge=-5, le=5)
-    localResolutionM: Literal[20,80] = 80
+    localResolutionM: Literal[20, 80, GLOBAL_TERRAIN_M] = 80
     eventToleranceS: float = Field(default=1, ge=0.01, le=30)
     constraints: Constraints = Field(default_factory=Constraints)
 

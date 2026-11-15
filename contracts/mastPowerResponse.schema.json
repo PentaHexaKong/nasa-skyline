@@ -1246,10 +1246,10 @@
         "localResolutionM": {
           "enum": [
             20,
-            80
+            80,
+            1895.21
           ],
-          "title": "Localresolutionm",
-          "type": "integer"
+          "title": "Localresolutionm"
         },
         "eventToleranceS": {
           "maximum": 30,

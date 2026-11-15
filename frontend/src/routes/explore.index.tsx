@@ -148,10 +148,7 @@ function Opening() {
   }, [])
   return (
     <section id="top" data-moon-chapter aria-labelledby="explore-title" className="relative min-h-[calc(100svh-3.5rem)] scroll-mt-14">
-      <div
-        ref={hold}
-        className="mx-auto grid min-h-[calc(100svh-3.5rem)] max-w-7xl grid-rows-[auto_1fr_auto] px-4 pt-5 pb-14 sm:px-6"
-      >
+      <div ref={hold} className="mx-auto grid min-h-[calc(100svh-3.5rem)] max-w-7xl grid-rows-[auto_1fr_auto] px-4 pt-5 pb-14 sm:px-6">
         <div className="grid justify-items-center gap-3 text-center">
           <Link to="/" className="justify-self-start text-sm text-ink-muted hover:text-ink">
             <ArrowLeftIcon aria-hidden className="mr-1 inline size-3.5" />

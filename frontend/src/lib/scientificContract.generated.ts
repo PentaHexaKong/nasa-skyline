@@ -10,7 +10,7 @@ export type ScientificRequest = {
   solarDefinition?: 'center' | 'anyDisk' | 'fullDisk'
   earthDefinition?: 'center'
   horizonOffsetDeg?: number
-  localResolutionM?: 20 | 80
+  localResolutionM?: 20 | 80 | 1895.21
   eventToleranceS?: number
   constraints?: Constraints
   observerHeightM?: number

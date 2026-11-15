@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { ReferenceSite, SkyTarget, Track } from './data'
+import { POLAR_TERRAIN_M, type ReferenceSite, type SkyTarget, type TerrainResolutionM, type Track } from './data'
 import { verifyPlannerResponse } from './dynamicPlanner'
 import type { ScientificRequest } from './missionScience'
 import { SERVICE_SITE, scientificUnavailableReason } from './missionScience'
@@ -19,7 +19,7 @@ export type ReferenceRequest = {
   solarDefinition: 'anyDisk'
   earthDefinition: 'center'
   horizonOffsetDeg: number
-  localResolutionM: 80
+  localResolutionM: TerrainResolutionM
   cadenceS: number
   eventToleranceS: number
 }
@@ -53,7 +53,7 @@ export function referenceRequest(site: ReferenceSite, start: number, end: number
     solarDefinition: 'anyDisk',
     earthDefinition: 'center',
     horizonOffsetDeg: 0,
-    localResolutionM: 80,
+    localResolutionM: site.site.terrainResolutionM ?? POLAR_TERRAIN_M,
     cadenceS,
     eventToleranceS: 1,
   }) as ReferenceRequest
@@ -263,6 +263,6 @@ export function queueReference<T>(run: () => Promise<T>, current: () => boolean,
 }
 export function referenceInitial(site: ReferenceSite): ReferenceState {
   return SERVICE_SITE[site.site.id]
-    ? { state: 'loading', message: 'Evaluating SPICE geometry and LOLA terrain.' }
+    ? { state: 'loading', message: 'Working out where the Sun and Earth sit above this terrain.' }
     : { state: 'unsupported', message: scientificUnavailableReason(site.site.id) }
 }
