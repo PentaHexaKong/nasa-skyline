@@ -127,7 +127,7 @@ test.each([2026, 2028])('annual %i windows are bounded, contiguous and include e
 })
 
 test('unsupported sites do not acquire scientific mappings', async () => {
-  expect(referenceRequest(await loadSummary('apollo11'), Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 2))).toBeNull()
+  expect(referenceRequest(await loadReferenceSite('change4'), Date.UTC(2026, 0, 1), Date.UTC(2026, 0, 2))).toBeNull()
 })
 
 test('reference request retains height, epoch and scientific settings', () => {
@@ -267,10 +267,10 @@ test('the actual annual report renders pending states and unknown days before hy
 })
 
 test('an unsupported annual observer stays visible without percentages or a flat horizon', async () => {
-  const unsupported = await loadSummary('apollo11')
+  const unsupported = await loadReferenceSite('change4')
   const html = renderToStaticMarkup(createElement(DynamicSiteReference, { site: unsupported, search: {}, go: () => {}, onSite: () => {} }))
   expect(html).toContain('unsupported')
-  expect(html).toContain('verified equatorial terrain')
+  expect(html).toContain('realization unresolved')
   expect(html).not.toContain('Annual sunlight</dt>')
   expect(html).not.toContain('Live scientific skyline')
 })

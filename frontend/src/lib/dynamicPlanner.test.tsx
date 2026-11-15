@@ -76,9 +76,9 @@ test('request identity covers date, duration, observer height, site, profile and
   })
 })
 
-test('unverified sites remain visible, unsupported and never call the scientific API', async () => {
+test('unsupported inputs remain visible and never call the scientific API', async () => {
   const plan = resolvePlan(all, planSearch.parse({ sites: 'apollo11,shackleton-ridge' }))
-  const inputs = plannerInputs(plan)
+  const inputs = plannerInputs(plan).map((input) => ({ ...input, request: null }))
   const rows = initialPlannerRows(inputs, true)
   expect(Object.values(rows).map((row) => row.state)).toEqual(['unsupported', 'unsupported'])
   const fetch = vi.fn()

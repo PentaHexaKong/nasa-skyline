@@ -35,7 +35,16 @@
           "type": "null"
         }
       },
-      "required": ["schemaVersion", "dataState", "scenarioId", "request", "units", "result", "provenance", "error"],
+      "required": [
+        "schemaVersion",
+        "dataState",
+        "scenarioId",
+        "request",
+        "units",
+        "result",
+        "provenance",
+        "error"
+      ],
       "title": "ComputedResponse",
       "type": "object"
     },
@@ -80,7 +89,10 @@
           "type": "string"
         }
       },
-      "required": ["code", "message"],
+      "required": [
+        "code",
+        "message"
+      ],
       "title": "ContractError",
       "type": "object"
     },
@@ -118,7 +130,12 @@
           "type": "string"
         }
       },
-      "required": ["completeSearchRegion", "missingData", "boundaryChecked", "reason"],
+      "required": [
+        "completeSearchRegion",
+        "missingData",
+        "boundaryChecked",
+        "reason"
+      ],
       "title": "Coverage",
       "type": "object"
     },
@@ -166,7 +183,15 @@
           "type": "string"
         }
       },
-      "required": ["filename", "sourceUrl", "sha256", "resolutionM", "boundsM", "frame", "projection"],
+      "required": [
+        "filename",
+        "sourceUrl",
+        "sha256",
+        "resolutionM",
+        "boundsM",
+        "frame",
+        "projection"
+      ],
       "title": "DemIdentity",
       "type": "object"
     },
@@ -248,7 +273,12 @@
           "type": "string"
         }
       },
-      "required": ["visibilityRule", "safetyMarginDeg", "rfConnectivity", "interpretation"],
+      "required": [
+        "visibilityRule",
+        "safetyMarginDeg",
+        "rfConnectivity",
+        "interpretation"
+      ],
       "title": "EarthDefinition",
       "type": "object"
     },
@@ -280,7 +310,13 @@
           "type": "boolean"
         }
       },
-      "required": ["azimuthDeg", "elevationDeg", "horizonElevationDeg", "clearanceDeg", "centerVisible"],
+      "required": [
+        "azimuthDeg",
+        "elevationDeg",
+        "horizonElevationDeg",
+        "clearanceDeg",
+        "centerVisible"
+      ],
       "title": "EarthSample",
       "type": "object"
     },
@@ -298,7 +334,13 @@
           "type": "number"
         },
         "eventType": {
-          "enum": ["sunrise", "sunset", "earthrise", "earthset", "grazing"],
+          "enum": [
+            "sunrise",
+            "sunset",
+            "earthrise",
+            "earthset",
+            "grazing"
+          ],
           "title": "Eventtype",
           "type": "string"
         },
@@ -319,12 +361,22 @@
           "title": "Physicaluncertaintys"
         },
         "method": {
-          "enum": ["numerical transition estimate", "extremum estimate"],
+          "enum": [
+            "numerical transition estimate",
+            "extremum estimate"
+          ],
           "title": "Method",
           "type": "string"
         }
       },
-      "required": ["timestampUtc", "elapsedS", "eventType", "numericalToleranceS", "physicalUncertaintyS", "method"],
+      "required": [
+        "timestampUtc",
+        "elapsedS",
+        "eventType",
+        "numericalToleranceS",
+        "physicalUncertaintyS",
+        "method"
+      ],
       "title": "Event",
       "type": "object"
     },
@@ -360,7 +412,14 @@
           "type": "boolean"
         }
       },
-      "required": ["startUtc", "endUtc", "startS", "endS", "startClipped", "endClipped"],
+      "required": [
+        "startUtc",
+        "endUtc",
+        "startS",
+        "endS",
+        "startClipped",
+        "endClipped"
+      ],
       "title": "Interval",
       "type": "object"
     },
@@ -387,7 +446,11 @@
           "type": "boolean"
         }
       },
-      "required": ["durationS", "interval", "touchesCoverageBoundary"],
+      "required": [
+        "durationS",
+        "interval",
+        "touchesCoverageBoundary"
+      ],
       "title": "LongestInterval",
       "type": "object"
     },
@@ -567,7 +630,13 @@
           "type": "string"
         }
       },
-      "required": ["startUtc", "endUtc", "durationS", "intervalConvention", "durationScale"],
+      "required": [
+        "startUtc",
+        "endUtc",
+        "durationS",
+        "intervalConvention",
+        "durationScale"
+      ],
       "title": "Period",
       "type": "object"
     },
@@ -588,12 +657,18 @@
           "type": "object"
         },
         "scientificProfile": {
-          "enum": ["geometric", "apparent"],
+          "enum": [
+            "geometric",
+            "apparent"
+          ],
           "title": "Scientificprofile",
           "type": "string"
         },
         "aberrationCorrection": {
-          "enum": ["NONE", "LT+S"],
+          "enum": [
+            "NONE",
+            "LT+S"
+          ],
           "title": "Aberrationcorrection",
           "type": "string"
         },
@@ -714,12 +789,19 @@
           "type": "number"
         },
         "profile": {
-          "enum": ["geometric", "apparent"],
+          "enum": [
+            "geometric",
+            "apparent"
+          ],
           "title": "Profile",
           "type": "string"
         },
         "solarDefinition": {
-          "enum": ["center", "anyDisk", "fullDisk"],
+          "enum": [
+            "center",
+            "anyDisk",
+            "fullDisk"
+          ],
           "title": "Solardefinition",
           "type": "string"
         },
@@ -735,9 +817,12 @@
           "type": "number"
         },
         "localResolutionM": {
-          "enum": [20, 80],
-          "title": "Localresolutionm",
-          "type": "integer"
+          "enum": [
+            20,
+            80,
+            1895.21
+          ],
+          "title": "Localresolutionm"
         },
         "eventToleranceS": {
           "maximum": 30,
@@ -754,7 +839,9 @@
           "type": "number"
         }
       },
-      "required": ["startUtc"],
+      "required": [
+        "startUtc"
+      ],
       "title": "ScientificRequest",
       "type": "object"
     },
@@ -845,7 +932,11 @@
           "type": "string"
         }
       },
-      "required": ["siteId", "latitudeDeg", "longitudeDeg"],
+      "required": [
+        "siteId",
+        "latitudeDeg",
+        "longitudeDeg"
+      ],
       "title": "Site",
       "type": "object"
     },
@@ -956,7 +1047,11 @@
       "additionalProperties": false,
       "properties": {
         "availabilityRule": {
-          "enum": ["anyDisk", "center", "fullDisk"],
+          "enum": [
+            "anyDisk",
+            "center",
+            "fullDisk"
+          ],
           "title": "Availabilityrule",
           "type": "string"
         },
@@ -972,7 +1067,11 @@
           "title": "Diskfractionthreshold"
         },
         "thresholdOperator": {
-          "enum": ["greater_than", "greater_than_or_equal", "center_clearance_nonnegative"],
+          "enum": [
+            "greater_than",
+            "greater_than_or_equal",
+            "center_clearance_nonnegative"
+          ],
           "title": "Thresholdoperator",
           "type": "string"
         },
@@ -995,7 +1094,14 @@
           "type": "array"
         }
       },
-      "required": ["availabilityRule", "diskFractionThreshold", "thresholdOperator", "diskModel", "classification", "limitations"],
+      "required": [
+        "availabilityRule",
+        "diskFractionThreshold",
+        "thresholdOperator",
+        "diskModel",
+        "classification",
+        "limitations"
+      ],
       "title": "SolarDefinition",
       "type": "object"
     },
@@ -1034,7 +1140,11 @@
           "type": "number"
         },
         "diskState": {
-          "enum": ["fully_visible", "partially_visible", "obscured"],
+          "enum": [
+            "fully_visible",
+            "partially_visible",
+            "obscured"
+          ],
           "title": "Diskstate",
           "type": "string"
         },
@@ -1065,7 +1175,12 @@
           "type": "string"
         },
         "dataState": {
-          "enum": ["unsupported", "not_computed", "unavailable", "failed"],
+          "enum": [
+            "unsupported",
+            "not_computed",
+            "unavailable",
+            "failed"
+          ],
           "title": "Datastate",
           "type": "string"
         },
@@ -1115,7 +1230,17 @@
           "$ref": "#/$defs/ContractError"
         }
       },
-      "required": ["schemaVersion", "dataState", "scenarioId", "request", "units", "result", "provenance", "coverage", "error"],
+      "required": [
+        "schemaVersion",
+        "dataState",
+        "scenarioId",
+        "request",
+        "units",
+        "result",
+        "provenance",
+        "coverage",
+        "error"
+      ],
       "title": "StateResponse",
       "type": "object"
     },
@@ -1133,7 +1258,10 @@
           "type": "number"
         },
         "scientificProfile": {
-          "enum": ["geometric", "apparent"],
+          "enum": [
+            "geometric",
+            "apparent"
+          ],
           "title": "Scientificprofile",
           "type": "string"
         },
@@ -1148,7 +1276,14 @@
           "$ref": "#/$defs/EarthSample"
         }
       },
-      "required": ["timestampUtc", "elapsedS", "scientificProfile", "endpointContext", "sun", "earth"],
+      "required": [
+        "timestampUtc",
+        "elapsedS",
+        "scientificProfile",
+        "endpointContext",
+        "sun",
+        "earth"
+      ],
       "title": "TrackSample",
       "type": "object"
     },
@@ -1181,7 +1316,13 @@
           "type": "string"
         }
       },
-      "required": ["angles", "distances", "durations", "fractions", "timestamps"],
+      "required": [
+        "angles",
+        "distances",
+        "durations",
+        "fractions",
+        "timestamps"
+      ],
       "title": "Units",
       "type": "object"
     },
@@ -1213,7 +1354,12 @@
           "$ref": "#/$defs/Detection"
         }
       },
-      "required": ["available", "unavailable", "events", "detection"],
+      "required": [
+        "available",
+        "unavailable",
+        "events",
+        "detection"
+      ],
       "title": "VisibilityWindows",
       "type": "object"
     }

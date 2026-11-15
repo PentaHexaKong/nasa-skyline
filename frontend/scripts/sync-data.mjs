@@ -39,7 +39,7 @@ for (const file of readdirSync(source)
 }
 writeFileSync(join(out, 'sites.json'), JSON.stringify(sites))
 // Local terrain for the 3D island: a small heightmap (.bin) and its metadata per site.
-for (const dir of ['terrain', 'moon', 'feeds'])
+for (const dir of ['terrain', 'moon', 'feeds', 'catalogue'])
   if (existsSync(join(source, dir))) cpSync(join(source, dir), join(out, dir), { recursive: true })
 function jsonFeedPaths(directory, prefix = '') {
   const paths = []

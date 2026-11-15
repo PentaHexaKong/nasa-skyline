@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Summary } from './data'
+import { REFERENCE_SITES, SITES, type Summary } from './data'
 import type { MissionWindow, Requirements } from './mission'
 
 /**
@@ -22,37 +22,27 @@ export const API_URL: string = (typeof import.meta !== 'undefined' && import.met
 
 /**
  * The service's catalogue identifiers for the app's sites (`examples/siteCatalog.json`, canonicalId). Both name
- * the same De Rosa et al. 2012 points; `catalogMatches` in the tests checks the coordinates agree.
+ * provenance-tracked catalogue observers; `catalogMatches` in the tests checks the coordinates agree.
  */
-export const SERVICE_SITE: Record<string, string> = {
-  'connecting-ridge': 'CR1',
-  'de-gerlache-rim': 'GR1',
-  'shackleton-rim': 'SR1',
-}
+export const SERVICE_SITE: Record<string, string> = Object.fromEntries(
+  REFERENCE_SITES.filter((site) => site.liveEvaluation.startsWith('supported')).map((site) => [site.id, site.canonicalId]),
+)
 
-/** Hourly search samples, refined to 1 s at each event: inside the service's 6000-interval and 3600 s cadence limits for any stay up to 60 days. */
 export const CADENCE_S = 3600
 
 export const SITE_CAPABILITIES: Record<
   string,
-  { liveEvaluation: 'supported' | 'unverified'; staticDataState: 'computed'; reason: string | null }
-> = {
-  'connecting-ridge': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
-  'de-gerlache-rim': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
-  'shackleton-rim': { liveEvaluation: 'supported', staticDataState: 'computed', reason: null },
-  'shackleton-ridge': {
-    liveEvaluation: 'unverified',
-    staticDataState: 'computed',
-    reason:
-      'The hill-top observer has static pipeline data. Its coordinate realization and live terrain capabilities require verification.',
-  },
-  apollo11: {
-    liveEvaluation: 'unverified',
-    staticDataState: 'computed',
-    reason:
-      'Apollo 11 has static pipeline data. The live engine requires a verified equatorial terrain profile and coordinate realization.',
-  },
-}
+  { liveEvaluation: 'supported' | 'unverified'; staticDataState: 'computed' | 'not_computed'; reason: string | null }
+> = Object.fromEntries(
+  REFERENCE_SITES.map((site) => [
+    site.id,
+    {
+      liveEvaluation: site.liveEvaluation.startsWith('supported') ? 'supported' : 'unverified',
+      staticDataState: SITES.some((legacy) => legacy.id === site.id) ? 'computed' : 'not_computed',
+      reason: site.liveEvaluation.startsWith('supported') ? null : `${site.name}: ${site.liveEvaluation}. ${site.notes.join(' ')}`,
+    },
+  ]),
+)
 
 export function scientificUnavailableReason(siteId: string) {
   return SITE_CAPABILITIES[siteId]?.reason ?? 'This site has no verified live scientific mapping.'
@@ -68,7 +58,7 @@ const scientificRequest = z.object({
   solarDefinition: z.literal('anyDisk'),
   earthDefinition: z.literal('center'),
   horizonOffsetDeg: z.number(),
-  localResolutionM: z.literal(80),
+  localResolutionM: z.union([z.literal(80), z.literal(1895.21)]),
   eventToleranceS: z.number(),
   constraints: z.object({
     minimumSolar: z.number().min(0).max(1),
@@ -86,7 +76,7 @@ export type ScientificRequest = z.infer<typeof scientificRequest>
  * geometric (airless) directions. The user's limits travel as the request's constraints, converted to fractions and seconds.
  */
 export function buildRequest(
-  site: { site: Pick<Summary['site'], 'id' | 'observer_height_m'> },
+  site: { site: Pick<Summary['site'], 'id' | 'observer_height_m'> & { terrainResolutionM?: 80 | 1895.21 } },
   window: MissionWindow,
   requirements: Requirements,
 ): ScientificRequest | null {
@@ -103,7 +93,7 @@ export function buildRequest(
     solarDefinition: 'anyDisk',
     earthDefinition: 'center',
     horizonOffsetDeg: 0,
-    localResolutionM: 80,
+    localResolutionM: site.site.terrainResolutionM ?? REFERENCE_SITES.find((entry) => entry.id === site.site.id)?.terrainResolutionM ?? 80,
     eventToleranceS: 1,
     constraints: {
       minimumSolar: requirements.minSun / 100,

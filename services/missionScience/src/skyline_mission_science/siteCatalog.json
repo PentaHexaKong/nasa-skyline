@@ -342,43 +342,64 @@
       "body": "moon",
       "latitudeDeg": 0.67416,
       "longitudeDegEast": 23.47314,
-      "frame": "MOON_ME_DE440_ME421",
-      "coordinateStatus": "reported by existing application, source realization unresolved",
-      "coordinateSource": "Apollo 11 LM, mean observed position in the ME frame, LROC Coordinates of Lunar Anthropogenic Features, 28 Jul 2016 (uncertainty 0.3 m); checked 2026-11-14.",
-      "coordinateUncertaintyM": null,
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "LROC 2016 ME coordinate; individual absolute registration independently unvalidated",
+      "coordinateSource": "https://www.lroc.asu.edu/data/support/downloads/2016_LROC_Coordinates_of_Human_Features.pdf",
+      "coordinateUncertaintyM": 0.3,
       "reportedCoordinateUncertaintyM": 0.3,
       "reportedUncertaintyStatus": "DS source claim, independently unverified",
       "observerHeightM": 2.0,
-      "groundElevationM": -1926.7,
+      "groundElevationM": null,
       "datum": "DS-reported radial height above 1737400 m sphere",
       "dems": [
         {
-          "role": "global map, all ranges",
-          "range_km": 200.0,
-          "url": "https://planetarymaps.usgs.gov/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
-          "size_bytes": 8494203833,
-          "etag": "\"722bebaeb337b9afc8b24ae5bd817aa3-1013\"",
-          "last_modified": "Tue, 08 Nov 2022 23:01:12 GMT",
-          "accept_ranges": "bytes",
-          "mode": "windowed HTTP range requests (GDAL /vsicurl); no full download",
-          "read_from": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Lunar_LRO_LOLA_Global_LDEM_118m_Mar2014.tif",
-          "window": {
-            "row_off": 21169,
-            "col_off": 50391,
-            "rows": 3398,
-            "cols": 3398
-          },
-          "crs": "+proj=eqc +lat_ts=0 +lat_0=0 +lon_0=0 +x_0=0 +y_0=0 +R=1737400 +units=m +no_defs=True",
-          "reference_radius_m": 1737400.0,
-          "pixel_size_m": 118.4505876,
-          "dtype": "scale 0.5 offset 0.0"
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
         }
       ],
-      "epochs": null,
-      "missionLimits": null,
-      "profiles": [],
-      "supportedObserverHeightsM": [],
-      "liveEvaluation": "unverified coordinate realization",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
       "relay": {
         "status": "unsupported",
         "reason": "No verified coordinate-equivalent replay site"
@@ -406,7 +427,31 @@
         1591749.1561585704,
         691225.128137667,
         20419.672123603817
-      ]
+      ],
+      "historicalReportedFrame": "MOON_ME_DE440_ME421",
+      "historicalReportedGroundElevationM": -1926.7,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frontendId": "apollo11",
+      "publishedElevationM": -1926,
+      "uncertaintyQualifier": "reported multi-image measurement scatter; source also reports orbital position uncertainty about 15 m",
+      "terrainResolutionM": 1895.21,
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      },
+      "publishedElevationDatum": "Datum not specified in feature post; publisher standard is recorded separately"
     },
     {
       "canonicalId": "im1-malapert",
@@ -909,14 +954,14 @@
       "body": "moon",
       "latitudeDeg": -89.4749,
       "longitudeDegEast": 222.5569,
-      "frame": "MOON_ME_DE440_ME421",
-      "coordinateStatus": "reported by existing application, source realization unresolved",
-      "coordinateSource": "Highest 18.6-year average Sun visibility (PGDA product 69, 0.884) within 14 km of 89.684 S, 196.739 E, where the Shackleton - de Gerlache ridge meets the Shackleton rim (LROC image 1247; ridgeline about 14 km); pipeline.pick, checked 2026-11-14.",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "derived PGDA/LOLA grid candidate; source convention documented, independent site validation incomplete",
+      "coordinateSource": "https://pgda.gsfc.nasa.gov/products/69",
       "coordinateUncertaintyM": null,
       "reportedCoordinateUncertaintyM": null,
       "reportedUncertaintyStatus": "unspecified",
       "observerHeightM": 2.0,
-      "groundElevationM": 1947.5,
+      "groundElevationM": null,
       "datum": "DS-reported radial height above 1737400 m sphere",
       "dems": [
         {
@@ -976,17 +1021,37 @@
           "dtype": "float32 metres relative to the reference sphere"
         }
       ],
-      "epochs": null,
-      "missionLimits": null,
-      "profiles": [],
-      "supportedObserverHeightsM": [],
-      "liveEvaluation": "unverified coordinate realization",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "liveEvaluation": "supported exploratory polar terrain subject to asset/time checks",
       "relay": {
         "status": "unsupported",
         "reason": "No verified coordinate-equivalent replay site"
       },
       "aliases": [],
-      "scientificCanonicalId": null,
+      "scientificCanonicalId": "shackleton-ridge",
       "sourceArtifact": {
         "path": "frontend/data/shackleton-ridge.json",
         "sha256": "4ab0ca4a99e77ae23e120cf66c497bbb18ad49d9e852a286969e6b75d0f65435"
@@ -1008,7 +1073,28 @@
         -11741.82070389402,
         -10780.867675483985,
         -1739276.4546468658
-      ]
+      ],
+      "historicalReportedFrame": "MOON_ME_DE440_ME421",
+      "historicalReportedGroundElevationM": 1947.5,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "PGDA/LOLA source-product DE421 ME convention; derived candidate retained at its own coordinates"
+      },
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frontendId": "shackleton-ridge",
+      "terrainResolutionM": 80,
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      }
     },
     {
       "canonicalId": "viganella",
@@ -1070,6 +1156,713 @@
       "dsRegistrySha256": "6c5a891a8967a419ff094c5bf6fffa62f42ad2aab282b9bb0a4e48d8c579f5cb",
       "latitudeConvention": "geodetic WGS84, reported",
       "demRegistrationStatus": "unverified for live mission-science evaluation"
+    },
+    {
+      "body": "moon",
+      "epochs": null,
+      "missionLimits": null,
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "ME realization unresolved",
+      "coordinateStatus": "published ME coordinates; CE2TMap2015 realization unresolved",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "unresolved coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "unresolved coordinate realization; evaluation unsupported",
+      "referenceEntry": true,
+      "frameEvidence": null,
+      "canonicalId": "CE4",
+      "frontendId": "change4",
+      "displayName": "Chang'e-4 - CNSA (Liu 2019)",
+      "agency": "CNSA",
+      "mission": "Chang'e-4",
+      "latitudeDeg": -45.4446,
+      "longitudeDegEast": 177.5991,
+      "publishedElevationM": -5935,
+      "coordinateSource": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6760200/",
+      "locationRole": "published landing estimate",
+      "notes": [
+        "Paper reports a 1737400 m radial datum and ME coordinate system; the specific realization and registration to DE421 remain unresolved.",
+        "A distinct LROC measurement is available as CE4_LROC2019."
+      ],
+      "capabilities": {
+        "environment": "unresolved",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      },
+      "publishedElevationDatum": "radial meters above a 1737400 m sphere, paper Table 1"
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": 20,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "CE4_LROC2019",
+      "frontendId": "change4-lroc",
+      "displayName": "Chang'e-4 - CNSA (LROC 2019)",
+      "agency": "CNSA",
+      "mission": "Chang'e-4",
+      "latitudeDeg": -45.457,
+      "longitudeDegEast": 177.589,
+      "publishedElevationM": null,
+      "coordinateSource": "https://lroc.im-ldi.com/images/1087",
+      "locationRole": "LROC landing estimate",
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      }
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": 30,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "CE6",
+      "frontendId": "change6",
+      "displayName": "Chang'e-6 - CNSA",
+      "agency": "CNSA",
+      "mission": "Chang'e-6",
+      "latitudeDeg": -41.6385,
+      "longitudeDegEast": 206.0148,
+      "publishedElevationM": -5256,
+      "publishedElevationDatum": "average lunar surface, as described by LROC; retained separately from DEM radial height",
+      "coordinateSource": "https://lroc.im-ldi.com/images/1374",
+      "uncertaintyComponent": "horizontal",
+      "locationRole": "landing estimate",
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      }
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "CY3",
+      "frontendId": "chandrayaan3",
+      "displayName": "Chandrayaan-3 - ISRO (LROC)",
+      "agency": "ISRO",
+      "mission": "Chandrayaan-3",
+      "latitudeDeg": -69.3741,
+      "longitudeDegEast": 32.32,
+      "publishedElevationM": 532,
+      "coordinateSource": "https://lroc.im-ldi.com/images/1314",
+      "locationRole": "LROC landing estimate",
+      "alternateEstimates": [
+        {
+          "latitudeDeg": -69.3735,
+          "longitudeDegEast": 32.3199,
+          "source": "https://pgda.gsfc.nasa.gov/products/101",
+          "role": "NASA mini-LRA surface coordinate; distinct estimate"
+        }
+      ],
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      },
+      "publishedElevationDatum": "Datum not specified in feature post; publisher standard is recorded separately"
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "SLIM",
+      "frontendId": "slim",
+      "displayName": "SLIM - JAXA (LROC 2024 landing)",
+      "agency": "JAXA",
+      "mission": "SLIM",
+      "latitudeDeg": -13.316,
+      "longitudeDegEast": 25.251,
+      "publishedElevationM": -912,
+      "coordinateSource": "https://lroc.im-ldi.com/images/1358",
+      "locationRole": "LROC estimated landing point",
+      "additionalSources": [
+        "https://www.isas.jaxa.jp/en/topics/files/SLIM-press-briefing-20241226.pdf"
+      ],
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      },
+      "publishedElevationDatum": "Datum not specified in feature post; publisher standard is recorded separately"
+    },
+    {
+      "body": "moon",
+      "epochs": null,
+      "missionLimits": null,
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "ME realization unresolved",
+      "coordinateStatus": "published surface coordinate; realization and differing SLIM estimates require reconciliation",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [],
+      "supportedObserverHeightsM": [],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "unresolved coordinate realization",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "unresolved coordinate realization; evaluation unsupported",
+      "referenceEntry": true,
+      "frameEvidence": null,
+      "canonicalId": "SLIM_PGDA101",
+      "frontendId": "slim-pgda101",
+      "displayName": "SLIM - JAXA (PGDA surface coordinate)",
+      "agency": "JAXA",
+      "mission": "SLIM",
+      "latitudeDeg": -13.31549,
+      "longitudeDegEast": 25.24889,
+      "publishedElevationM": null,
+      "coordinateSource": "https://pgda.gsfc.nasa.gov/products/101",
+      "locationRole": "published mini-LRA surface coordinate",
+      "notes": [
+        "User supplied this tuple as a target. PGDA 101 labels it as a surface location; JAXA/LROC publishes a different landing estimate.",
+        "The approximate 55 m eastward landing displacement is source metadata, not a synthesized coordinate."
+      ],
+      "capabilities": {
+        "environment": "unresolved",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      }
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "LUNA25_TARGET",
+      "frontendId": "luna25-target",
+      "displayName": "Luna-25 - Roscosmos (intended target)",
+      "agency": "Roscosmos",
+      "mission": "Luna-25",
+      "latitudeDeg": -69.545,
+      "longitudeDegEast": 43.544,
+      "publishedElevationM": null,
+      "coordinateSource": "https://lroc.im-ldi.com/images/1311",
+      "locationRole": "intended target; no successful landing",
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      }
+    },
+    {
+      "body": "moon",
+      "epochs": {
+        "startEt": -3155716800.0,
+        "endEt": 1609416000.0,
+        "startUtc": "1899-12-31T23:59:18.816Z",
+        "endUtc": "2050-12-31T23:58:50.816Z",
+        "rule": "Entire requested time interval must lie within kernel intersection"
+      },
+      "missionLimits": {
+        "maxDurationS": 31536000,
+        "maxIntervals": 6000,
+        "cadenceS": [
+          30,
+          3600
+        ],
+        "effectiveMaxDurationS": 21600000
+      },
+      "datum": "radial meters above 1737400 m sphere",
+      "latitudeConvention": "planetocentric",
+      "frame": "MOON_ME_DE421",
+      "coordinateStatus": "publisher-reported coordinate; independent site validation not performed",
+      "coordinateUncertaintyM": null,
+      "observerHeightM": 2,
+      "groundElevationM": null,
+      "aliases": [],
+      "profiles": [
+        "geometric",
+        "apparent"
+      ],
+      "supportedObserverHeightsM": [
+        0,
+        2
+      ],
+      "dems": [
+        {
+          "filename": "LDEM_16.LBL",
+          "sha256": "9aef29463ccc6ed3a3fbe0df3ecd830a99c69e16b564f455507dee2697096579",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.LBL"
+        },
+        {
+          "filename": "LDEM_16.IMG",
+          "sha256": "a511e40d7a3ea3275945b4da2a1df377133264fab0be94b7434b1cf8907254cb",
+          "resolutionM": [
+            1895.21,
+            1895.21
+          ],
+          "frame": "MOON_ME_DE421",
+          "datum": "radial meters above 1737400 m sphere",
+          "sourceUrl": "https://imbrium.mit.edu/DATA/LOLA_GDR/CYLINDRICAL/IMG/LDEM_16.IMG"
+        }
+      ],
+      "liveEvaluation": "supported exploratory global terrain subject to asset/time checks",
+      "relay": {
+        "status": "unsupported",
+        "reason": "No position- and epoch-qualified trajectory replay"
+      },
+      "terrainResolutionM": 1895.21,
+      "evaluationQualification": "exploratory, independently unvalidated",
+      "referenceEntry": true,
+      "frameEvidence": {
+        "realization": "MOON_ME_DE421",
+        "evidence": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+        "pages": [
+          4,
+          8
+        ],
+        "basis": "LRO/LOLA cartographic convention; individual site registration remains independently unvalidated"
+      },
+      "canonicalId": "LUNA25_IMPACT",
+      "frontendId": "luna25-impact",
+      "displayName": "Luna-25 - Roscosmos (impact)",
+      "agency": "Roscosmos",
+      "mission": "Luna-25",
+      "latitudeDeg": -57.865,
+      "longitudeDegEast": 61.36,
+      "publishedElevationM": -360,
+      "coordinateSource": "https://lroc.im-ldi.com/images/1311",
+      "locationRole": "probable impact crater",
+      "reportedAccuracyM": 40,
+      "reportedAccuracyQualifier": "better than 40 m; source does not explicitly separate horizontal and vertical components",
+      "capabilities": {
+        "environment": "exploratory",
+        "mastPlacement": "unsupported pending site-specific high-resolution qualification",
+        "rover": "unsupported pending position-specific terrain scenario",
+        "relay": "unsupported"
+      },
+      "publishedElevationDatum": "Datum not specified in feature post; publisher standard is recorded separately"
     }
   ],
   "sourceEvidence": {
@@ -1105,7 +1898,14 @@
         "filename": "moon_de440_250416.tf",
         "sha256": "a47c71e9c9f33796bdafb2c9d69a7ee447b6016ecad80f71cd6f3e479f9cf768"
       }
-    ]
+    ],
+    "internationalCatalogue": {
+      "coordinateSources": "per-entry links",
+      "frameConventionSource": "https://www.lpi.usra.edu/mapsit/standup-committees/LCDP-SAT-REPORT-20211110.pdf",
+      "independentSiteValidation": false,
+      "elevationPolicy": "Published elevation is retained separately. Observer ground height is sampled from the declared DEM.",
+      "variantsPolicy": "Source-specific estimates, intended targets, and impacts retain distinct identifiers."
+    }
   },
   "tolerances": {
     "coordinateDeg": 1e-09,

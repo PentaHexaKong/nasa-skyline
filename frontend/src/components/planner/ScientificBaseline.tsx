@@ -40,6 +40,11 @@ export function ScientificBaseline({ plan, rows, refresh }: { plan: Plan; rows: 
           <article key={site.data.site.id} className="grid gap-5 rounded-xl border border-line p-5">
             <header className="grid gap-1">
               <h3 className="text-lg font-medium">{site.data.site.name}</h3>
+              {provenance.limitations.some((limit) => /exploratory/i.test(limit)) && (
+                <p className="text-sm text-ink-muted">
+                  Exploratory scientific result. Independent site-specific visibility validation is incomplete.
+                </p>
+              )}
               <p>{works ? 'Meets touchdown and mission requirements' : 'Misses touchdown or mission requirements'}</p>
               <p className="text-sm text-ink-muted">At touchdown · {TOUCHDOWN_LABEL[scientificTouchdown(response)]}</p>
             </header>

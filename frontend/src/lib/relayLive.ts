@@ -2,7 +2,7 @@ import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { z } from 'zod'
 import type { Span } from './mission'
-import { SERVICE_SITE, scientificUnavailableReason } from './missionScience'
+import { SERVICE_SITE } from './missionScience'
 import { postScience } from './scienceRequest'
 
 /** The comparison's longest window; longer stays are computed over their first 28 days. */
@@ -150,8 +150,8 @@ export function useRelayLadder(siteId: string, startMs: number, stayS: number): 
   useEffect(() => {
     if (!hydrated) return
     const site = SERVICE_SITE[siteId]
-    if (!site) {
-      setLoad({ status: 'unavailable', message: scientificUnavailableReason(siteId) })
+    if (!site || !['CR1', 'GR1', 'SR1'].includes(site)) {
+      setLoad({ status: 'unavailable', message: 'This observer has no position- and epoch-compatible relay comparison.' })
       return
     }
     const durationS = Math.min(stayS, RELAY_MAX_S)

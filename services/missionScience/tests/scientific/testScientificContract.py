@@ -144,7 +144,7 @@ def testCloseGrazingPartitionsDoNotOverlap():
 
 def testUnsupportedAndMissingDataHaveNoNumbers(tmp_path):
     engine = Engine(tmp_path, tmp_path / 'cache')
-    for changes in [dict(site='apollo11')]:
+    for changes in [dict(site='CE4')]:
         request = ScientificRequest(startUtc='2025-01-01T00:00:00Z', **changes)
         response = evaluateScientific(engine, request)
         assert response.dataState == 'unsupported'

@@ -103,8 +103,12 @@ func TestUnifiedScientificLive(t *testing.T) {
 	registerMissionScience(mux, http.DefaultClient)
 	bridge := httptest.NewServer(mux)
 	defer bridge.Close()
-	for _, site := range []string{"CR1", "apollo11"} {
-		response, err := http.Post(bridge.URL+"/api/mission-science/v1/scientific-evaluations", "application/json", strings.NewReader(`{"site":"`+site+`","startUtc":"2025-01-01T00:00:00Z","durationS":3600,"cadenceS":600}`))
+	for _, site := range []string{"CR1", "CE4", "apollo11", "CE4_LROC2019", "CE6", "CY3", "SLIM", "LUNA25_TARGET", "LUNA25_IMPACT"} {
+		resolution := "1895.21"
+		if site == "CR1" || site == "CE4" {
+			resolution = "80"
+		}
+		response, err := http.Post(bridge.URL+"/api/mission-science/v1/scientific-evaluations", "application/json", strings.NewReader(`{"site":"`+site+`","startUtc":"2025-01-01T00:00:00Z","durationS":3600,"cadenceS":600,"localResolutionM":`+resolution+`}`))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -119,7 +123,7 @@ func TestUnifiedScientificLive(t *testing.T) {
 		var result scientificContractEnvelope
 		_ = json.Unmarshal(body, &result)
 		expected := "computed"
-		if site == "apollo11" {
+		if site == "CE4" {
 			expected = "unsupported"
 		}
 		if result.DataState != expected {

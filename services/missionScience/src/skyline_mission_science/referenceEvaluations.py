@@ -21,7 +21,7 @@ class ReferenceRequest(ContractModel):
     solarDefinition: Literal['anyDisk', 'center', 'fullDisk'] = 'anyDisk'
     earthDefinition: Literal['center'] = 'center'
     horizonOffsetDeg: float = Field(default=0, ge=-5, le=5)
-    localResolutionM: Literal[20, 80] = 80
+    localResolutionM: Literal[20, 80, 1895.21] = 80
     cadenceS: float = Field(default=3600, ge=30, le=3600)
     eventToleranceS: float = Field(default=1, ge=0.01, le=30)
 

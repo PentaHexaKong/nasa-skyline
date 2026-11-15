@@ -58,7 +58,7 @@ def testBusyAndUnsupportedStatesDoNotContainResults(tmp_path):
     with scienceLock:
         response = evaluateReference(engine, request())
     assert response.dataState == 'unavailable' and response.error.code == 'busy'
-    unsupported = evaluateReference(engine, ReferenceRequest(site='apollo11', startUtc='2026-01-01T00:00:00Z', endUtc='2026-01-02T00:00:00Z'))
+    unsupported = evaluateReference(engine, ReferenceRequest(site='CE4', startUtc='2026-01-01T00:00:00Z', endUtc='2026-01-02T00:00:00Z'))
     assert unsupported.dataState == 'unsupported' and unsupported.result is None
     missing = evaluateReference(engine, request())
     assert missing.dataState == 'unavailable' and missing.provenance is None

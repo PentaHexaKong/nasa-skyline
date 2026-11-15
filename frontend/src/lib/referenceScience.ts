@@ -19,7 +19,7 @@ export type ReferenceRequest = {
   solarDefinition: 'anyDisk'
   earthDefinition: 'center'
   horizonOffsetDeg: number
-  localResolutionM: 80
+  localResolutionM: 80 | 1895.21
   cadenceS: number
   eventToleranceS: number
 }
@@ -53,7 +53,7 @@ export function referenceRequest(site: ReferenceSite, start: number, end: number
     solarDefinition: 'anyDisk',
     earthDefinition: 'center',
     horizonOffsetDeg: 0,
-    localResolutionM: 80,
+    localResolutionM: site.site.terrainResolutionM ?? 80,
     cadenceS,
     eventToleranceS: 1,
   }) as ReferenceRequest

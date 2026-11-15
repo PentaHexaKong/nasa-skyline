@@ -8,7 +8,7 @@ from dataclasses import asdict
 import numpy as np
 import spiceypy as spice
 from .schemas import Site, EvaluationRequest, EvaluationResponse
-from .siteCatalog import resolveSite
+from .siteCatalog import resolveSite, loadCatalog, catalogPath
 from .lunarSites import southPoleSites, LunarSite
 from .spiceGeometry import loadSpice
 from .terrainHorizon import cachedHorizon, HorizonConfig, TerrainCoverageError
@@ -50,10 +50,14 @@ class Engine:
             raise TerrainCoverageError('Unknown or unverified site identifier')
         localPath = self.assetRoot / f'lola/LDEM_80S_{request.localResolutionM}MPP_ADJ.TIF'
         extendedPath = self.assetRoot / 'lola/LDEM_60S_240MPP_ADJ.TIF'
-        demHashes = {str(path): fileHash(path) for path in (localPath, extendedPath)}
+        terrainPaths = [localPath, extendedPath]
+        if request.localResolutionM == 1895.21:
+            localPath = extendedPath = self.assetRoot / 'lola/LDEM_16.IMG'
+            terrainPaths = [localPath, localPath.with_suffix('.LBL')]
+        demHashes = {str(path): fileHash(path) for path in terrainPaths}
         with loadSpice(self.assetRoot / 'spice') as kernels:
             kernelHashes = {path.name: fileHash(path) for path in kernels}
-            identity = dict(version='0.4.0', terrainConfig=asdict(config), engineVersion=version('skyline-mission-science'), implementation=implementationIdentity(), resolvedSite=site.model_dump(), request=request.model_dump(mode='json'), kernels=kernelHashes, dems=demHashes)
+            identity = dict(catalogueSha256=fileHash(catalogPath), version='0.4.0', terrainConfig=asdict(config), engineVersion=version('skyline-mission-science'), implementation=dict(**implementationIdentity(), catalogueSha256=fileHash(catalogPath)), resolvedSite=site.model_dump(), request=request.model_dump(mode='json'), kernels=kernelHashes, dems=demHashes)
             identityKey = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
             if identityKey in self.memo:
                 response = self.memo[identityKey].model_copy(deep=True)
@@ -122,6 +126,11 @@ class Engine:
                                            'Zero-degree elevation floor','Earth center geometry only',
                                            'Terrain perturbations are uncalibrated scenarios','Root tolerance is numerical',
                                            'Solar disk ignores variation of terrain across disk'])
+            catalogueEntry = next((entry for entry in loadCatalog()['sites'] if entry['canonicalId'] == site.siteId), None) if isinstance(request.site, str) else None
+            if catalogueEntry and catalogueEntry.get('evaluationQualification'):
+                provenance['limitations'].append(catalogueEntry['evaluationQualification'])
+            if request.localResolutionM == 1895.21:
+                provenance['limitations'].extend(['Coarse global LOLA terrain has nominal 1895.21 m spacing; subpixel ridges and hazards are unresolved', 'Exploratory site evaluation has no independent site-specific visibility validation', 'Observer ground elevation is sampled from the declared DEM; published site elevations retain their separate provenance'])
             response = EvaluationResponse(dataState='computed',result=result,provenance=provenance)
             if len(self.memo) >= 32:
                 self.memo.pop(next(iter(self.memo)))

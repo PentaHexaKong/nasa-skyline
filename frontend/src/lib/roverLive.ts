@@ -1,6 +1,6 @@
 import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { SERVICE_SITE, scientificUnavailableReason } from './missionScience'
+import { SERVICE_SITE } from './missionScience'
 import type { RoverRequest, RoverResponse } from './roverContract.proposed'
 import { postScience } from './scienceRequest'
 
@@ -32,7 +32,7 @@ export type RoverLoad = { status: 'loading' } | { status: 'ready'; reach: RoverR
 /** The service's request for a mobile 3 by 3 grid around the site, from the landing moment, on the service's 2-minute steps. */
 export function roverRequest(siteId: string, landingMs: number): RoverRequest | null {
   const site = SERVICE_SITE[siteId]
-  if (!site) return null
+  if (!site || !['CR1', 'GR1', 'SR1'].includes(site)) return null
   const start = new Date(landingMs).toISOString().replace(/\.\d{3}Z$/, 'Z')
   return {
     schemaVersion: 'skyline-rover-request/0.1.0',
@@ -96,7 +96,7 @@ export function useRoverReach(siteId: string, landingMs: number): RoverLoad {
     if (!hydrated) return
     const body = roverRequest(siteId, landingMs)
     if (!body) {
-      setLoad({ status: 'unavailable', message: scientificUnavailableReason(siteId) })
+      setLoad({ status: 'unavailable', message: 'No compatible rover terrain scenario is registered for this observer.' })
       return
     }
     let current = true

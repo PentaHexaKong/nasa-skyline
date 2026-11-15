@@ -18,6 +18,8 @@ def mastFailure(state, code, message, request=None, coverage=None):
 
 def evaluateMastPower(engine, request):
     request = MastPowerRequest.model_validate(request)
+    if isinstance(request.site, str) and request.site not in engine.sites:
+        return mastFailure('unsupported', 'site_unsupported', 'This observer has no qualified mast-power terrain scenario', request)
     outcomes = []
     for height in sorted(set([0.0, *request.mastHeightsM])):
         single = ScientificRequest(

@@ -1,13 +1,13 @@
 import { createFileRoute, notFound, useNavigate } from '@tanstack/react-router'
 import { DynamicSiteReference } from '~/components/dynamicSiteReference'
 import { Shell } from '~/components/Shell'
-import { loadReferenceSite, SITES } from '~/lib/data'
+import { loadReferenceSite, REFERENCE_SITES } from '~/lib/data'
 import { type SiteSearch, siteSearch } from '~/lib/useSiteView'
 
 export const Route = createFileRoute('/analyze/$siteId')({
   validateSearch: siteSearch,
   loader: async ({ params }) => {
-    if (!SITES.some((site) => site.id === params.siteId)) throw notFound()
+    if (!REFERENCE_SITES.some((site) => site.id === params.siteId)) throw notFound()
     return loadReferenceSite(params.siteId)
   },
   head: ({ loaderData }) => ({ meta: [{ title: `${loaderData?.site.name ?? 'Site'} · Analyze · Skyline` }] }),

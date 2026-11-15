@@ -1,7 +1,7 @@
 import { useHydrated } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Panorama } from '~/components/Panorama'
-import { hasTerrain, type ReferenceSite, SITES } from '~/lib/data'
+import { hasTerrain, MOON_SITES, REFERENCE_SITES, type ReferenceSite } from '~/lib/data'
 import type { PlannerRow } from '~/lib/dynamicPlanner'
 import {
   annualSummary,
@@ -53,7 +53,7 @@ export function ReferenceControls({
           value={site.site.id}
           onChange={(event) => onSite(event.target.value)}
         >
-          {SITES.map((site) => (
+          {REFERENCE_SITES.map((site) => (
             <option key={site.id} value={site.id}>
               {site.name}
             </option>
@@ -277,9 +277,11 @@ export function DynamicSiteReference({
           <button type="button" onClick={view.refresh} className="cursor-pointer underline">
             Re-evaluate reference
           </button>
-          <a className="underline" href={`/analyze?sites=${site.site.id}&day=${view.date}&t=${view.minute}&step=result`}>
-            Plan a mission here
-          </a>
+          {MOON_SITES.some((entry) => entry.id === site.site.id) && (
+            <a className="underline" href={`/analyze?sites=${site.site.id}&day=${view.date}&t=${view.minute}&step=result`}>
+              Plan a mission here
+            </a>
+          )}
           {hasTerrain(site.site.id) && (
             <a className="underline" href={`/explore/${site.site.id}?day=${view.date}&t=${view.minute}`}>
               Explore this live sky in 3D
@@ -287,6 +289,27 @@ export function DynamicSiteReference({
           )}
         </div>
       </header>
+      {site.catalogue && (
+        <section aria-label="Observer coordinate provenance" className="grid gap-2 rounded-xl border border-line p-4 text-sm">
+          <p>{site.catalogue.qualification}</p>
+          <p>
+            {site.catalogue.latitudeDeg} deg latitude, {site.catalogue.longitudeDegEast} deg east longitude. Frame {site.catalogue.frame}.
+          </p>
+          <p>
+            Observer height {site.site.observer_height_m} m above DEM terrain. Nominal terrain resolution {site.site.terrainResolutionM} m.
+          </p>
+          <p>
+            Published elevation {site.catalogue.publishedElevationM === null ? 'not supplied' : `${site.catalogue.publishedElevationM} m`}.
+            This value has its own source and datum.
+          </p>
+          <a className="underline" href={site.catalogue.coordinateSource} target="_blank" rel="noreferrer">
+            Coordinate source
+          </a>
+          <a className="underline" href="/sites">
+            Katalog Situs Internasional
+          </a>
+        </section>
+      )}
       <ReferenceDayView site={site} view={view} />
       <section aria-label="Dynamic annual scientific reference" className="grid gap-5 rounded-xl border border-line p-5">
         <h2 className="text-2xl font-medium">{year} UTC annual report</h2>

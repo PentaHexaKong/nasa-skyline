@@ -228,6 +228,8 @@ class RoverEngine:
                 return roverFailure(
                     'unsupported', 'site_unsupported', str(error), request
                 )
+            if reference.siteId not in self.science.sites:
+                return roverFailure('unsupported', 'site_unsupported', 'This observer has no qualified rover terrain scenario', request)
             if reference.siteId != request.site:
                 return roverFailure(
                     'unsupported',

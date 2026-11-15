@@ -82,6 +82,9 @@ export function StepBar({ step, plan, actions }: { step: StepId; plan: Plan; act
             >
               Edit setup
             </button>
+            <a className="text-sm underline" href="/sites">
+              Site catalogue
+            </a>
             <span className="text-ink-muted">Slip</span>
             <SlipButtons plan={plan} actions={actions} />
           </div>

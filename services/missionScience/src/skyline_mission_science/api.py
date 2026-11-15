@@ -100,6 +100,8 @@ def capabilities():
         maxCompare=16,
         maxSearchEvaluations=128,
         maxConcurrentRequests=1,
+        siteCatalog='/v1/site-catalog',
+        terrainProfiles=dict(polar=dict(localResolutionM=[20, 80], optionalResolutionM=20), globalExploratory=dict(localResolutionM=1895.21, requiredAssets=['LDEM_16.IMG', 'LDEM_16.LBL'], independentlyValidated=False)),
         execution='synchronous bounded admission',
         arbitraryCoordinates='conditional on complete DEM search extent and DE421 kernel coverage',
         earthDefinition='center geometric visibility',
