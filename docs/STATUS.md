@@ -1,8 +1,18 @@
 # STATUS
 
-_Last updated: 2026-11-14_
+_Last updated: 2026-11-15_
 
 **Lunar Landing Site Navigation** compares lunar landing sites and dates by showing where the Sun and Earth sit relative to the local terrain horizon: sunlight and power potential, and direct-to-Earth visibility windows. A working baseline runs end to end for three south-polar sites. Relay Mode, mast placement and rover reach exist as scientific services and frontend screens, with partial integration (see Known limits).
+
+## Scientific reconciliation — 2026-11-15
+
+The planner lists five sites and automatically evaluates its selected mission through the versioned scientific API. Its metrics, touchdown verdict, visibility timeline, add-on baseline and downloaded brief share the same response. Live environmental, mast, relay and rover evaluations admit the verified CR1, GR1 and SR1 observers. Apollo 11 and the separate hill-top pick display explicit unsupported planner states. Site-report pages evaluate daily and annual windows dynamically, and linked 3D site views use live scientific sky readouts. See [dynamic references](dynamicReferences.md).
+
+The production rover screen now consumes the bounded Python service over nine 80 m cells and two hours. Mobile relay requires position-specific hop compatibility. The retained browser research model rejects site-wide relay windows and checks every hourly bin crossed by an edge.
+
+Pipeline 0.5.0 uses the explicit MOON_ME_DE421 realization, seven pinned kernels and the IAU nominal solar radius of 695700 km. Its interval calculation reuses the mission engine's extrema-aware event detector with signed margins. Existing 0.4.0 static files retain their original numerical values and provenance. The dynamic planner obtains its scientific baseline from the mission-science API. Annual reference files require regeneration for corrected-profile comparisons.
+
+Source-manifest version 2 normalizes source-text line endings to LF and checks the complete runtime inventory. Trajectory CSV and dataset identities retain exact byte hashes. See [scientific reconciliation](scientificReconciliation.md) for validation and reproduction.
 
 ## Where we are
 
@@ -14,7 +24,7 @@ _Last updated: 2026-11-14_
 | De Gerlache Rim (GR1) | `de-gerlache-rim` | 88.6952 S | 291.7154 E | Region-of-Interest centre |
 | Shackleton Rim (SR1) | `shackleton-rim` | 89.7755 S | 203.552 E | Region-of-Interest centre |
 
-- The app shows only these three sites, the ones the scientific engine supports. Coordinates are the region centres from De Rosa et al. 2012, Table 2 (doi:10.1016/j.pss.2012.08.002, arXiv 1208.5587), in the ME/PA (DE421) frame, checked against the arXiv PDF.
+- The three observers below have verified live capabilities. Apollo 11 and the separate hill-top pick are also visible through their static feeds. Coordinates are the region centres from De Rosa et al. 2012, Table 2 (doi:10.1016/j.pss.2012.08.002, arXiv 1208.5587), in the ME/PA (DE421) frame, checked against the arXiv PDF.
 - Other site definitions (Apollo 11, IM-1, IM-2, Malapert Massif, the Shackleton connecting-ridge hill-top pick) stay in `ds/pipeline/sites.py`. Rerunning the pipeline for them recreates their files, so they can be added back.
 - CR1 is the paper's region centre, not the sunniest point nearby. The hill-top pick about 200 m away is the PGDA 69 Sun maximum; `cd ds && uv run python -m pipeline.run shackleton-ridge` computes it for a side-by-side comparison.
 - Ground heights from the pipeline agree with the independent engine to about 1 m (1942.6 / 1778.7 / 1734.8 m against 1942.9 / 1779.2 / 1733.7 m).
@@ -24,18 +34,18 @@ _Last updated: 2026-11-14_
 - Computes skyline, SPICE Sun and Earth tracks, partial Sun disk, 1 s event edges and convergence from LOLA terrain and SPICE for the Moon only, over 365 days from 2026-11-14 at a 1 min step with a 2 m observer height.
 - Writes `frontend/data/<site>.json` plus `pipeline.island` terrain. Also `pipeline.pick` (rerunnable hill-top pick: highest PGDA 69 average Sun visibility inside a stated region), `pipeline.relay_check` and `space.py`.
 - `space.py` `ephemeris` writes `frontend/data/moon/space.json` (Moon-centred Earth and Sun positions and orientations, ECLIPJ2000, 2 h step over the 365-day window, max Earth interpolation error 21 km, kernels pinned). `textures` bakes `frontend/public/space/` (5.5 MB), provenance in `textures.json` (NASA Blue Marble NG and Black Marble via GIBS, Blue Marble cloud map, SVS Deep Star Maps 2020, SDO/HMI). Clouds are not a real day; the page caption says so.
-- The frame is pinned to `MOON_ME_DE440_ME421`. There is no Earth terrain, refraction or GEO comms model.
+- New pipeline evaluations use `MOON_ME_DE421` for both observer and terrain geometry. There is no Earth terrain, refraction or GEO comms model.
 - `ds/server.py` (the DS service the Go backend calls) is still a **stub** that echoes input with `status: stub_only`.
 
 ### Web app (`frontend/`)
 
-TanStack Start, pre-rendered static (43 pages), Kumo on Tailwind v4, SVG charts, dark theme only, Barlow and DM Mono (see [design.md](design.md), [frontend/README.md](../frontend/README.md)). pnpm only; `frontend/pnpm-lock.yaml` is the lockfile.
+TanStack Start, pre-rendered static (35 pages), Kumo on Tailwind v4, SVG charts, dark theme only, Barlow and DM Mono (see [design.md](design.md), [frontend/README.md](../frontend/README.md)). pnpm only; `frontend/pnpm-lock.yaml` is the lockfile.
 
 | Route | What it is |
 | --- | --- |
 | `/` (Explore) | One scrolling page with a fixed 3D Moon that turns to each chapter: 01 *How long is a day at the south pole?*, 02 *Can a mountain hide the Sun?*, 03 *Is higher ground always sunnier?* (Shackleton Rim is about 210 m lower than the ridge but sunlit 79% against 46%), 04 Earth contact, 05 sites compared, 06 true-scale space scene, then the lesson list. Every number is computed at runtime from pipeline output. |
 | `/understand/$lessonId` | Guess-first lessons (`/understand` and `/explore` redirect to `/#lessons` and `/#space`). |
-| `/analyze` | Four-step planner (Set up, Result, Dates, Review): side-by-side Sun, Earth and Both lanes, Earthset and sunset countdowns, trade-off table, downloadable brief, landing windows, 29.5-day timeline. Result has an At touchdown column, because a stay can meet every requirement while the Sun or Earth is hidden at landing. Mission profiles (`src/lib/profiles.ts`) use labelled example thresholds. |
+| `/analyze` | Four-step planner with automatic versioned scientific evaluation. Result displays API-derived sunlight and direct-Earth metrics, UTC visibility lanes, touchdown checks and scientific identities. Dates evaluates a mission after selection. Add-ons shares the selected live baseline. Downloaded briefs include complete scientific responses and provenance. Mission profiles use labelled example thresholds. |
 | `/analyze/$siteId` | Full per-site report ("Explore in 3D" button, "Method and limits" folded). |
 | `/analyze/scenario/{mast,relay,rover}` | Follow-ups from Review: missed Sun limits invite a mast investigation, missed Earth limits a relay comparison, rover reach is optional. They keep every planner setting, show the computed baseline, and reject fixture or mismatched-site/period feeds. |
 | `/method` | Pipeline, sites, limits and credits. |
@@ -77,13 +87,13 @@ cd backend && go test -count=1 ./... && go vet ./...
 cd ds && uv run pytest                     # pipeline tests
 cd frontend && pnpm install && pnpm test   # Vitest
 cd frontend && pnpm exec tsc --noEmit      # TypeScript
-cd frontend && pnpm build                  # sync-data, scientific client, vite build (43 pages)
+cd frontend && pnpm build                  # sync-data, scientific client, vite build (35 pages)
 cd ds && uv run python -m pipeline.run <site-id>   # writes frontend/data/<site-id>.json
 python3 scripts/prepareScienceAssets.py    # verify the nine pinned science assets
 python3 scripts/verifyScienceDeployment.py # verify the packaged source identities
 ```
 
-Checks: 100 Vitest tests, TypeScript clean, 55 pipeline tests with Moon kernels (39 pass and 16 skip without them), production build of 43 pages. Services: 85 mission-science tests; relay adapter 14 pass and 6 skip, Go 31 pass and 8 skip (the skipped tests need running services); `go vet` clean. Biome reports formatting errors in files from the scientific-engine merge; run it on changed files only.
+Checks on November 15, 2026: 166 Vitest tests, TypeScript clean, 62 pipeline tests with real Moon kernels, and a production build of 35 pages. Services: 85 mission-science tests, 32 relay-adapter tests and 46 Go tests with live mission/relay/rover services. The optional legacy INT-4 Go test is skipped. `go vet` is clean. Biome reports formatting errors in files from the scientific-engine merge; run it on changed files only.
 
 ## Data and asset requirements
 
@@ -97,16 +107,16 @@ Checks: 100 Vitest tests, TypeScript clean, 55 pipeline tests with Moon kernels 
 
 - **Terrain accuracy.** LOLA is good enough to compare sites and dates, not to claim an exact horizon at one point; the 0.1 deg skyline target is doubtful for horizons about 100 m away. Metre-scale physical terrain accuracy remains unverified. See [LOLA accuracy](data/sources.md#lola-accuracy-checked-2026-11-14). Terrain error ranges are not yet on the sites.
 - **Claims.** Results are geometric opportunities under stated assumptions, not delivered power, a working radio link or guaranteed contact ([claims](science/claims.md)). Continuous and RF availability are unvalidated; construction suitability of placed masts is unverified; rover hazards at subcell scale, battery and thermal survival, traction and operational communications are unmodeled.
-- **Catalog mismatch.** The engine's site catalog and tests still use `shackleton-ridge`, while the app uses `connecting-ridge`. The catalog leaves every app site unmapped, so the delivered CR1, GR1 and SR1 feeds load but no app page shows them yet.
+- **Catalog capabilities.** Connecting Ridge maps to CR1, de Gerlache Rim to GR1 and Shackleton Rim to SR1. Apollo 11 and the distinct hill-top pick have unverified live capability and are rejected before live requests.
 - **Docker.** `docker compose up --build` brings all seven services up healthy on macOS, and live relay comparisons run through the frontend proxy. The `legacy` INT-4 profile needs the external engine checkout and is not part of that check.
 - **Relay feed gap.** `pipeline.relay_check` computes direct, plus Pathfinder and plus Intuitive Machines contact per site over one lunar month but writes only Markdown. It needs a writer to `frontend/data/feeds/relay/<site>.json` (scenarios in ladder order, intervals from sampled flags, share, longest gap and truncation, provenance) and one Pathfinder starting orbit chosen and labelled indicative.
 - **Relay numbers vs NASA's LCRNS slide.** Our direct-to-Earth shares are higher than its 17-43%; match its definitions (elevation mask, ground stations, Earth rule) before quoting them side by side. Do not quote the relay results beside it until then.
-- **Rover.** No RoverFeed contract or UI consumer exists yet; mobile relay is unsupported.
+- **Rover.** The production UI consumes the proposed version 0.1.0 Python response. Its current evaluated domain is nine cells over two hours with direct Earth communication. Mobile relay remains unsupported.
 - **Placeholders.** Profile thresholds are examples, not sourced requirements. The prototype relay scene uses two-body orbits with a flat horizon, so it is illustrative; its models are stand-ins from [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources).
 
 ## Next actions
 
-1. Resolve the catalog mismatch (`shackleton-ridge` vs `connecting-ridge`) and map the app sites to the engine's CR1, GR1 and SR1 so the delivered feeds show in the app.
+1. Regenerate the five static site feeds with pipeline 0.5.0 and review terrain/event sensitivity under the corrected scientific profile.
 2. Write the relay feed writer for `pipeline.relay_check`, then deliver the feed files in [frontend-feeds.md](architecture/frontend-feeds.md) for power, masts, relays and validation. Agree schemas with the frontend first.
 3. Review rover schema 0.1.0 and extend grid size, duration or mobile relay only after more scientific validation.
 4. Add terrain error ranges from `LDEM_*_ERR` or the PGDA product 78 terrain variants, and rerun at 2 m and 5 m.

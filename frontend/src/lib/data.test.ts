@@ -44,3 +44,10 @@ test('the sunniest spot on Connecting Ridge is its near neighbour, 212 m away', 
   expect(NEIGHBOURS['shackleton-ridge']).toBe('connecting-ridge')
   expect(Math.round(surfaceMetres(a.site, b.site))).toBe(212)
 })
+
+test('earlier scientific feeds require regeneration', async () => {
+  const { requiresScientificRefresh } = await import('./data')
+  const summary = await loadSummary('connecting-ridge')
+  expect(requiresScientificRefresh(summary)).toBe(true)
+  expect(requiresScientificRefresh({ ...summary, provenance: { ...summary.provenance, algorithm_version: '0.5.0' } })).toBe(false)
+})

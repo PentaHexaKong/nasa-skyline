@@ -1,2 +1,7 @@
 # Pinned by SHA-256 over these exact bytes (CRLF); never convert line endings.
 services/relayAdapter/data/states/candidate2States.csv -text
+
+# Source identity uses LF text across platforms. Trajectory bytes retain their original pin.
+*.py text eol=lf
+*.json text eol=lf
+*.toml text eol=lf

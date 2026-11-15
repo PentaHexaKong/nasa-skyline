@@ -80,16 +80,18 @@ test('a dark hour stops driving and the rover waits it out', () => {
   const lit = simulateRover(flatInput('dark', { stayS: 3 * HOUR, speedMps: 0.01 }))
   const dark = simulateRover(flatInput('dark', { stayS: 3 * HOUR, speedMps: 0.01, sun }))
   expect(eastOf(lit, 5)).toBeCloseTo(5000, 3)
-  // Four edges start in the first hour; the fifth waits for the third.
-  expect(eastOf(dark, 4)).toBeCloseTo(4000, 3)
-  expect(eastOf(dark, 5)).toBeCloseTo(2 * HOUR + 1000, 3)
+  // The fourth edge would cross the closed second hour, so it waits for the third.
+  expect(eastOf(dark, 3)).toBeCloseTo(3000, 3)
+  expect(eastOf(dark, 4)).toBeCloseTo(2 * HOUR + 1000, 3)
+  expect(eastOf(dark, 5)).toBeCloseTo(2 * HOUR + 2000, 3)
   expect(dark.summary.waitingH).toBeGreaterThan(0)
   // No contact (Earth below every horizon) has the same effect, and a relay restores it.
   const quiet: SkySample[] = sun.map((s) => ({ ...s }))
   const noEarth = simulateRover(flatInput('dark', { stayS: 3 * HOUR, speedMps: 0.01, earth: quiet }))
-  expect(eastOf(noEarth, 5)).toBeCloseTo(2 * HOUR + 1000, 3)
-  const relayed = simulateRover(flatInput('dark', { stayS: 3 * HOUR, speedMps: 0.01, earth: quiet, relaySpans: [[0, 3 * HOUR * 1000]] }))
-  expect(eastOf(relayed, 5)).toBeCloseTo(5000, 3)
+  expect(eastOf(noEarth, 5)).toBeCloseTo(2 * HOUR + 2000, 3)
+  expect(() =>
+    simulateRover(flatInput('dark', { stayS: 3 * HOUR, speedMps: 0.01, earth: quiet, relaySpans: [[0, 3 * HOUR * 1000]] })),
+  ).toThrow('position-specific hop evaluations')
 })
 
 // --- The real site ----------------------------------------------------------------------------------------------

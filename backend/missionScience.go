@@ -38,10 +38,10 @@ func registerMissionScience(mux *http.ServeMux, client *http.Client) {
 			proxyError = writeMastPlacementError
 			expectedVersion = "skyline-mast-placement-response/1.0.0"
 		}
-		if route == "/v1/scientific-evaluations" {
+		if route == "/v1/scientific-evaluations" || route == "/v1/reference-evaluations" {
 			proxyError = writeScientificError
 		}
-		valid := (r.Method == "GET" && (route == "/v1/sites" || route == "/v1/capabilities" || route == "/v1/site-catalog")) || (r.Method == "POST" && (route == "/v1/evaluate" || route == "/v1/scientific-evaluations" || route == "/v1/mast-power-evaluations" || route == "/v1/mast-placement-evaluations"))
+		valid := (r.Method == "GET" && (route == "/v1/sites" || route == "/v1/capabilities" || route == "/v1/site-catalog")) || (r.Method == "POST" && (route == "/v1/evaluate" || (route == "/v1/scientific-evaluations" || route == "/v1/reference-evaluations") || route == "/v1/mast-power-evaluations" || route == "/v1/mast-placement-evaluations"))
 		if !valid {
 			http.NotFound(w, r)
 			return
@@ -73,7 +73,7 @@ func registerMissionScience(mux *http.ServeMux, client *http.Client) {
 			proxyError(w, 502, "invalid_scientific_response", "Scientific response exceeded transport bounds.")
 			return
 		}
-		if route == "/v1/scientific-evaluations" || route == "/v1/mast-power-evaluations" || route == "/v1/mast-placement-evaluations" {
+		if (route == "/v1/scientific-evaluations" || route == "/v1/reference-evaluations") || route == "/v1/mast-power-evaluations" || route == "/v1/mast-placement-evaluations" {
 			if err := validateScientificEnvelopeVersion(result, expectedVersion); err != nil {
 				proxyError(w, 502, "invalid_scientific_response", "Scientific service returned an invalid versioned envelope.")
 				return

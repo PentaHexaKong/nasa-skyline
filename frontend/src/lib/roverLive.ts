@@ -1,6 +1,6 @@
 import { useHydrated } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { SERVICE_SITE } from './missionScience'
+import { SERVICE_SITE, scientificUnavailableReason } from './missionScience'
 import type { RoverRequest, RoverResponse } from './roverContract.proposed'
 import { postScience } from './scienceRequest'
 
@@ -33,7 +33,7 @@ export type RoverLoad = { status: 'loading' } | { status: 'ready'; reach: RoverR
 export function roverRequest(siteId: string, landingMs: number): RoverRequest | null {
   const site = SERVICE_SITE[siteId]
   if (!site) return null
-  const start = new Date(Math.floor(landingMs / 120_000) * 120_000).toISOString().replace(/\.\d{3}Z$/, 'Z')
+  const start = new Date(landingMs).toISOString().replace(/\.\d{3}Z$/, 'Z')
   return {
     schemaVersion: 'skyline-rover-request/0.1.0',
     site,
@@ -96,7 +96,7 @@ export function useRoverReach(siteId: string, landingMs: number): RoverLoad {
     if (!hydrated) return
     const body = roverRequest(siteId, landingMs)
     if (!body) {
-      setLoad({ status: 'unavailable', message: 'Rover reach is computed for the three study sites only.' })
+      setLoad({ status: 'unavailable', message: scientificUnavailableReason(siteId) })
       return
     }
     let current = true

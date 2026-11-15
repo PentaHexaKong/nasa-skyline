@@ -7,6 +7,7 @@ dependencies = [
     "numpy>=2.5.4",
     "rasterio>=1.5.2",
     "spiceypy>=8.3.0",
+    'skyline-mission-science',
 ]
 
 [dependency-groups]
@@ -20,5 +21,9 @@ dev = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+python_files = ['test*.py']
 markers = ["net: needs network access (JPL Horizons); run with -m net"]
 addopts = "-m 'not net'"
+
+[tool.uv.sources]
+skyline-mission-science = { path = '../services/missionScience', editable = true }

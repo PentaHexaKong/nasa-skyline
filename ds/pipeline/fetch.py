@@ -16,6 +16,8 @@ MOON_KERNELS = {
     "naif0012.tls": f"{NAIF}/lsk/naif0012.tls",
     "de440s.bsp": f"{NAIF}/spk/planets/de440s.bsp",
     "pck00011.tpc": f"{NAIF}/pck/pck00011.tpc",
+    'moon_pa_de421_1900-2050.bpc': f'{NAIF}/pck/moon_pa_de421_1900-2050.bpc',
+    'moon_080317.tf': f'{NAIF}/fk/satellites/moon_080317.tf',
     "moon_pa_de440_200625.bpc": f"{NAIF}/pck/moon_pa_de440_200625.bpc",
     "moon_de440_250416.tf": f"{NAIF}/fk/satellites/moon_de440_250416.tf",
 }

@@ -3,15 +3,15 @@ import { useMemo } from 'react'
 import { useMoonScene } from '~/components/MoonStage'
 import type { MoonScene } from '~/components/ParallaxMoon'
 import { AddonsStep } from '~/components/planner/AddonsStep'
-import { DatesStep } from '~/components/planner/DatesStep'
 import { type Plan, type PlanActions, type PlanSearch, planSearch, type StepId, stepOf } from '~/components/planner/plan'
-import { ResultStep } from '~/components/planner/ResultStep'
 import { resolvePlan } from '~/components/planner/resolvePlan'
+import { ScientificBaseline, ScientificDates } from '~/components/planner/ScientificBaseline'
 import { SetupStep } from '~/components/planner/SetupStep'
 import { missionShort, SlipButtons, StepBar } from '~/components/planner/StepBar'
 import { Shell } from '~/components/Shell'
 import { loadMoonEphemeris, loadSummary, MOON_SITES } from '~/lib/data'
-import { buildBrief } from '~/lib/mission'
+import { buildScientificBrief } from '~/lib/dynamicPlanner'
+import { useScientificPlan } from '~/lib/useScientificPlan'
 
 // The flow starts at Set up; links that mean the answer ask for Result by name.
 const DEFAULT_STEP: StepId = 'setup'
@@ -46,8 +46,9 @@ function PlannerPage() {
   const navigate = useNavigate({ from: Route.fullPath })
   const go = (s: Partial<PlanSearch>) => navigate({ search: (prev) => ({ ...prev, ...s }), replace: true, resetScroll: false })
   const p = useMemo(() => (hydrated ? params : ({} as PlanSearch)), [hydrated, params])
-  const plan: Plan = useMemo(() => resolvePlan(all, p), [all, p])
-  const { dates, index, date, window, requirements, sites } = plan
+  const selected: Plan = useMemo(() => resolvePlan(all, p), [all, p])
+  const { plan, rows, refresh } = useScientificPlan(selected, hydrated, p.focus)
+  const { dates, index, date, sites } = plan
   const chosenIds = sites.map((s) => s.data.site.id)
   // The step lives in the URL, so it is the same on the server: read it before hydration too, or a link to Set up
   // flashes Result first.
@@ -70,24 +71,10 @@ function PlannerPage() {
       const next = all.filter((s) => (s.site.id === id ? on : chosenIds.includes(s.site.id))).map((s) => s.site.id)
       if (next.length > 0) go({ sites: next.join(',') })
     },
-    downloadBrief: () =>
-      saveText(
-        buildBrief({
-          window,
-          requirements,
-          sites: sites.map((s) => ({
-            name: s.data.site.name,
-            lat: s.data.site.lat_deg,
-            lon: s.data.site.lon_deg_east,
-            measure: s.stay,
-            touchdown: s.touchdown,
-            algorithm: s.data.provenance.algorithm_version,
-            datasets: s.data.provenance.dem.flatMap((d) => d.file ?? d.url?.split('/').pop() ?? []),
-            kernels: s.data.provenance.kernels.map((k) => k.file),
-          })),
-        }),
-      ),
+    downloadBrief: () => saveText(buildScientificBrief(plan, rows)),
   }
+
+  const baseline = <ScientificBaseline plan={plan} rows={rows} refresh={refresh} />
 
   return (
     <Shell>
@@ -100,9 +87,24 @@ function PlannerPage() {
         </main>
       ) : (
         <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
-          {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
-          {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
-          {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} />}
+          {step === 'result' && (
+            <>
+              {baseline}
+              <button type="button" className="cursor-pointer underline" onClick={() => actions.setStep('dates')}>
+                Try another date
+              </button>
+              <button type="button" className="cursor-pointer underline" onClick={() => actions.setStep('addons')}>
+                Explore add-ons
+              </button>
+            </>
+          )}
+          {step === 'dates' && (
+            <>
+              <ScientificDates plan={plan} actions={actions} />
+              {baseline}
+            </>
+          )}
+          {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} scientificBaseline={baseline} />}
         </main>
       )}
       {step !== 'setup' && (

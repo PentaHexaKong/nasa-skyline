@@ -38,6 +38,7 @@ export const planSearch = z.object({
 export type PlanSearch = z.infer<typeof planSearch>
 
 export type Plan = {
+  baseline?: { headline: string }
   profile: Profile
   /** The user changed something the profile set. */
   edited: boolean

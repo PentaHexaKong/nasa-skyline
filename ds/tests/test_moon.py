@@ -130,7 +130,7 @@ def test_the_earth_is_always_up_at_apollo_11():
 
 
 def test_the_me_frame_is_the_one_the_frame_kernel_defines():
-    text = (fetch.DATA / "moon_de440_250416.tf")
+    text = (fetch.DATA / "moon_080317.tf")
     if not text.exists():
         pytest.skip("frame kernel not fetched")
     assert re.search(rf"FRAME_{ME_FRAME}\s*=", text.read_text())

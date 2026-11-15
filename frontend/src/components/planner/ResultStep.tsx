@@ -27,6 +27,7 @@ import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { RecommendedPlan } from '~/components/planner/RecommendedPlan'
 import { Eyebrow, OpenEnd } from '~/components/Shell'
+import { requiresScientificRefresh } from '~/lib/data'
 import {
   evaluate,
   isPolar,
@@ -429,6 +430,12 @@ function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
         <p className="max-w-[58ch] text-lg leading-relaxed text-ink-muted text-pretty">
           {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
         </p>
+        {plan.sites.some((site) => requiresScientificRefresh(site.data)) && (
+          <p role="status" className="max-w-[68ch] rounded-md border border-line-strong p-3 text-sm text-ink-muted">
+            These precomputed results use an earlier scientific profile. Regenerate the site feeds with pipeline 0.5.0 for corrected frame
+            and event calculations. The live scientific check evaluates its stated profile separately.
+          </p>
+        )}
         <SlipChange plan={plan} />
         <div className="flex flex-wrap gap-3">
           {plan.base ? (

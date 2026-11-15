@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import numpy as np
+from skyline_mission_science.visibility import eventIntervals
 
 from . import fetch, moon
 from .sites import SITES, Site
@@ -13,7 +14,7 @@ from .sun import ME_FRAME, Ephemeris, utc_to_et
 from .terrain import MOON_RADIUS_M, horizon_at, skyline
 from .visibility import visible_fraction
 
-ALGORITHM_VERSION = "0.4.0"
+ALGORITHM_VERSION = '0.5.0'
 COMMS_MARGIN_DEG = 0.0
 TRACK_STEP_MIN = 10  # spacing of the stored daily Sun tracks, for the chart only
 EARTH_STEP_MIN = 10  # sampling of Earth's position; Earth moves slowly, edges are refined to 1 s
@@ -54,6 +55,18 @@ class Model:
         az, el, rad = self.earth(et)
         return visible_fraction(el - horizon_at(self.skyline, az), rad)
 
+    def sunMargin(self, et):
+        az, el, rad = self.sun(et)
+        return el + rad - horizon_at(self.skyline, az)
+
+    def daylightMargin(self, et):
+        _, el, rad = self.sun(et)
+        return el + rad
+
+    def earthLimbMargin(self, et):
+        az, el, rad = self.earth(et)
+        return el + rad - horizon_at(self.skyline, az)
+
     def direct(self, et) -> np.ndarray:
         az, el, rad = self.sun(et)
         return visible_fraction(el - horizon_at(self.skyline, az), rad)
@@ -63,22 +76,28 @@ class Model:
         return visible_fraction(el, rad)
 
 
-def refine(fraction, a: float, b: float, lit_at_b: bool, tol_s: float = 1.0) -> float:
-    while b - a > tol_s:
-        m = (a + b) / 2
-        if (fraction(m)[0] > 0) == lit_at_b:
-            b = m
-        else:
-            a = m
-    return (a + b) / 2
-
-
-def spans(fraction, et: np.ndarray, lit: np.ndarray, et_end: float) -> list[tuple[float, float]]:
-    """Lit periods [start, end), each edge bisected to 1 s between samples."""
-    edges = np.flatnonzero(lit[1:] != lit[:-1])
-    cuts = [refine(fraction, et[i], et[i + 1], bool(lit[i + 1])) for i in edges]
-    bounds = ([et[0]] if lit[0] else []) + cuts + ([et_end] if lit[-1] else [])
-    return list(zip(bounds[::2], bounds[1::2]))
+def spans(margin, et: np.ndarray, lit: np.ndarray, et_end: float, eventCadenceS=None) -> list[tuple[float, float]]:
+    '''Intervals from the shared extrema-aware detector using a signed visibility margin.'''
+    times = np.asarray(et, dtype=float)
+    if times.ndim != 1 or not len(times) or np.any(np.diff(times) <= 0) or et_end < times[-1] or et_end <= times[0]:
+        raise ValueError('Event samples must be ordered inside a nonempty half-open window')
+    if np.asarray(lit).shape != times.shape:
+        raise ValueError('Visibility samples and event timestamps disagree')
+    origin = float(times[0])
+    cadence = float(eventCadenceS or (np.diff(times).max() if len(times) > 1 else et_end - origin))
+    intervals = []
+    # Bound search memory independently of mission length and merge clipped daily pieces.
+    for chunkStart in np.arange(origin, et_end, 86400.):
+        chunkEnd = min(chunkStart + 86400., et_end)
+        initial = times[(times >= chunkStart) & (times <= chunkEnd)] - chunkStart
+        result = eventIntervals(lambda offsets: margin(chunkStart + offsets), chunkEnd - chunkStart, cadence, 1., sampleTimesS=initial)
+        for left, right in result['intervalsS']:
+            interval = (chunkStart + left, chunkStart + right)
+            if intervals and intervals[-1][1] == interval[0]:
+                intervals[-1] = (intervals[-1][0], interval[1])
+            else:
+                intervals.append(interval)
+    return intervals
 
 
 def minutes_in(periods, day_start: float) -> float:
@@ -149,8 +168,8 @@ def earth_section(model: Model, et0: float, et1: float, margin_deg: float = COMM
     az, el, rad = model.earth(et)
     clearance = el - horizon_at(model.skyline, az)
     fraction = visible_fraction(clearance, rad)
-    any_spans = spans(model.earth_fraction, et, fraction > 0, et1)
-    centre_spans = spans(lambda t: model.earth_clearance(t, margin_deg), et, clearance - margin_deg > 0, et1)
+    any_spans = spans(model.earthLimbMargin, et, fraction > 0, et1, eventCadenceS=3600.)
+    centre_spans = spans(lambda t: model.earth_clearance(t, margin_deg), et, clearance - margin_deg > 0, et1, eventCadenceS=3600.)
     per_hour = EARTH_TRACK_STEP_MIN // EARTH_STEP_MIN
     hourly = np.arange(0, et.size, per_hour)
     return {
@@ -176,8 +195,8 @@ def run(site: Site, start: str, days: int, step_min: float, az_step_deg: float =
     direct = visible_fraction(el - horizon_at(model.skyline, az), rad)
     daylit = visible_fraction(el, rad)
 
-    direct_spans = spans(model.direct, et, direct > 0, et1)
-    daylit_spans = spans(model.daylit, et, daylit > 0, et1)
+    direct_spans = spans(model.sunMargin, et, direct > 0, et1, eventCadenceS=max(step, 3600.))
+    daylit_spans = spans(model.daylightMargin, et, daylit > 0, et1, eventCadenceS=max(step, 3600.))
     intervals = [[iso(a), iso(b)] for a, b in direct_spans]
     earth = earth_section(model, et0, et1)
 
@@ -265,7 +284,7 @@ def run(site: Site, start: str, days: int, step_min: float, az_step_deg: float =
             "azimuth": "clockwise from local north",
             "time": "UTC; intervals are [start, end)",
             "days": "UTC calendar days",
-            "elevation": "geometric, no atmosphere",
+            'elevation': 'apparent LT+S, no atmospheric refraction',
             "longitude": "°E in [0, 360)",
             "direct_sun": "any part of the solar disk above the terrain skyline",
             "daylight": "any part of the solar disk above the flat horizon",
@@ -279,15 +298,22 @@ def run(site: Site, start: str, days: int, step_min: float, az_step_deg: float =
             "dem": model.terrain.provenance,
             "dem_product": model.terrain.product,
             "kernels": kernels,
-            "frame": f"{ME_FRAME} body-fixed (the frame of the LOLA product 90 grids), 1737.4 km reference sphere, planetocentric site, LT+S aberration, no refraction",
+            'frame': f'{ME_FRAME} body-fixed, 1737.4 km reference sphere, planetocentric site, LT+S aberration, no refraction',
+            'event_detection': {
+                'algorithm': 'skyline_mission_science.visibility.eventIntervals',
+                'sunSearchCadenceS': max(step, 3600.), 'earthSearchCadenceS': 3600., 'maximumSearchChunkS': 86400.,
+                'initialSunSampleCadenceS': step, 'numericalRootToleranceS': 1.,
+                'possibleMissedEvents': True,
+                'completenessAssumption': 'At most one minimum and maximum per search interval. Multiple extrema and skyline discontinuities remain uncertified.',
+            },
             "known_limits": [
                 moon.resolution_note(model.terrain, site, az_step_deg, max_km),
-                "No atmosphere: all elevations are geometric and nothing is refracted.",
-                "Observer height is 2.0 m above the DEM surface.",
+                'Directions include reception light time and stellar aberration (LT+S). Atmospheric refraction is excluded.',
+                f'Observer height is {site.observer_height_m:g} m above the DEM surface.',
                 f"Earth visibility is line of sight only: Earth's centre above the skyline plus a {COMMS_MARGIN_DEG:g} deg margin (default), with the any-part-of-the-6371 km-disc rule alongside as *_any. It is not a radio link, and says nothing about link budget, antenna pointing or DSN availability.",
                 f"The window is {days} days from {start}, not the 18.6-year lunar nodal cycle; the Sun's grazing angles and the Earth libration vary across that cycle.",
                 "The visible share of a disc treats the horizon as locally straight.",
-                f"Edges are bisected to 1 s, but a spell shorter than the sample step (Sun {step_min:g} min, Earth {EARTH_STEP_MIN} min) can be missed entirely.",
+                'Detected events use extrema searches and Brent refinement to 1 s. Multiple extrema and skyline discontinuities can still hide events.',
             ],
         },
         "skyline": skyline_block,
