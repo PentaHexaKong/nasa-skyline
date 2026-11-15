@@ -84,8 +84,6 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   const cards = useRef<Record<string, HTMLButtonElement | null>>({})
   const [open, setOpen] = useState<OptionId | null>(null)
   const [closing, setClosing] = useState<OptionId | null>(null)
-  // Each move through the questions while one is open turns the Moon once around.
-  const [spin, setSpin] = useState(0)
   // The question in front of the deck, and whether a panel is changing over to the next one.
   const [front, setFront] = useState(0)
   const [size, setSize] = useState({ w: 1280, h: 720 })
@@ -160,14 +158,13 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
   }
   /**
    * To another question. With none open the deck moves. With one open, the row of cards on the Moon slides: the next
-   * question's card swings into the middle and becomes its form, and the Moon turns once around.
+   * question's card swings into the middle and becomes its form.
    */
   const toQuestion = (i: number) => {
     const target = OPTIONS[i]?.id
     if (!target || i === front) return
     setFront(i)
     if (!open) return
-    setSpin((k) => k + 1)
     setOpen(target)
   }
   useEffect(() => {
@@ -350,7 +347,6 @@ export function SetupStep({ plan, actions }: { plan: Plan; actions: PlanActions 
         zoom={zoom}
         aim={aim}
         sway
-        spin={spin}
         handoff
         footClassName={
           wide
