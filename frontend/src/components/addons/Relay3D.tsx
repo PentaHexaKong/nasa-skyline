@@ -7,6 +7,7 @@ import { glowTexture, palette as scenePalette } from '~/components/SiteIsland'
 import tdrsUrl from '~/components/scene/models/relay-tdrs.glb?url'
 import { type Build, loadModel, polyline, rgb, Stage } from '~/components/scene/stage'
 import { rgbOf } from '~/components/scene/terrain'
+import { reducedMotion } from '~/lib/motion'
 import { type RelayLadder, suggestedRelays } from '~/lib/relayLive'
 import { loadSpace, R_MOON_KM, type Space, sampleSpace, spanHours } from '~/lib/space'
 import { clock, shortDate } from '~/lib/time'
@@ -83,7 +84,7 @@ export default function Relay3D({ ladder, site }: { ladder: RelayLadder; site: {
     loadSpace()
       .then((sp) => live && setSpace(sp))
       .catch(() => live && setSpace(null))
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) setPlaying(true)
+    if (!reducedMotion().matches) setPlaying(true)
     return () => {
       live = false
     }

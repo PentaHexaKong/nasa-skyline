@@ -4,8 +4,8 @@ import { HORIZON_FOV, HORIZON_VIEW, horizonFrame, quarterHour, SPIN_DEG_S } from
 import { beginGlide, endGlide, moonBridge, plannerBridge, reaim, type SharedView } from '~/components/moonBridge'
 import { halo, moonMaterial, toVec } from '~/components/moonGlobe'
 import type { MoonEphemeris } from '~/lib/data'
-import { bestHour, SYNODIC_HOURS, subPoints, whenAt } from '~/lib/moonLight'
-import { minuteLabel, shortDate } from '~/lib/time'
+import { bestHour, SYNODIC_HOURS, subPoints } from '~/lib/moonLight'
+import { reducedMotion } from '~/lib/motion'
 
 /**
  * The one Moon behind the front door, Explore and Understand. MoonStage keeps it mounted across those pages and each
@@ -155,7 +155,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dots = useRef<Record<string, HTMLDivElement | null>>({})
   const earthTag = useRef<HTMLDivElement>(null)
-  const caption = useRef<HTMLParagraphElement>(null)
   const scrimLeft = useRef<HTMLDivElement>(null)
   const scrimRight = useRef<HTMLDivElement>(null)
   const latest = useRef(moonScene)
@@ -184,7 +183,7 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.15
     renderer.setClearColor(0x000000, 0)
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const reduced = reducedMotion()
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.01, 100)
     let dirty = true
@@ -282,11 +281,9 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     // ---- the scene's night sky, drawn behind this Moon while the scene hands its Moon view over (moonBridge.ts)
     // Drawn last but under everything already on the canvas (it only fills what the Moon leaves uncovered), and only
     // inside the scene's box, whose top and bottom edges fade into the page as the scene's own frame does (--sky-fade).
-    // The same NASA star map, tint and orientation as the scene's, so a crossfade between the two shows no seam.
+    // Plain black, as the scene's own sky is, so a crossfade between the two shows no seam.
     const skyBox = { value: new THREE.Vector4() }
     const skyFade = { value: 48 }
-    const skyStars = { value: 0 }
-    let starsArrived = false
     let skyFadePx = 48
     const skyMat = new THREE.MeshBasicMaterial({
       side: THREE.BackSide,
@@ -294,7 +291,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       depthWrite: false,
       toneMapped: false,
       transparent: true,
-      color: new THREE.Color(0.45, 0.45, 0.45),
       blending: THREE.CustomBlending,
       blendSrc: THREE.OneMinusDstAlphaFactor,
       blendDst: THREE.OneFactor,
@@ -304,9 +300,8 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     skyMat.onBeforeCompile = (shader) => {
       shader.uniforms.skyBox = skyBox
       shader.uniforms.skyFade = skyFade
-      shader.uniforms.skyStars = skyStars
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform vec4 skyBox;\nuniform float skyFade;\nuniform float skyStars;')
+        .replace('#include <common>', '#include <common>\nuniform vec4 skyBox;\nuniform float skyFade;')
         .replace(
           '#include <dithering_fragment>',
           `#include <dithering_fragment>
@@ -314,7 +309,7 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
           float inX = step(skyBox.x, gl_FragCoord.x) * step(gl_FragCoord.x, skyBox.x + skyBox.z);
           float edge = min(gl_FragCoord.y - skyBox.y, skyBox.y + skyBox.w - gl_FragCoord.y);
           float m = inX * smoothstep(0.0, skyFade, edge);
-          gl_FragColor = vec4(gl_FragColor.rgb * skyStars * m, m);`,
+          gl_FragColor = vec4(vec3(0.0), m);`,
         )
     }
     const sky = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 48), skyMat)
@@ -322,16 +317,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     sky.renderOrder = 20
     sky.frustumCulled = false
     sky.visible = false
-    const loadStars = () => {
-      if (skyMat.map) return
-      const t = tex('/space/stars-4k.jpg', true, () => {
-        starsArrived = true
-      })
-      t.wrapS = THREE.RepeatWrapping
-      t.repeat.x = -1
-      skyMat.map = t
-      skyMat.needsUpdate = true
-    }
     // While the sky shows, the Moon's fade happens here instead of on the canvas, so the sky itself never dims: this
     // multiplies everything drawn so far by the Moon's opacity, before the sky goes underneath.
     const fadeK = { value: 1 }
@@ -365,7 +350,7 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
     let shared = 0
     // How much of the frame is still the previous page's, 1 to 0, while the Moon glides to its new place.
     let glideK = 0
-    // Whether the page is a tour, so its fades, labels and caption may show (not on the front door).
+    // Whether the page is a tour, so its fades and labels may show (not on the front door).
     let tour = false
     // The scene's box on this canvas while its sky shows here (CSS px from the top left), else null.
     let skyRect: { x: number; y: number; w: number; h: number } | null = null
@@ -395,7 +380,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
         el.style.maskImage = mask
         el.style.setProperty('-webkit-mask-image', mask)
       }
-      if (caption.current) caption.current.dataset.side = side < 0 ? 'left' : 'right'
     }
     /** The tour's lens: beside the text on wide screens (side by pose), above it on narrow ones, below the header. */
     const tourLens = () => {
@@ -764,7 +748,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       moonBridge.weight = shared
       const box = view ? sceneBox(view) : null
       const skyOn = !!box && box.y < h && box.y + box.h > 0
-      if (skyOn) loadStars()
       // The scene camera's projection, re-aimed at this canvas, so the Moon lands where the scene would draw it.
       const mapped = view && box && shared > 0 ? reaim(view.projection, box, { w, h }, camera.near, camera.far, sceneProj) : null
       const key = box ? `${box.x},${box.y},${box.w},${box.h},${w},${h}` : ''
@@ -772,12 +755,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       if (key !== sceneKey) skyRect = skyOn ? box : null
       sceneKey = key
       sceneVersion = moonBridge.version
-      // The stars fade in once their map has arrived, over the sky's black ground.
-      const starsGoal = starsArrived ? 1 : 0
-      if (skyStars.value !== starsGoal) {
-        skyStars.value = reduced.matches ? starsGoal : Math.min(starsGoal, skyStars.value + dt * 2)
-        dirty = true
-      }
       if (
         cam.distanceToSquared(before) > 1e-10 ||
         Math.abs(opTarget - opacity) > 1e-3 ||
@@ -796,9 +773,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
         earthMark.position.copy(toVec(sub.earth.lat, sub.earth.lon, 1.003))
         // Ring flat on the ground: its normal (+z) points straight up, away from the Moon's centre.
         earthMark.lookAt(earthMark.position.clone().multiplyScalar(2))
-        const when = whenAt(eph, hours)
-        if (caption.current)
-          caption.current.textContent = `Sunlight as on ${shortDate(when.date)} ${when.date.slice(0, 4)}, ${minuteLabel(when.minute)} UTC`
       }
       camera.position.copy(cam)
       camera.up.set(0, 1, 0)
@@ -838,8 +812,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       trailMat.opacity = 0.6 * earthK
       markMat.opacity = earthK
       trail.visible = earthMark.visible = tour && earthK > 0.01
-      // The scene states its own moment, so the caption steps aside there too.
-      if (caption.current) caption.current.style.opacity = labelsOn() ? '1' : '0'
       // With the sky on, the canvas stays opaque and the Moon fades inside it; otherwise the canvas itself fades.
       sky.visible = skyOn
       if (skyOn && box && view) {
@@ -847,7 +819,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
         skyBox.value.set(box.x * pr, (h - box.y - box.h) * pr, box.w * pr, box.h * pr)
         skyFade.value = skyFadePx * pr
         sky.position.copy(camera.position)
-        sky.quaternion.copy(view.stars)
       }
       fade.visible = skyOn && opacityShown < 0.999
       fadeK.value = opacityShown
@@ -918,10 +889,6 @@ export default function ParallaxMoon({ scene: moonScene, eph }: { scene: MoonSce
       <div ref={earthTag} className="tour-earth absolute top-0 left-0 opacity-0">
         <span className="tour-earth-label">Point under Earth</span>
       </div>
-      <p
-        ref={caption}
-        className="tour-caption scene-text eyebrow absolute bottom-4 hidden text-ink-faint opacity-0 transition-opacity duration-300 lg:block"
-      />
     </div>
   )
 }

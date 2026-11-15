@@ -7,6 +7,7 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import { hasTerrain, loadTerrain, type SkyTarget, type Terrain, type Track } from '~/lib/data'
+import { reducedMotion } from '~/lib/motion'
 import { blockedAt, direction, heightAt, runs } from '~/lib/sky'
 
 type Sun = { az: number; el: number; fraction: number }
@@ -914,7 +915,7 @@ export default function SiteIsland(props: SiteIslandProps) {
       controls.enableDamping = false
       controls.update()
       frameHome()
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      if (reducedMotion().matches) {
         camera.position.copy(home)
         controls.enableDamping = true
         dirty = true

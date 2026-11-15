@@ -20,7 +20,7 @@ export function ProfileCards({ plan, actions, compact = false }: { plan: Plan; a
                 aria-pressed={active}
                 onClick={() => actions.chooseProfile(p.id)}
                 className={`grid h-full w-full cursor-pointer content-start gap-2 rounded-xl border p-4 text-left transition-[border-color,background-color] duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
-                  active ? 'border-white bg-white/[0.05]' : 'border-line hover:border-line-strong hover:bg-white/[0.02]'
+                  active ? 'border-story bg-story/10' : 'border-line hover:border-line-strong hover:bg-white/[0.02]'
                 }`}
               >
                 <span className="flex min-h-5 items-center justify-between gap-2">

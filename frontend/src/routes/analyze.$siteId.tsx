@@ -407,7 +407,7 @@ function VisualizePage() {
             <LinkButton
               href={`/analyze?sites=${data.site.id}&day=${current.date}&t=${minute}`}
               variant="primary"
-              className="ml-auto hidden whitespace-nowrap sm:flex"
+              className="ml-auto hidden whitespace-nowrap bg-story! text-white! hover:bg-story-hover! sm:flex"
             >
               Plan a landing here
             </LinkButton>

@@ -3,42 +3,25 @@ import { Link as KLink } from '@cloudflare/kumo/components/link'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ArrowSquareOutIcon,
+  ArrowUpRightIcon,
   CalendarBlankIcon,
-  CheckCircleIcon,
   CheckIcon,
-  ClockIcon,
   DownloadSimpleIcon,
-  GlobeHemisphereWestIcon,
   LinkSimpleIcon,
-  SunIcon,
-  XCircleIcon,
   XIcon,
 } from '@phosphor-icons/react'
 import { Link } from '@tanstack/react-router'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import { Lanes } from '~/components/Lanes'
 import { changeReadout, earthChangeReadout, moment, PhaseBadge, Readouts, sunReadout } from '~/components/Moment'
 import { Panorama } from '~/components/Panorama'
 import { DeeperAnalysis } from '~/components/planner/DeeperAnalysis'
-import { SiteThumb } from '~/components/planner/Illustrations'
 import { LiveCheck } from '~/components/planner/LiveCheck'
 import MissionMoon, { type MoonMarker } from '~/components/planner/MissionMoon'
 import type { Plan, PlanActions, PlanSearch } from '~/components/planner/plan'
 import { RecommendedPlan } from '~/components/planner/RecommendedPlan'
-import { Eyebrow, OpenEnd } from '~/components/Shell'
-import {
-  evaluate,
-  isPolar,
-  type Measure,
-  REQUIREMENTS,
-  type SitePlan,
-  shortName,
-  siteResult,
-  type VerdictRow,
-  verdict,
-  whyNote,
-} from '~/lib/mission'
+import { Eyebrow } from '~/components/Shell'
+import { isPolar, type Measure, REQUIREMENTS, type SitePlan, shortName, siteResult, type VerdictRow, verdict, whyNote } from '~/lib/mission'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
 import { useTracks } from '~/lib/useTracks'
@@ -48,10 +31,7 @@ export const verdictRows = (plan: Plan): VerdictRow[] =>
 
 type Requirement = (typeof REQUIREMENTS)[number]
 
-const Missed = () => <XIcon aria-label="Missed" weight="bold" className="mr-1 inline text-miss" />
-
 const pct = (x: number) => `${(x * 100).toFixed(0)} %`
-const value = (q: Requirement, m: Measure) => `${q.read(m).toFixed(1)} ${q.unit}`
 /** Whether a gap touches the edge of the stay. Undefined for requirements that are not gaps. */
 const edge = (q: Requirement, m: Measure) =>
   q.key === 'maxNoSun' ? m.noSun.truncated : q.key === 'maxNoEarth' ? m.noEarth.truncated : undefined
@@ -62,188 +42,299 @@ function change(q: Requirement, now: Measure, was: Measure) {
   return `${d > 0 ? '+' : '−'}${Math.abs(d).toFixed(1)} ${q.unit === '%' ? 'pts' : 'h'}`
 }
 
-function Reading({ q, s }: { q: Requirement; s: SitePlan }) {
-  const { stay, was, checks } = s
-  if (!stay || !checks) return null
-  const check = checks.checks.find((c) => c.key === q.key)
-  const open = edge(q, stay)
-  return (
-    <>
-      <span className="whitespace-nowrap">
-        {check && !check.pass && <Missed />}
-        {value(q, stay)}
-        {open !== undefined && <OpenEnd open={open} />}
-      </span>
-      {was && <small className="block text-xs font-normal whitespace-nowrap text-ink-faint">{change(q, stay, was)}</small>}
-    </>
-  )
+/** A ghost button in the page's style. */
+const ghost =
+  'inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm transition-colors hover:border-white/60'
+
+const better = (q: Requirement, now: Measure, was: Measure) => (q.read(now) - q.read(was)) * (q.bound === 'at least' ? 1 : -1) > 0
+
+function Works({ yes }: { yes: boolean }) {
+  return <span className={yes ? 'text-go' : 'text-miss'}>{yes ? 'Works' : 'Doesn’t work'}</span>
 }
 
-/** One body at touchdown: a tick or a cross, and its name, so the state never rests on colour alone. */
-function Seen({ what, seen }: { what: string; seen: boolean }) {
+/** After a slip: per site, whether the original day worked and whether the new one does, then the readings that moved. */
+function SlipChange({ plan }: { plan: Plan }) {
+  if (!plan.base) return null
+  const days = plan.slip
   return (
-    <span className="inline-flex items-center gap-1 whitespace-nowrap">
-      {seen ? (
-        <CheckIcon aria-hidden weight="bold" className="text-ink-muted" />
-      ) : (
-        <XIcon aria-hidden weight="bold" className="text-miss" />
-      )}
-      {what}
-      <span className="sr-only">{seen ? ' in view' : ' hidden'}</span>
-    </span>
-  )
-}
-
-/** The Sun and Earth at touchdown, each on its own: either one hidden fails the landing. */
-function Touchdown({ s }: { s: SitePlan }) {
-  const sun = s.touchdown === 'both' || s.touchdown === 'earth_hidden'
-  const earth = s.touchdown === 'both' || s.touchdown === 'sun_hidden'
-  return (
-    <span className="inline-flex gap-3">
-      <Seen what="Sun" seen={sun} />
-      <Seen what="Earth" seen={earth} />
-    </span>
-  )
-}
-
-/** Whether this site works for this landing, with the reason when it does not. */
-function Answer({ s, compact = false }: { s: SitePlan; compact?: boolean }) {
-  const r = siteResult(s)
-  if (r.works) return <span className="font-medium">Works</span>
-  if (compact)
-    return (
-      <span>
-        <span className="font-medium">
-          <Missed />
-          Doesn’t work:
-        </span>{' '}
-        <span className="text-ink-muted">{r.why.charAt(0).toLowerCase() + r.why.slice(1)}</span>
-      </span>
-    )
-  return (
-    <span className="grid justify-items-end">
-      <span className="font-medium whitespace-nowrap">
-        <Missed />
-        No
-      </span>
-      <small className="block max-w-[14rem] text-right text-xs font-normal text-pretty text-ink-muted">{r.why}</small>
-    </span>
+    <section aria-labelledby="slip-change" className="grid gap-3 border-t border-line pt-4">
+      <h3 id="slip-change" className="font-medium">
+        What changed from {shortDate(plan.base)}{' '}
+        <span className="tabular font-normal text-ink-muted">
+          ({days > 0 ? '+' : '−'}
+          {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'})
+        </span>
+      </h3>
+      <ul className="grid gap-3">
+        {plan.sites.map((s) => {
+          const now = siteResult(s).works
+          const moved = s.stay && s.was ? REQUIREMENTS.filter((q) => change(q, s.stay as Measure, s.was as Measure) !== 'no change') : null
+          return (
+            <li key={s.data.site.id} className="grid gap-1 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4">
+              <span className="font-medium">{shortName(s.data)}</span>
+              <div className="grid gap-1">
+                <p>
+                  {s.wasGo === null ? (
+                    <span className="text-ink-muted">Not computed</span>
+                  ) : s.wasGo === now ? (
+                    <>
+                      <Works yes={now} /> <span className="text-ink-muted">on both days</span>
+                    </>
+                  ) : (
+                    <>
+                      <Works yes={s.wasGo} /> <ArrowRightIcon aria-label="now" className="inline" /> <Works yes={now} />
+                    </>
+                  )}
+                </p>
+                <p className="tabular text-sm text-ink-muted">
+                  {!moved
+                    ? 'One of the two stays runs past the computed data.'
+                    : moved.length === 0
+                      ? 'The four readings are unchanged.'
+                      : moved.map((q, i) => (
+                          <span key={q.key}>
+                            {i > 0 && ' · '}
+                            {q.label}{' '}
+                            <span className={better(q, s.stay as Measure, s.was as Measure) ? 'text-go' : 'text-miss'}>
+                              {change(q, s.stay as Measure, s.was as Measure)}
+                            </span>
+                          </span>
+                        ))}
+                </p>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 
 /**
- * The limit beside a reading and how far the reading is from it, so a planner sees whether 71.7 % against 70 % is a
- * comfortable pass or a near miss without opening the table.
+ * The answer, set like a cover: how many sites work as one large figure, the verdict in words, the Moon at the landing
+ * moment, and a strip of the plan's four facts under it.
  */
-function Margin({ q, site }: { q: Requirement; site: SitePlan }) {
-  const c = site.checks?.checks.find((x) => x.key === q.key)
-  if (!c) return null
-  const gap = q.bound === 'at least' ? c.value - c.limit : c.limit - c.value
-  const unit = q.unit === '%' ? 'pts' : 'h'
+function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
+  const v = verdict(verdictRows(plan), plan.slip)
+  const computed = plan.sites.every((s) => s.checks)
+  const works = plan.sites.filter((s) => siteResult(s).works).length
+  const next = plan.sites
+    .map((s) => s.nextGo)
+    .filter((d): d is string => !!d)
+    .sort()[0]
+  const markers: MoonMarker[] = plan.sites.map((s) => ({
+    id: s.data.site.id,
+    name: shortName(s.data),
+    lat: s.data.site.lat_deg,
+    lon: s.data.site.lon_deg_east,
+    selected: true,
+    status: !s.checks ? 'not-computed' : siteResult(s).works ? 'works' : 'fails',
+  }))
+  const facts: [string, ReactNode][] = [
+    ['Mission', `${plan.profile.name}${plan.edited ? ' (edited)' : ''}`],
+    ['Landing', `${shortDate(plan.date)} ${plan.date.slice(0, 4)}, ${minuteLabel(plan.minute)} UTC`],
+    ['Stay', `${plan.stay} days`],
+    ['Next day that works', next ? longDate(next) : 'None in the computed year'],
+  ]
   return (
-    <dd className="readout text-xs text-ink-faint">
-      {q.bound === 'at least' ? '≥' : '≤'} {c.limit} {q.unit}
-      <span className={c.pass ? '' : 'text-miss'}>
-        {' · '}
-        {Math.abs(gap).toFixed(1)} {unit} {gap >= 0 ? 'spare' : 'short'}
-      </span>
-    </dd>
-  )
-}
-
-const met = (s: SitePlan) => `${s.checks?.met} of ${s.checks?.checks.length}`
-const wasMet = (s: SitePlan, plan: Plan) => s.was && `was ${evaluate(s.was, plan.requirements).met}`
-
-function ResultTable({ plan }: { plan: Plan }) {
-  return (
-    <table className="hidden w-full border-collapse md:table">
-      <thead>
-        <tr className="text-xs text-ink-muted">
-          <th className="pb-2 text-left align-bottom font-normal">Site</th>
-          <th className="pb-2 pl-3 text-right align-bottom font-normal">At touchdown</th>
-          {REQUIREMENTS.map((q) => (
-            <th key={q.key} className="pb-2 pl-3 text-right align-bottom font-normal">
-              {q.label}
-              <small className="readout block text-xs font-normal text-ink-faint">
-                {q.bound === 'at least' ? '≥' : '≤'} {plan.requirements[q.key]} {q.unit}
-              </small>
-            </th>
-          ))}
-          <th className="pb-2 pl-3 text-right align-bottom font-normal">Stay limits met</th>
-          <th className="pb-2 pl-3 text-right align-bottom font-normal">This landing</th>
-        </tr>
-      </thead>
-      <tbody className="readout text-base font-normal">
-        {plan.sites.map((s) => (
-          <tr key={s.data.site.id} className="border-t border-line align-top">
-            <td className="py-2 font-sans">{s.data.site.name}</td>
-            <td className="py-2 pl-3 text-right font-sans">
-              <Touchdown s={s} />
-            </td>
-            {s.stay ? (
-              <>
-                {REQUIREMENTS.map((q) => (
-                  <td key={q.key} className="py-2 pl-3 text-right">
-                    <Reading q={q} s={s} />
-                  </td>
-                ))}
-                <td className="py-2 pl-3 text-right">
-                  {met(s)}
-                  {s.was && <small className="block text-xs font-normal text-ink-faint">{wasMet(s, plan)}</small>}
-                </td>
-              </>
-            ) : (
-              <td colSpan={REQUIREMENTS.length + 1} className="py-2 text-right font-sans text-ink-muted">
-                Not computed
-              </td>
-            )}
-            <td className="py-2 pl-3 text-right font-sans">
-              <Answer s={s} />
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  )
-}
-
-function ResultCards({ plan }: { plan: Plan }) {
-  return (
-    <div className="md:hidden">
-      {plan.sites.map((s) => (
-        <article key={s.data.site.id} className="grid gap-1.5 border-t border-line py-3">
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className="font-semibold">{s.data.site.name}</h3>
-          </div>
-          <p>
-            <Answer s={s} compact />
-          </p>
-          <p className="flex flex-wrap items-baseline gap-x-3">
-            <span className="text-ink-muted">At touchdown</span> <Touchdown s={s} />
-          </p>
-          {s.checks && (
-            <p className="readout text-xs font-normal text-ink-muted">
-              Stay limits met: {met(s)}
-              {s.was && `, ${wasMet(s, plan)}`}
+    <section aria-labelledby="verdict" className="grid gap-10">
+      <div className="grid items-center gap-x-10 gap-y-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="grid content-center gap-5">
+          <Eyebrow pip>Result</Eyebrow>
+          {computed && (
+            <p aria-hidden className="flex items-baseline gap-2 leading-none font-medium">
+              <span key={`${works}-${plan.sites.length}`} className="rise text-[clamp(5rem,3rem+7vw,9.5rem)] tabular-nums">
+                {works}
+              </span>
+              <span className="text-[clamp(2rem,1.4rem+2.6vw,4rem)] text-ink-faint">/{plan.sites.length}</span>
             </p>
           )}
-          {s.stay ? (
-            <dl className="grid grid-cols-2 gap-x-4 gap-y-1">
-              {REQUIREMENTS.map((q) => (
-                <div key={q.key} className="flex justify-between gap-2">
-                  <dt className="text-xs text-ink-muted">{q.short}</dt>
-                  <dd className="readout text-right text-xs font-normal">
-                    <Reading q={q} s={s} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p className="text-ink-muted">Not computed</p>
-          )}
-        </article>
-      ))}
+          <h2
+            id="verdict"
+            aria-live="polite"
+            className="max-w-[22ch] text-[clamp(1.6rem,1.1rem+1.6vw,2.5rem)] leading-[1.1] font-medium text-balance"
+          >
+            {v.headline}
+          </h2>
+          <p className="max-w-[56ch] leading-relaxed text-ink-muted text-pretty">
+            {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
+          </p>
+          <SlipChange plan={plan} />
+          <div className="flex flex-wrap items-center gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => actions.setStep('dates')}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-story px-5 py-2.5 font-medium text-white transition-colors hover:bg-story-hover"
+            >
+              <CalendarBlankIcon aria-hidden weight="bold" /> See every date
+            </button>
+            {plan.base && (
+              <button
+                type="button"
+                className={ghost}
+                onClick={() => {
+                  const i = plan.dates.indexOf(plan.base ?? '')
+                  if (i >= 0) actions.selectDay(i)
+                }}
+              >
+                <ArrowLeftIcon aria-hidden /> Back to {shortDate(plan.base)}
+              </button>
+            )}
+            <button type="button" className={ghost} onClick={() => actions.setStep('setup')}>
+              Change the setup
+            </button>
+          </div>
+        </div>
+        <MissionMoon markers={markers} at={plan.window.start} controls={false} className="h-[22rem] sm:h-[28rem] lg:h-[32rem]" />
+      </div>
+      <dl className="grid grid-cols-2 border-y border-line md:grid-cols-4">
+        {facts.map(([label, value], i) => (
+          <div
+            key={label}
+            className={`grid content-start gap-1.5 py-4 ${i % 2 === 1 ? 'pl-4 max-md:border-l max-md:border-line' : 'pr-4'} ${i > 0 ? 'md:border-l md:border-line md:pl-5' : ''} ${i > 1 ? 'max-md:border-t max-md:border-line' : ''}`}
+          >
+            <dt className="eyebrow text-ink-faint">{label}</dt>
+            <dd className="text-lg leading-snug font-medium text-pretty">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
+/**
+ * One requirement as a meter: the reading against its limit. Shares fill toward 100 %; gaps fill toward the stay's length.
+ * The tick is the limit; a missed limit is a red cross beside the value, never colour alone.
+ */
+function Meter({ q, site, plan }: { q: Requirement; site: SitePlan; plan: Plan }) {
+  const { stay, was, checks } = site
+  const check = checks?.checks.find((c) => c.key === q.key)
+  const limit = plan.requirements[q.key]
+  const sun = q.key === 'minSun' || q.key === 'maxNoSun'
+  const full = q.unit === '%' ? 100 : plan.stay * 24
+  const reading = stay ? q.read(stay) : null
+  const open = stay ? edge(q, stay) : undefined
+  // How far from the limit, so 71.7 % against 70 % reads as a near miss without the table.
+  const gap = check ? (q.bound === 'at least' ? check.value - check.limit : check.limit - check.value) : null
+  return (
+    <div className="grid gap-1.5 py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="text-sm text-ink-muted">
+          {q.label}
+          <span className="readout ml-2 text-2xs text-ink-faint">
+            {q.bound === 'at least' ? '≥' : '≤'} {limit} {q.unit}
+            {gap != null && (
+              <span className={check?.pass ? '' : 'text-miss'}>
+                {' · '}
+                {Math.abs(gap).toFixed(1)} {q.unit === '%' ? 'pts' : 'h'} {gap >= 0 ? 'spare' : 'short'}
+              </span>
+            )}
+          </span>
+        </span>
+        <span className={`readout text-xl whitespace-nowrap ${check && !check.pass ? 'text-miss' : ''}`}>
+          {check && !check.pass && <XIcon aria-label="Missed" weight="bold" className="mr-1 inline size-4 align-[-0.1em]" />}
+          {reading == null ? '—' : `${reading.toFixed(1)} ${q.unit}`}
+          {open && <span title="The gap touches the edge of the stay, so it may be longer."> +</span>}
+        </span>
+      </div>
+      <div aria-hidden className="relative h-1.5 rounded-full bg-white/[0.08]">
+        {reading != null && (
+          <div
+            className={`h-full rounded-full ${sun ? 'bg-sun' : 'bg-comms'}`}
+            style={{ width: `${Math.max(0, Math.min(100, (reading / full) * 100))}%` }}
+          />
+        )}
+        <div className="absolute -inset-y-1 w-0.5 rounded-full bg-white" style={{ left: `${Math.min(100, (limit / full) * 100)}%` }} />
+      </div>
+      {was && stay && (
+        <span className="readout text-2xs text-ink-faint">
+          {change(q, stay, was)} since {shortDate(plan.base ?? plan.date)}
+        </span>
+      )}
     </div>
+  )
+}
+
+/** One column of the comparison board: the site, whether it works and why, its skyline now, and every limit as a meter. */
+function SiteBoardColumn({ site, plan, n }: { site: SitePlan; plan: Plan; n: number }) {
+  const { data, elRange } = site
+  const tracks = useTracks(data.site.id)
+  const track = tracks?.[plan.date]
+  const now = moment(data, track, plan.date, plan.minute)
+  const earth = earthTarget(data, track, plan.date, plan.minute)
+  const r = siteResult(site)
+  const sunSeen = site.touchdown === 'both' || site.touchdown === 'earth_hidden'
+  const earthSeen = site.touchdown === 'both' || site.touchdown === 'sun_hidden'
+  return (
+    <article className="group grid min-w-0 content-start gap-4 py-8 transition-colors md:px-6 md:first:pl-0 md:last:pr-0">
+      <header className="grid gap-2">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="readout text-xs text-ink-faint">{String(n).padStart(2, '0')}</span>
+          <span className="text-sm font-medium">
+            {!site.checks ? (
+              <span className="text-ink-muted">Not computed</span>
+            ) : r.works ? (
+              <span className="text-go">✓ Works</span>
+            ) : (
+              <span className="text-miss">× Doesn’t work</span>
+            )}
+          </span>
+        </div>
+        <h3 className="text-[clamp(1.4rem,1.1rem+1vw,1.9rem)] leading-tight font-medium">{data.site.name}</h3>
+        <p className="readout text-2xs text-ink-faint">
+          {Math.abs(data.site.lat_deg).toFixed(2)}°{data.site.lat_deg < 0 ? 'S' : 'N'} · {data.site.lon_deg_east.toFixed(1)}°E
+        </p>
+        {/* Every column has its reason line, so the skylines below line up across the board. */}
+        <p className="min-h-[2.5em] text-sm text-ink-muted text-pretty">
+          {!site.checks ? 'Stay not computed.' : r.works ? 'Sun and Earth in view at touchdown; every limit holds.' : `${r.why}.`}
+        </p>
+      </header>
+      <Panorama
+        skyline={data.skyline.elevation_deg}
+        azStep={data.skyline.az_step_deg}
+        track={track}
+        now={now.sun}
+        comms={earth}
+        height={150}
+        elRange={elRange}
+        compact
+        label={`${data.site.name}: skyline, Sun and Earth on ${longDate(plan.date)}`}
+      />
+      <div className="divide-y divide-line border-y border-line">
+        <div className="flex items-baseline justify-between gap-3 py-3">
+          <span className="text-sm text-ink-muted">At touchdown</span>
+          <span className="inline-flex gap-4 text-sm">
+            {[
+              ['Sun', sunSeen],
+              ['Earth', earthSeen],
+            ].map(([what, seen]) => (
+              <span key={what as string} className="inline-flex items-center gap-1">
+                {seen ? (
+                  <CheckIcon aria-hidden weight="bold" className="text-ink-muted" />
+                ) : (
+                  <XIcon aria-hidden weight="bold" className="text-miss" />
+                )}
+                {what}
+                <span className="sr-only">{seen ? ' in view' : ' hidden'}</span>
+              </span>
+            ))}
+          </span>
+        </div>
+        {site.stay ? (
+          REQUIREMENTS.map((q) => <Meter key={q.key} q={q} site={site} plan={plan} />)
+        ) : (
+          <p className="py-3 text-sm text-ink-muted">The stay runs past the computed data: not computed.</p>
+        )}
+      </div>
+      <Link
+        to="/analyze/$siteId"
+        params={{ siteId: data.site.id }}
+        search={{ day: plan.date, t: plan.minute }}
+        className="inline-flex w-max items-center gap-2 text-sm text-ink-muted transition-colors hover:text-ink"
+      >
+        Full site report <ArrowUpRightIcon aria-hidden />
+      </Link>
+    </article>
   )
 }
 
@@ -342,222 +433,13 @@ function MarkerKey({ mixedScales }: { mixedScales: boolean }) {
   )
 }
 
-/** The answer first, beside the Moon at the landing moment: the verdict, how many sites work, and the next day that does. */
-const better = (q: Requirement, now: Measure, was: Measure) => (q.read(now) - q.read(was)) * (q.bound === 'at least' ? 1 : -1) > 0
-
-function Works({ yes }: { yes: boolean }) {
-  return <span className={yes ? 'text-go' : 'text-miss'}>{yes ? 'Works' : 'Doesn’t work'}</span>
-}
-
-/** After a slip: per site, whether the original day worked and whether the new one does, then the readings that moved. */
-function SlipChange({ plan }: { plan: Plan }) {
-  if (!plan.base) return null
-  const days = plan.slip
-  return (
-    <section aria-labelledby="slip-change" className="grid gap-3 border-t border-line pt-4">
-      <h3 id="slip-change" className="font-medium">
-        What changed from {shortDate(plan.base)}{' '}
-        <span className="tabular font-normal text-ink-muted">
-          ({days > 0 ? '+' : '−'}
-          {Math.abs(days)} {Math.abs(days) === 1 ? 'day' : 'days'})
-        </span>
-      </h3>
-      <ul className="grid gap-3">
-        {plan.sites.map((s) => {
-          const now = siteResult(s).works
-          const moved = s.stay && s.was ? REQUIREMENTS.filter((q) => change(q, s.stay as Measure, s.was as Measure) !== 'no change') : null
-          return (
-            <li key={s.data.site.id} className="grid gap-1 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-x-4">
-              <span className="font-medium">{shortName(s.data)}</span>
-              <div className="grid gap-1">
-                <p>
-                  {s.wasGo === null ? (
-                    <span className="text-ink-muted">Not computed</span>
-                  ) : s.wasGo === now ? (
-                    <>
-                      <Works yes={now} /> <span className="text-ink-muted">on both days</span>
-                    </>
-                  ) : (
-                    <>
-                      <Works yes={s.wasGo} /> <ArrowRightIcon aria-label="now" className="inline" /> <Works yes={now} />
-                    </>
-                  )}
-                </p>
-                <p className="tabular text-sm text-ink-muted">
-                  {!moved
-                    ? 'One of the two stays runs past the computed data.'
-                    : moved.length === 0
-                      ? 'The four readings are unchanged.'
-                      : moved.map((q, i) => (
-                          <span key={q.key}>
-                            {i > 0 && ' · '}
-                            {q.label}{' '}
-                            <span className={better(q, s.stay as Measure, s.was as Measure) ? 'text-go' : 'text-miss'}>
-                              {change(q, s.stay as Measure, s.was as Measure)}
-                            </span>
-                          </span>
-                        ))}
-                </p>
-              </div>
-            </li>
-          )
-        })}
-      </ul>
-    </section>
-  )
-}
-
-function Verdict({ plan, actions }: { plan: Plan; actions: PlanActions }) {
-  const v = verdict(verdictRows(plan), plan.slip)
-  const markers: MoonMarker[] = plan.sites.map((s) => ({
-    id: s.data.site.id,
-    name: shortName(s.data),
-    lat: s.data.site.lat_deg,
-    lon: s.data.site.lon_deg_east,
-    selected: true,
-    status: !s.checks ? 'not-computed' : siteResult(s).works ? 'works' : 'fails',
-  }))
-  return (
-    <section aria-labelledby="verdict" className="grid items-center gap-x-10 gap-y-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)]">
-      <div className="grid content-center gap-5">
-        <Eyebrow pip>
-          Result · {shortDate(plan.date)} {plan.date.slice(0, 4)}, {minuteLabel(plan.minute)} UTC · {plan.stay}-day stay
-        </Eyebrow>
-        <h2 id="verdict" aria-live="polite" className="text-[clamp(2rem,1.4rem+2.2vw,3.25rem)] leading-[1.05] font-medium text-balance">
-          {v.headline}
-        </h2>
-        <p className="max-w-[58ch] text-lg leading-relaxed text-ink-muted text-pretty">
-          {v.detail} {v.next && <span className="text-ink">{v.next}</span>}
-        </p>
-        <SlipChange plan={plan} />
-        <div className="flex flex-wrap gap-3">
-          {plan.base ? (
-            <button
-              type="button"
-              className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
-              onClick={() => {
-                const i = plan.dates.indexOf(plan.base ?? '')
-                if (i >= 0) actions.selectDay(i)
-              }}
-            >
-              <ArrowLeftIcon aria-hidden /> Back to {shortDate(plan.base)}
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
-            onClick={() => actions.setStep('dates')}
-          >
-            <CalendarBlankIcon aria-hidden /> See every date
-          </button>
-          <button
-            type="button"
-            className="inline-flex cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-ink-muted underline-offset-4 hover:text-ink hover:underline"
-            onClick={() => actions.setStep('setup')}
-          >
-            Change the setup
-          </button>
-        </div>
-      </div>
-      {/* A small Moon: it locates the sites and shows the light at landing; the answer and the cards below carry the detail. */}
-      <MissionMoon markers={markers} at={plan.window.start} controls={false} className="h-[16rem] rounded-xl sm:h-[18rem]" />
-    </section>
-  )
-}
-
-const statValue = (q: Requirement, s: SitePlan) =>
-  s.stay ? `${q.key === 'minSun' || q.key === 'minEarth' ? `${q.read(s.stay).toFixed(1)}%` : `${q.read(s.stay).toFixed(1)} h`}` : 'n/a'
-
-/** One card per site: its own skyline as the picture, whether it works, its skyline with the Sun and Earth now, and three readings. */
-function SiteCard({ site, plan }: { site: SitePlan; plan: Plan }) {
-  const { data, stay, elRange } = site
-  const tracks = useTracks(data.site.id)
-  const track = tracks?.[plan.date]
-  const now = moment(data, track, plan.date, plan.minute)
-  const earth = earthTarget(data, track, plan.date, plan.minute)
-  const r = siteResult(site)
-  const shown = REQUIREMENTS.filter((q) => q.key !== 'maxNoEarth')
-  const Icon = { minSun: SunIcon, maxNoSun: ClockIcon, minEarth: GlobeHemisphereWestIcon, maxNoEarth: ClockIcon } as const
-  const short = { minSun: 'Sun in view', maxNoSun: 'Longest w/o Sun', minEarth: 'Earth in view', maxNoEarth: 'Longest w/o Earth' } as const
-  return (
-    <article className="grid content-start gap-3 rounded-xl border border-line p-4 transition-colors hover:border-line-strong">
-      <header className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-start gap-3">
-        <SiteThumb site={data} className="h-12 w-full overflow-hidden rounded-md" />
-        <div className="grid gap-1">
-          <h3 className="leading-tight font-medium">{data.site.name}</h3>
-          <span className="inline-flex items-center gap-1.5 text-sm font-medium">
-            {!site.checks ? (
-              <span className="text-ink-muted">Not computed</span>
-            ) : r.works ? (
-              <>
-                <CheckCircleIcon aria-hidden weight="fill" className="text-go" /> <span className="text-go">Works</span>
-              </>
-            ) : (
-              <>
-                <XCircleIcon aria-hidden weight="fill" className="text-miss" /> <span className="text-miss">Doesn’t work</span>
-              </>
-            )}
-          </span>
-        </div>
-        <Link
-          to="/analyze/$siteId"
-          params={{ siteId: data.site.id }}
-          search={{ day: plan.date, t: plan.minute }}
-          aria-label={`Open the full report for ${data.site.name}`}
-          title="Open the full site report"
-          className="rounded p-1 text-ink-muted hover:bg-surface-hover hover:text-ink"
-        >
-          <ArrowSquareOutIcon aria-hidden className="size-5" />
-        </Link>
-      </header>
-      {!r.works && <p className="text-sm text-ink-muted text-pretty">{r.why}.</p>}
-      <Panorama
-        skyline={data.skyline.elevation_deg}
-        azStep={data.skyline.az_step_deg}
-        track={track}
-        now={now.sun}
-        comms={earth}
-        height={120}
-        elRange={elRange}
-        compact
-        label={`${data.site.name}: skyline, Sun and Earth on ${longDate(plan.date)}`}
-      />
-      <dl className="grid grid-cols-3 divide-x divide-line border-t border-line pt-3">
-        {shown.map((q) => {
-          const miss = site.checks?.checks.find((c) => c.key === q.key)?.pass === false
-          const I = Icon[q.key]
-          const open = stay ? edge(q, stay) : undefined
-          return (
-            <div key={q.key} className="grid gap-0.5 px-2 first:pl-0">
-              <dt className="flex items-center gap-1 text-2xs text-ink-muted">
-                <I aria-hidden className={q.key === 'minSun' ? 'text-sun' : q.key === 'minEarth' ? 'text-comms' : ''} />
-                {short[q.key]}
-              </dt>
-              <dd className={`readout text-lg ${miss ? 'text-miss' : ''}`}>
-                {miss && <XIcon aria-label="Missed" weight="bold" className="mr-0.5 inline size-3.5" />}
-                {statValue(q, site)}
-                {open && (
-                  <abbr title="The gap runs past the end of the stay, so it is at least this long" className="no-underline">
-                    {' +'}
-                  </abbr>
-                )}
-              </dd>
-              <Margin q={q} site={site} />
-            </div>
-          )
-        })}
-      </dl>
-    </article>
-  )
-}
-
 function CopyLink() {
   const [copied, setCopied] = useState(false)
   return (
     <button
       type="button"
       onClick={() => navigator.clipboard.writeText(location.href).then(() => setCopied(true))}
-      className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
+      className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm transition-colors hover:border-white/60"
     >
       {copied ? <CheckIcon aria-hidden /> : <LinkSimpleIcon aria-hidden />}
       {copied ? 'Link copied' : 'Copy link to this plan'}
@@ -608,72 +490,83 @@ function BeforeYouDecide({ plan }: { plan: Plan }) {
   )
 }
 
-/** Result and the way forward on one page: summary, the sites, the table, what to do next, the live check, the brief. */
+/** Result and the way forward on one page: the answer, the sites side by side, what to do next, and the detail. */
 export function ResultStep({ plan, actions, search }: { plan: Plan; actions: PlanActions; search: PlanSearch }) {
   const polar = plan.sites.map((s) => isPolar(s.data))
   return (
-    <div className="grid gap-12">
+    <div className="grid gap-16 pb-8">
       <Verdict plan={plan} actions={actions} />
       <RecommendedPlan plan={plan} actions={actions} search={search} />
-      <section id="compare" aria-labelledby="compare-title" className="grid scroll-mt-32 gap-4">
-        <div className="grid gap-2">
-          <Eyebrow pip>Site by site</Eyebrow>
-          <h2 id="compare-title" className="text-[clamp(1.5rem,1.2rem+1vw,2rem)] leading-tight font-medium">
-            What each site sees at touchdown
-          </h2>
+
+      <section id="compare" aria-labelledby="compare-title" className="grid scroll-mt-32 gap-2">
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+          <div className="grid gap-2">
+            <Eyebrow pip>Site by site</Eyebrow>
+            <h2 id="compare-title" className="text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)] leading-tight font-medium">
+              What each site gives you
+            </h2>
+          </div>
+          <MarkerKey mixedScales={polar.includes(true) && polar.includes(false)} />
         </div>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(19rem,1fr))] gap-4">
-          {plan.sites.map((s) => (
-            <SiteCard key={s.data.site.id} site={s} plan={plan} />
+        <div
+          className="grid divide-y divide-line border-t border-line md:divide-x md:divide-y-0"
+          style={{ gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, 18rem), 1fr))` }}
+        >
+          {plan.sites.map((s, i) => (
+            <SiteBoardColumn key={s.data.site.id} site={s} plan={plan} n={i + 1} />
           ))}
         </div>
-        <MarkerKey mixedScales={polar.includes(true) && polar.includes(false)} />
+        <p className="max-w-[80ch] text-xs text-ink-faint text-pretty">
+          The bar is the reading over the whole stay, the white tick your limit. A + means a gap touches the edge of the stay, so it may be
+          longer. Geometric opportunities under stated assumptions, not delivered power or a working radio link.
+        </p>
       </section>
-      <div className="grid gap-1">
-        <Collapsible.Root>
-          <Collapsible.DefaultTrigger>Every limit, site by site</Collapsible.DefaultTrigger>
-          <Collapsible.DefaultPanel>
-            <section aria-label="Every limit, site by site" className="grid gap-3 pt-2">
-              <ResultTable plan={plan} />
-              <ResultCards plan={plan} />
-              <p className="max-w-[80ch] text-xs text-ink-faint text-pretty">
-                A + means the gap touches the edge of the stay, so it may be longer. These are geometric opportunities under stated
-                assumptions, not delivered power or a working radio link.
-              </p>
-            </section>
-          </Collapsible.DefaultPanel>
-        </Collapsible.Root>
-        <Collapsible.Root>
-          <Collapsible.DefaultTrigger>Sun and Earth at touchdown, in detail</Collapsible.DefaultTrigger>
-          <Collapsible.DefaultPanel>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-x-8 gap-y-10 pt-3">
-              {plan.sites.map((s) => (
-                <SiteColumn key={s.data.site.id} site={s} plan={plan} />
-              ))}
-            </div>
-          </Collapsible.DefaultPanel>
-        </Collapsible.Root>
-      </div>
-      <LiveCheck plan={plan} />
-      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-5">
-        <button
-          type="button"
-          onClick={actions.downloadBrief}
-          className="inline-flex cursor-pointer items-center gap-2 rounded-md bg-brand px-4 py-2 font-medium text-bg hover:opacity-90"
-        >
-          <DownloadSimpleIcon aria-hidden weight="bold" /> Download mission brief
-        </button>
-        <CopyLink />
-        <button
-          type="button"
-          onClick={() => actions.setStep('dates')}
-          className="ml-auto inline-flex cursor-pointer items-center gap-2 rounded-md border border-line-strong px-4 py-2 hover:bg-surface-hover"
-        >
-          See dates <ArrowRightIcon aria-hidden />
-        </button>
-      </div>
-      <BeforeYouDecide plan={plan} />
-      <DeeperAnalysis plan={plan} />
+
+      <section aria-labelledby="take-title" className="grid gap-6 border-t border-line pt-12">
+        <div className="grid gap-2">
+          <Eyebrow pip>Take it with you</Eyebrow>
+          <h2 id="take-title" className="text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)] leading-tight font-medium">
+            Share or keep this plan
+          </h2>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={actions.downloadBrief}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-story px-5 py-2.5 font-medium text-white transition-colors hover:bg-story-hover"
+          >
+            <DownloadSimpleIcon aria-hidden weight="bold" /> Download mission brief
+          </button>
+          <CopyLink />
+          <button type="button" onClick={() => actions.setStep('dates')} className={ghost}>
+            See every date <ArrowRightIcon aria-hidden />
+          </button>
+        </div>
+        <LiveCheck plan={plan} />
+      </section>
+
+      <section aria-labelledby="appendix-title" className="grid gap-4 border-t border-line pt-12">
+        <div className="grid gap-2">
+          <Eyebrow pip>Behind the numbers</Eyebrow>
+          <h2 id="appendix-title" className="text-[clamp(1.75rem,1.3rem+1.4vw,2.5rem)] leading-tight font-medium">
+            How we know, and what we cannot see
+          </h2>
+        </div>
+        <div className="grid gap-1">
+          <Collapsible.Root>
+            <Collapsible.DefaultTrigger>The stay hour by hour, site by site</Collapsible.DefaultTrigger>
+            <Collapsible.DefaultPanel>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(18rem,1fr))] gap-x-8 gap-y-10 pt-3">
+                {plan.sites.map((s) => (
+                  <SiteColumn key={s.data.site.id} site={s} plan={plan} />
+                ))}
+              </div>
+            </Collapsible.DefaultPanel>
+          </Collapsible.Root>
+          <BeforeYouDecide plan={plan} />
+          <DeeperAnalysis plan={plan} />
+        </div>
+      </section>
     </div>
   )
 }

@@ -4,7 +4,8 @@ import { Collapsible } from '@cloudflare/kumo/components/collapsible'
 import { TooltipProvider } from '@cloudflare/kumo/components/tooltip'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { Link, useRouter, useRouterState } from '@tanstack/react-router'
-import { forwardRef, type ReactNode } from 'react'
+import { forwardRef, type ReactNode, useEffect } from 'react'
+import { MotionNotice } from '~/components/MotionNotice'
 import { Wordmark } from '~/components/Wordmark'
 
 /** The app is dark only: <html> ships with data-mode="dark" (Kumo's mode switch) and nothing removes it. */
@@ -49,6 +50,38 @@ const SECTIONS = [
   { n: '03', to: '/analyze', label: 'Analyze', owns: (p: string) => p.startsWith('/analyze') },
 ] as const
 
+/**
+ * The header tucks away once the page has scrolled past its own height and comes back on any scroll up. It sets
+ * `data-header="hidden"` on <html>, which zeroes `--header-h` so the sticky bars under it close the gap.
+ */
+function useTuckingHeader(on: boolean) {
+  useEffect(() => {
+    if (!on) return
+    const root = document.documentElement
+    let last = window.scrollY
+    let frame = 0
+    const update = () => {
+      frame = 0
+      const y = Math.max(0, window.scrollY)
+      // A couple of pixels of slack so trackpad jitter and iOS bounce don't flicker it.
+      if (Math.abs(y - last) < 3) return
+      const hide = y > 56 && y > last
+      if (hide) root.dataset.header = 'hidden'
+      else delete root.dataset.header
+      last = y
+    }
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(frame)
+      delete root.dataset.header
+    }
+  }, [on])
+}
+
 /** `bare`: no header, for a page that is its own way in (the front door). */
 export function Shell({
   children,
@@ -63,12 +96,13 @@ export function Shell({
   active?: (typeof SECTIONS)[number]['to']
 }) {
   const path = useRouterState({ select: (s) => s.location.pathname })
+  useTuckingHeader(!bare)
   return (
     <LinkProvider component={AppLink}>
       <TooltipProvider>
         <div className="isolate min-h-dvh">
           {!bare && (
-            <header className="sticky top-0 z-(--z-sticky) border-b border-line bg-bg">
+            <header className="site-header sticky top-0 z-(--z-sticky)">
               <div className="mx-auto flex h-14 max-w-7xl items-center gap-x-2 px-4 sm:gap-x-4 sm:px-6">
                 <Link to="/" className="shrink-0 py-2.5 sm:pr-2" aria-label="Skyline, choose your journey">
                   {/* The Y's loop rises above and dips below the letters, so shift up to centre the letters with the nav labels. */}
@@ -104,6 +138,7 @@ export function Shell({
               </div>
             </header>
           )}
+          <MotionNotice />
           {children}
         </div>
       </TooltipProvider>

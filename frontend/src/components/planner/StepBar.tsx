@@ -35,7 +35,7 @@ export const missionShort = (plan: Plan) => `${shortDate(plan.date)}, ${minuteLa
 
 export function StepBar({ step, plan, actions }: { step: StepId; plan: Plan; actions: PlanActions }) {
   return (
-    <div className="sticky top-14 z-(--z-sticky) border-b border-line bg-bg">
+    <div className="sticky top-(--header-h) z-(--z-sticky) transition-[top] duration-300 ease-out motion-reduce:transition-none border-b border-line bg-bg">
       <div className="mx-auto flex max-w-7xl items-center px-4 sm:px-6">
         <nav aria-label="Planning steps" className="min-w-0">
           <ol className="flex gap-x-5 sm:gap-x-7">
@@ -46,7 +46,7 @@ export function StepBar({ step, plan, actions }: { step: StepId; plan: Plan; act
                   aria-current={s.id === step ? 'step' : undefined}
                   onClick={() => actions.setStep(s.id)}
                   className={`-mb-px flex cursor-pointer items-baseline gap-2 border-b-2 py-3 font-medium whitespace-nowrap ${
-                    s.id === step ? 'border-brand text-ink' : 'border-transparent text-ink-muted hover:text-ink'
+                    s.id === step ? 'border-story text-ink' : 'border-transparent text-ink-muted hover:text-ink'
                   }`}
                 >
                   <span className="hidden font-mono text-xs sm:inline">{i + 1}</span>

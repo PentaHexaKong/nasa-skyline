@@ -21,8 +21,6 @@ export type SharedView = {
   projection: THREE.Matrix4
   /** Unit vector toward the Sun, same frame. */
   sun: THREE.Vector3
-  /** The star sphere's orientation in the same frame, so the page draws the scene's sky behind its Moon. */
-  stars: THREE.Quaternion
 }
 
 export const moonBridge = {

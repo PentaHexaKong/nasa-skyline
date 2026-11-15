@@ -1,6 +1,6 @@
 import { ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon } from '@phosphor-icons/react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { Landscape, type LandscapeMode, type Moment, momentLabel } from '~/components/explore/Landscape'
 import { useMoonScene } from '~/components/MoonStage'
@@ -11,6 +11,7 @@ import { SpaceChapter, type SpaceSearch } from '~/components/SpaceChapter'
 import { Bubble, Guide, Mascot, Orbits, StoryLink, useScrollProgress } from '~/components/story'
 import { loadMoonEphemeris, loadSummary, MAP_SITES, type Summary } from '~/lib/data'
 import { measure, shortName, siteSpans } from '~/lib/mission'
+import { reducedMotion } from '~/lib/motion'
 import { forgiving } from '~/lib/useSiteView'
 
 /**
@@ -118,9 +119,39 @@ function ExplorePage() {
 
 /** 1. Curiosity first: the whole Moon, a question, and the explorer looking up at it. */
 function Opening() {
+  const hold = useRef<HTMLDivElement>(null)
+  // The words stay where they are and fade out over the first third of a screen, while the Moon comes in behind them,
+  // so nothing slides up under the header.
+  useEffect(() => {
+    const el = hold.current
+    if (!el) return
+    let raf = 0
+    const read = () => {
+      raf = 0
+      const y = Math.max(0, Math.min(window.scrollY, el.offsetHeight))
+      const k = Math.min(1, y / (window.innerHeight * 0.35))
+      el.style.translate = `0 ${y}px`
+      el.style.opacity = (1 - k).toFixed(3)
+      el.style.visibility = k >= 1 ? 'hidden' : ''
+    }
+    const on = () => {
+      if (!raf) raf = requestAnimationFrame(read)
+    }
+    read()
+    window.addEventListener('scroll', on, { passive: true })
+    window.addEventListener('resize', on)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', on)
+      window.removeEventListener('resize', on)
+    }
+  }, [])
   return (
     <section id="top" data-moon-chapter aria-labelledby="explore-title" className="relative min-h-[calc(100svh-3.5rem)] scroll-mt-14">
-      <div className="mx-auto grid min-h-[calc(100svh-3.5rem)] max-w-7xl grid-rows-[auto_1fr_auto] px-4 py-5 sm:px-6">
+      <div
+        ref={hold}
+        className="mx-auto grid min-h-[calc(100svh-3.5rem)] max-w-7xl grid-rows-[auto_1fr_auto] px-4 pt-5 pb-14 sm:px-6"
+      >
         <div className="grid justify-items-center gap-3 text-center">
           <Link to="/" className="justify-self-start text-sm text-ink-muted hover:text-ink">
             <ArrowLeftIcon aria-hidden className="mr-1 inline size-3.5" />
@@ -138,9 +169,6 @@ function Opening() {
         <div className="grid items-end gap-4 sm:grid-cols-[1fr_auto_1fr]">
           <Guide pose="explorer-lookup" says="Let’s find out together!" className="rise [--i:3]" size="size-24 sm:size-28" />
           <a href="#discover" className="grid justify-items-center gap-1 pb-2 text-sm text-ink-muted hover:text-ink">
-            <span className="max-w-[30ch] text-center text-xs text-ink-faint">
-              The Moon may look quiet from here. Up close, every ridge, crater and shadow changes the story.
-            </span>
             <span>
               Scroll to get closer <ArrowDownIcon aria-hidden className="inline size-3.5" />
             </span>
@@ -224,9 +252,9 @@ function Discovery({ site }: { site: Summary }) {
     const read = () => {
       raf = 0
       const r = el.getBoundingClientRect()
-      const run = Math.max(1, r.height - window.innerHeight + 56)
-      // Pinned below the header, so the run starts when the top reaches it.
-      const x = Math.max(0, Math.min(0.999, (56 - r.top) / run))
+      const run = Math.max(1, r.height - window.innerHeight)
+      // Pinned to the top of the viewport (the header floats over it), so the run starts when the top reaches it.
+      const x = Math.max(0, Math.min(0.999, -r.top / run))
       // The ground comes in from black once the Moon has gone, and the dive carries on down into it.
       el.style.setProperty('--reveal', ease((x - MOON_GONE) / (ARRIVAL - MOON_GONE)).toFixed(4))
       el.style.setProperty('--exit', ease((x - (1 - LEAVING)) / LEAVING).toFixed(4))
@@ -247,10 +275,10 @@ function Discovery({ site }: { site: Summary }) {
   const go = (i: number) => {
     const el = ref.current
     if (!el) return
-    const run = el.offsetHeight - window.innerHeight + 56
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const run = el.offsetHeight - window.innerHeight
+    const reduced = reducedMotion().matches
     const x = ARRIVAL + ((1 - ARRIVAL - LEAVING) * (i + 0.5)) / MODES.length
-    window.scrollTo({ top: el.offsetTop - 56 + run * x, behavior: reduced ? 'auto' : 'smooth' })
+    window.scrollTo({ top: el.offsetTop + run * x, behavior: reduced ? 'auto' : 'smooth' })
   }
 
   // Arriving or leaving: the text is out of sight, so out of reach too.
@@ -269,7 +297,7 @@ function Discovery({ site }: { site: Summary }) {
 
   return (
     <section ref={ref} id="discover" data-moon-chapter aria-labelledby="discover-title" className="discover relative h-[460svh]">
-      <div className="sticky top-14 h-[calc(100svh-3.5rem)] overflow-hidden">
+      <div className="sticky top-0 h-svh overflow-hidden">
         <div className="pointer-events-none absolute inset-0">
           <div className="discover-window absolute inset-0">
             <div className="absolute inset-0">

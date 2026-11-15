@@ -116,7 +116,7 @@ function Column({ id, tall = false, label, children }: { id: string; tall?: bool
       <div className={`mx-auto max-w-7xl px-4 pt-[44svh] sm:px-6 lg:pt-0 ${tall ? 'lg:min-h-[200svh]' : ''}`}>
         <div
           className={`tour-panel grid max-w-[36rem] content-center gap-6 pb-20 lg:min-h-[calc(100svh-3.5rem)] lg:py-24 ${
-            tall ? 'lg:sticky lg:top-14' : ''
+            tall ? 'lg:sticky lg:top-(--header-h) lg:transition-[top] lg:duration-300 lg:ease-out motion-reduce:transition-none' : ''
           } ${textRight ? 'lg:ml-auto' : ''}`}
         >
           {children}

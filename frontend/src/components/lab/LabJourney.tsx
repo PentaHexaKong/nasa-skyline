@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import type { LabSearch } from '~/components/lab/LabExperience'
+import { StepNav } from '~/components/lab/StepNav'
 import { SmoothDialog } from '~/components/SmoothDialog'
 import { Guide } from '~/components/story'
 import type { MoonEphemeris, Summary } from '~/lib/data'
@@ -75,7 +76,17 @@ export function LabJourney({
           <p className="text-xs text-ink-faint">Open any step. Your notes stay in this browser tab.</p>
         </div>
       </div>
-      <SmoothDialog open={open} onClose={() => setOpen(false)}>
+      <SmoothDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        nav={
+          <StepNav
+            step={search.step ?? 'choose'}
+            ready={search.q !== undefined}
+            onStep={(step) => setSearch((previous) => ({ ...previous, step }))}
+          />
+        }
+      >
         {loaded && (
           <Suspense
             fallback={

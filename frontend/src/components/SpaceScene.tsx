@@ -7,6 +7,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { moonBridge, type SharedView } from '~/components/moonBridge'
 import { halo, moonMaterial, toVec } from '~/components/moonGlobe'
+import { reducedMotion } from '~/lib/motion'
 import { R_EARTH_KM, R_MOON_KM, R_SUN_KM, type Space, sampleSpace } from '~/lib/space'
 
 export type GlobeSite = { id: string; name: string; lat: number; lon: number; note: string }
@@ -83,7 +84,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
     renderer.toneMappingExposure = 1.15
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(40, 1, 1e-4, 1e7)
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const motion = reducedMotion()
     const coarse = window.matchMedia('(pointer: coarse)').matches
     let dirty = true
     const redraw = () => {
@@ -193,30 +194,6 @@ export default function SpaceScene(props: SpaceSceneProps) {
     )
     glow.scale.setScalar(RS * 8)
 
-    // Stars: NASA SVS Deep Star Maps 2020 in J2000 equatorial coordinates, tilted into the ecliptic frame. RA grows
-    // to the left in the map, so u is flipped. The sphere rides with the camera and is drawn first, behind everything.
-    const starTex = tex('/space/stars-4k.jpg')
-    starTex.wrapS = THREE.RepeatWrapping
-    starTex.repeat.x = -1
-    const stars = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 96, 48),
-      new THREE.MeshBasicMaterial({
-        map: starTex,
-        side: THREE.BackSide,
-        depthWrite: false,
-        depthTest: false,
-        toneMapped: false,
-        color: new THREE.Color(0.45, 0.45, 0.45),
-      }),
-    )
-    const obl = (23.4392911 * Math.PI) / 180
-    stars.quaternion.setFromRotationMatrix(
-      new THREE.Matrix4().set(1, 0, 0, 0, 0, Math.cos(obl), Math.sin(obl), 0, 0, -Math.sin(obl), Math.cos(obl), 0, 0, 0, 0, 1),
-    )
-    stars.scale.setScalar(1e5)
-    stars.renderOrder = -1
-    stars.frustumCulled = false
-
     // The Moon's path around Earth over the whole window, drawn around Earth's current position.
     const sp = latest.current.space
     const pts = new Float32Array(sp.n * 3)
@@ -230,7 +207,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
 
     const light = new THREE.DirectionalLight(0xffffff, 3.2)
     // A faint fill so the Moon's night side reads as a shape, as earthshine does.
-    scene.add(stars, moon, earth, sun, glow, pathGroup, light, light.target, new THREE.AmbientLight(0xffffff, 0.03))
+    scene.add(moon, earth, sun, glow, pathGroup, light, light.target, new THREE.AmbientLight(0xffffff, 0.03))
 
     const composer = new EffectComposer(renderer)
     composer.addPass(new RenderPass(scene, camera))
@@ -362,7 +339,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
       const p = pose(v)
       controls.enabled = v !== 'fromEarth'
       ;[controls.minDistance, controls.maxDistance] = limits[v]
-      if (animate && !reduced) tween = { from: prevTarget, fromOff: prevOff, fromFov: camera.fov, t0: performance.now(), ms: 1400 }
+      if (animate && !motion.matches) tween = { from: prevTarget, fromOff: prevOff, fromFov: camera.fov, t0: performance.now(), ms: 1400 }
       else {
         anchor(v, target)
         controls.target.copy(target)
@@ -384,7 +361,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
       const to = landing(id)
       if (!to || view !== 'moon') return
       latest.current.onFlight()
-      if (reduced) {
+      if (motion.matches) {
         latest.current.onArrive(id)
         return
       }
@@ -394,7 +371,7 @@ export default function SpaceScene(props: SpaceSceneProps) {
     setView(view, false)
     const start = latest.current.from && landing(latest.current.from)
     if (start && view === 'moon') {
-      if (reduced) camera.position.copy(off)
+      if (motion.matches) camera.position.copy(off)
       else {
         camera.position.copy(start)
         controls.enabled = false
@@ -542,7 +519,6 @@ export default function SpaceScene(props: SpaceSceneProps) {
       quaternion: new THREE.Quaternion(),
       projection: new THREE.Matrix4(),
       sun: new THREE.Vector3(),
-      stars: new THREE.Quaternion(),
     }
     const FADE_MS = 800
 
@@ -629,7 +605,6 @@ export default function SpaceScene(props: SpaceSceneProps) {
         bridgeView.quaternion.copy(invQ).multiply(camera.quaternion)
         bridgeView.projection.copy(camera.projectionMatrix)
         bridgeView.sun.copy(sunDir.value).applyQuaternion(invQ)
-        bridgeView.stars.copy(invQ).multiply(stars.quaternion)
         moonBridge.view = bridgeView
         if (dirty) moonBridge.version++
         moonBridge.draw?.()
@@ -645,9 +620,6 @@ export default function SpaceScene(props: SpaceSceneProps) {
       if (!dirty) return
       dirty = false
       sun.quaternion.copy(camera.quaternion)
-      stars.position.copy(camera.position)
-      // Through a narrow lens the star map is magnified past its resolution: leave the sky black.
-      stars.visible = camera.fov > 10
       pathGroup.visible = view === 'pair' || view === 'orbit'
       if (!handoff || crossfading) composer.render()
       place()

@@ -1,95 +1,313 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useId } from 'react'
 import type { InvestigationId } from '~/lib/investigation'
 
 /**
- * One small picture per question, in the same language as the skyline chart (white terrain line, amber Sun, cyan Earth),
- * so the card shows what the question is about rather than a bare patch of terrain.
+ * One picture per question, as the view from the surface: ridges fade with distance, the Sun is a small hard disc
+ * with a glow (no air to soften it), the ridge it sits behind is rim-lit, and Earth is a lit sphere, not a dot.
+ *
+ * Every scene draws on one 400×176 canvas, cropped from the middle, so anything that matters stays between x 40 and
+ * 360 (the crop takes up to ~35px a side at phone width). Ridges stroke only their top edge, never the canvas edges.
  */
-const STARS: [number, number][] = [
-  [24, 20],
-  [70, 44],
-  [118, 16],
-  [176, 34],
-  [232, 14],
-  [286, 40],
-  [300, 76],
+
+type Pt = readonly [number, number]
+const W = 400
+const H = 176
+
+const line = (pts: readonly Pt[]) => `M${pts.map(([x, y]) => `${x} ${y}`).join(' L')}`
+const area = (pts: readonly Pt[]) => {
+  const first = pts[0]
+  const last = pts.at(-1)
+  return first && last ? `${line(pts)} L${last[0]} ${H + 4} L${first[0]} ${H + 4} Z` : ''
+}
+
+const FAR = 'oklch(0.2 0.004 250)'
+const MID = 'oklch(0.155 0.004 250)'
+const NEAR = 'oklch(0.11 0.004 250)'
+
+/** Fixed, uneven stars, so the sky is never a grid. [x, y, opacity] */
+const STARS: readonly (readonly [number, number, number])[] = [
+  [52, 22, 0.5],
+  [88, 48, 0.25],
+  [131, 14, 0.4],
+  [168, 36, 0.2],
+  [214, 18, 0.35],
+  [246, 44, 0.2],
+  [292, 12, 0.45],
+  [326, 34, 0.25],
+  [352, 58, 0.3],
+  [74, 74, 0.15],
+  [198, 64, 0.15],
 ]
 
-function Sky({ children }: { children: ReactNode }) {
+function Label({
+  x,
+  y,
+  children,
+  className = 'fill-ink-faint',
+  anchor = 'middle',
+}: {
+  x: number
+  y: number
+  children: ReactNode
+  className?: string
+  anchor?: 'start' | 'middle' | 'end'
+}) {
   return (
-    <svg viewBox="0 0 320 160" role="img" aria-hidden className="block h-full w-full" preserveAspectRatio="xMidYMid slice">
-      <rect width="320" height="160" fill="#06090d" />
-      {STARS.map(([x, y]) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="1" fill="white" opacity="0.45" />
-      ))}
+    <text x={x} y={y} textAnchor={anchor} className={className} style={{ font: '500 8px var(--font-mono)', letterSpacing: '0.08em' }}>
       {children}
-    </svg>
+    </text>
   )
 }
 
-const RIDGE = 'fill-[#11151b] stroke-white/80'
+function Ridge({ pts, fill, rim }: { pts: readonly Pt[]; fill: string; rim?: string }) {
+  return (
+    <>
+      <path d={area(pts)} fill={fill} />
+      {rim && <path d={line(pts)} fill="none" stroke={`url(#${rim})`} strokeWidth={1.25} strokeLinejoin="round" />}
+    </>
+  )
+}
+
+/** Warm light along a ridge edge, brightest where it faces the Sun at `x`. */
+function RimGradient({ id, x, spread = 90 }: { id: string; x: number; spread?: number }) {
+  return (
+    <linearGradient id={id} gradientUnits="userSpaceOnUse" x1={x - spread} x2={x + spread} y1={0} y2={0}>
+      <stop offset="0" stopColor="var(--color-sun)" stopOpacity={0} />
+      <stop offset="0.5" stopColor="var(--color-sun)" stopOpacity={0.9} />
+      <stop offset="1" stopColor="var(--color-sun)" stopOpacity={0} />
+    </linearGradient>
+  )
+}
+
+function Sun({ x, y, glow, r = 7, ghost = false }: { x: number; y: number; glow: string; r?: number; ghost?: boolean }) {
+  if (ghost)
+    return (
+      <circle
+        cx={x}
+        cy={y}
+        r={r}
+        fill="none"
+        stroke="var(--color-sun)"
+        strokeOpacity={0.5}
+        strokeDasharray="1.5 2.5"
+        strokeLinecap="round"
+      />
+    )
+  return (
+    <>
+      <circle cx={x} cy={y} r={r * 8} fill={`url(#${glow})`} />
+      <circle cx={x} cy={y} r={r} fill="oklch(0.95 0.06 85)" />
+    </>
+  )
+}
+
+/** Earth as the Moon sees it: mostly lit, with a dark limb, so it reads as a world rather than a second moon. */
+function Earth({ x, y, uid, r = 9 }: { x: number; y: number; uid: string; r?: number }) {
+  const mask = `${uid}-earth`
+  return (
+    <g>
+      <defs>
+        <mask id={mask}>
+          <circle cx={x} cy={y} r={r} fill="white" />
+          <circle cx={x + r * 1.45} cy={y + r * 0.25} r={r} fill="black" />
+        </mask>
+      </defs>
+      <circle cx={x} cy={y} r={r} fill="oklch(0.2 0.03 230)" />
+      <circle cx={x} cy={y} r={r} fill="var(--color-comms)" mask={`url(#${mask})`} />
+      <circle cx={x} cy={y} r={r + 0.5} fill="none" stroke="var(--color-comms)" strokeOpacity={0.35} strokeWidth={0.75} />
+    </g>
+  )
+}
 
 export function ScenarioArt({ id, className = '' }: { id: InvestigationId; className?: string }) {
+  const uid = useId().replace(/:/g, '')
+  const glow = `${uid}-glow`
+  const rim = `${uid}-rim`
   return (
-    <div className={`overflow-hidden bg-[#06090d] ${className}`}>
-      {id === 'mountain' && (
-        <Sky>
-          <path d="M20 132 Q160 -20 300 118" fill="none" className="stroke-sun" strokeWidth="1.5" strokeDasharray="4 5" opacity="0.7" />
-          <circle cx="236" cy="78" r="17" className="fill-sun" />
-          <path
-            d="M0 160 V116 L38 102 L78 118 L126 80 L168 94 L212 82 L262 104 L320 96 V160Z"
-            className={RIDGE}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </Sky>
-      )}
-      {id === 'light' && (
-        <Sky>
-          <line x1="160" x2="160" y1="14" y2="146" stroke="white" strokeOpacity="0.2" strokeDasharray="3 5" />
-          {/* Left: lots of sunlight, Earth hidden behind the near hill. */}
-          <circle cx="86" cy="60" r="15" className="fill-sun" />
-          <circle cx="42" cy="104" r="6" className="fill-comms" />
-          <path
-            d="M0 160 V122 L22 112 L52 110 L84 126 L130 118 L160 124 V160Z"
-            className={RIDGE}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-          <path d="M24 160 V118 L52 100 L78 122 V160Z" className={RIDGE} strokeWidth="1.5" strokeLinejoin="round" />
-          {/* Right: a tall ridge hides the Sun, Earth clears it. */}
-          <circle cx="262" cy="108" r="15" className="fill-sun" />
-          <circle cx="224" cy="48" r="6" className="fill-comms" />
-          <path
-            d="M160 160 V128 L190 112 L226 96 L252 74 L282 92 L320 104 V160Z"
-            className={RIDGE}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </Sky>
-      )}
-      {id === 'later' && (
-        <Sky>
-          <path
-            d="M14 118 Q96 6 178 66 T306 118"
-            fill="none"
-            className="stroke-sun"
-            strokeWidth="1.5"
-            strokeDasharray="4 5"
-            opacity="0.7"
-          />
-          <circle cx="92" cy="50" r="14" className="fill-sun" />
-          <circle cx="232" cy="92" r="14" className="stroke-sun" fill="#06090d" strokeWidth="2" strokeDasharray="3 3" />
-          <path d="M112 46 H204" stroke="white" strokeOpacity="0.55" strokeWidth="1.5" />
-          <path d="M198 40 L206 46 L198 52" fill="none" stroke="white" strokeOpacity="0.55" strokeWidth="1.5" />
-          <path
-            d="M0 160 V120 L46 108 L98 122 L154 104 L204 110 L250 96 L320 112 V160Z"
-            className={RIDGE}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </Sky>
-      )}
+    <div className={`overflow-hidden bg-[#030507] ${className}`}>
+      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden className="block h-full w-full" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id={glow}>
+            <stop offset="0" stopColor="var(--color-sun)" stopOpacity={0.45} />
+            <stop offset="0.35" stopColor="var(--color-sun)" stopOpacity={0.12} />
+            <stop offset="1" stopColor="var(--color-sun)" stopOpacity={0} />
+          </radialGradient>
+        </defs>
+        <g className="fill-white">
+          {STARS.map(([x, y, o]) => (
+            <circle key={`${x}-${y}`} cx={x} cy={y} r={o > 0.3 ? 0.9 : 0.6} opacity={o} />
+          ))}
+        </g>
+        {id === 'mountain' && (
+          <>
+            <defs>
+              <RimGradient id={rim} x={256} />
+            </defs>
+            <Ridge
+              pts={[
+                [-10, 118],
+                [50, 110],
+                [110, 116],
+                [170, 102],
+                [230, 108],
+                [300, 96],
+                [360, 104],
+                [410, 100],
+              ]}
+              fill={FAR}
+            />
+            <Ridge
+              pts={[
+                [-10, 132],
+                [60, 124],
+                [120, 130],
+                [170, 120],
+                [220, 126],
+                [290, 116],
+                [350, 122],
+                [410, 118],
+              ]}
+              fill={MID}
+            />
+            {/* The Sun sits behind the near peak: its lower half is already gone. */}
+            <Sun x={256} y={80} glow={glow} r={8} />
+            <Ridge
+              pts={[
+                [-10, 150],
+                [40, 140],
+                [90, 146],
+                [140, 128],
+                [190, 112],
+                [228, 92],
+                [248, 82],
+                [262, 80],
+                [282, 94],
+                [320, 118],
+                [360, 130],
+                [410, 136],
+              ]}
+              fill={NEAR}
+              rim={rim}
+            />
+          </>
+        )}
+        {id === 'light' && (
+          <>
+            <defs>
+              <RimGradient id={rim} x={110} spread={120} />
+              <RimGradient id={`${rim}-b`} x={286} spread={50} />
+              <clipPath id={`${uid}-a`}>
+                <rect x={-10} y={0} width={208} height={H} />
+              </clipPath>
+              <clipPath id={`${uid}-b`}>
+                <rect x={202} y={0} width={210} height={H} />
+              </clipPath>
+            </defs>
+            {/* Place A: high ground in full sunlight, no Earth above its horizon. */}
+            <g clipPath={`url(#${uid}-a)`}>
+              <Sun x={112} y={50} glow={glow} />
+              <Ridge
+                pts={[
+                  [-10, 120],
+                  [40, 114],
+                  [90, 118],
+                  [140, 110],
+                  [210, 116],
+                ]}
+                fill={MID}
+              />
+              <Ridge
+                pts={[
+                  [-10, 140],
+                  [50, 130],
+                  [100, 134],
+                  [150, 124],
+                  [210, 130],
+                ]}
+                fill="oklch(0.16 0.006 75)"
+                rim={rim}
+              />
+            </g>
+            {/* Place B: a ridge stands in front of the Sun, and Earth hangs clear above it. */}
+            <g clipPath={`url(#${uid}-b)`}>
+              <Earth x={340} y={46} uid={uid} />
+              <Sun x={290} y={92} glow={glow} />
+              <Ridge
+                pts={[
+                  [190, 128],
+                  [240, 106],
+                  [270, 86],
+                  [290, 80],
+                  [312, 90],
+                  [350, 112],
+                  [410, 120],
+                ]}
+                fill={NEAR}
+                rim={`${rim}-b`}
+              />
+            </g>
+            <line x1={200} x2={200} y1={0} y2={H} stroke="#090c11" strokeWidth={4} />
+            <Label x={58} y={26} anchor="start">
+              A
+            </Label>
+            <Label x={342} y={26} anchor="end">
+              B
+            </Label>
+          </>
+        )}
+        {id === 'later' && (
+          <>
+            <defs>
+              <RimGradient id={rim} x={270} spread={80} />
+            </defs>
+            <Ridge
+              pts={[
+                [-10, 116],
+                [60, 108],
+                [120, 114],
+                [180, 104],
+                [240, 110],
+                [310, 100],
+                [410, 106],
+              ]}
+              fill={FAR}
+            />
+            {/* Day 1: a ghost of where the Sun stood. Day 2: the same Sun, now slipping behind the ridge. */}
+            <path
+              d="M150 66 Q216 62 268 86"
+              fill="none"
+              stroke="var(--color-sun)"
+              strokeOpacity={0.4}
+              strokeDasharray="1 4"
+              strokeLinecap="round"
+            />
+            <Sun x={146} y={66} glow={glow} ghost />
+            <Sun x={270} y={90} glow={glow} />
+            <Ridge
+              pts={[
+                [-10, 148],
+                [50, 138],
+                [110, 142],
+                [170, 126],
+                [214, 112],
+                [248, 96],
+                [268, 90],
+                [288, 96],
+                [330, 120],
+                [410, 132],
+              ]}
+              fill={NEAR}
+              rim={rim}
+            />
+            <Label x={146} y={50} className="fill-sun opacity-60">
+              DAY 1
+            </Label>
+            <Label x={270} y={66} className="fill-sun">
+              DAY 2
+            </Label>
+          </>
+        )}
+      </svg>
     </div>
   )
 }

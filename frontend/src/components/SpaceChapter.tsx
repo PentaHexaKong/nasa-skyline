@@ -153,7 +153,7 @@ export function SpaceChapter({
   const r = space ? spaceReadouts(sampleSpace(space, hours)) : undefined
   const when = `${shortDate(date)} ${minuteLabel(minute)} UTC`
   const lede: Record<SpaceView, string> = {
-    moon: `Sunlight as it falls on ${when}. Pick a site to fly down and stand on it.`,
+    moon: 'Pick a site to fly down and stand on it.',
     earth:
       'Earth as the Moon sees it. From the near side it stays in the same patch of sky all month, and its phase runs opposite to the Moon’s.',
     pair: r
@@ -173,7 +173,7 @@ export function SpaceChapter({
       className={`overflow-hidden text-kumo-default ${full ? 'fixed inset-0 z-(--z-popover) bg-black' : 'relative h-[calc(100svh-3.5rem)] min-h-[34rem]'}`}
       role={full ? 'dialog' : undefined}
       aria-modal={full || undefined}
-      aria-label={full ? 'The Moon, Earth and the Sun at true scale, full screen' : undefined}
+      aria-label={full ? 'The Moon, Earth and the Sun at their real positions, full screen' : undefined}
     >
       {/* The night sky's ground. Its top and bottom edges fade into the page, as the sky itself does (.sky-edges). */}
       <div
@@ -193,7 +193,7 @@ export function SpaceChapter({
             onHandoff={setShared}
             onFlight={() => setPlaying(false)}
             onArrive={(id) => onArrive(id, date, minute)}
-            label={`The Moon, Earth and the Sun at true scale on ${when}, ${VIEWS.find((v) => v.value === view)?.label} view, with ${sites.length} landing sites marked`}
+            label={`The Moon, Earth and the Sun at their real positions on ${when}, ${VIEWS.find((v) => v.value === view)?.label} view, with ${sites.length} landing sites marked`}
           />
         </Suspense>
       )}
@@ -208,7 +208,7 @@ export function SpaceChapter({
         className={`pointer-events-none absolute inset-x-4 flex flex-col gap-3 sm:right-(--page-edge) sm:left-(--page-edge) sm:flex-row sm:items-start sm:justify-between ${full ? 'top-4' : 'top-(--sky-fade)'}`}
       >
         <div className="scene-text grid max-w-[30rem] gap-3">
-          <Eyebrow pip>The whole system, at true scale</Eyebrow>
+          <Eyebrow pip>Real positions, from NASA</Eyebrow>
           <h2 id="space-title" className="text-[clamp(1.75rem,1.2rem+2vw,2.75rem)] leading-[1.05] font-medium text-balance">
             Pick a place on the Moon.
           </h2>
