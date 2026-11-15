@@ -186,6 +186,11 @@ export type SitePlan = {
   runs: LandingRun[]
   nextGo: string | null
   goDays: number
+  /**
+   * Where the selected stay's numbers come from: the live mission-science engine, or the site's precomputed file. Year-wide
+   * values (runs, next good day, slips) always come from the file.
+   */
+  source?: 'live' | 'precomputed'
 }
 
 export function planSite(

@@ -36,9 +36,9 @@ site (lat, lon °E, ME frame, observer height h)
 
 ## 2. Ephemeris (SPICE)
 
-Kernels: `naif0012.tls`, `de440s.bsp`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf`, `pck00011.tpc` (see [data/sources.md](../data/sources.md)).
+Kernels: `naif0012.tls`, `moon_080317.tf`, `moon_pa_de421_1900-2050.bpc`, `de440s.bsp`, `moon_pa_de440_200625.bpc`, `moon_de440_250416.tf`, `pck00011.tpc` (see [data/sources.md](../data/sources.md)).
 
-- Express the site in the **ME** frame defined by the frames kernel Use `MOON_ME_DE440_ME421`: LOLA product 90 states its grids are in "the MOON_ME reference frame of the JPL DE421 ephemeris", and this frame is DE440's ME aligned to DE421. Check the kernel text for the exact name. Don't mix PA and ME: they differ by a sub-km surface offset.
+- Express the site in the **ME** frame defined by the frames kernel Use `MOON_ME_DE421` with moon_080317.tf and moon_pa_de421_1900-2050.bpc. LOLA product 90 identifies its grid in the DE421 realization. DE440-based ME coordinates require an explicit SPICE transformation. Check the kernel text for the exact name. Don't mix PA and ME: they differ by a sub-km surface offset.
 - Compute **topocentric** apparent vectors from the surface point to the Sun and to Earth's center. Use `spkcpo` / `azlcpo` (constant-position observer), with light time and stellar aberration (`LT+S`). The Earth parallax from the surface is ~0.26°, so a Moon-centered vector is wrong at our margins.
 - Local frame: up = the ellipsoid/sphere normal at the site; azimuth clockwise from local north; elevation above the local horizontal plane.
 - At the exact pole, north is undefined. Define azimuth for |lat| > 89.99° as measured from the direction of the 0° meridian, and document it.
@@ -84,4 +84,4 @@ Record the results in `docs/science/validation.md` (create it on the first run).
 
 ## INT-4 scientific interface
 
-The versioned research API consolidates the preserved MD-2C physical modules through `src.science.ScientificEngine`. Its geometric SPICE profiles use aberration `NONE` and explicit `MOON_ME_DE421`, `MOON_ME_DE440_ME421` or J2000 frame identifiers. The existing apparent-body pipeline above retains its separate convention. [ADR 0006](../decisions/0006-versioned-scientific-engine.md) and [the service guide](../../scientificengine/README.md) document the scientific profile boundary and provenance.
+The versioned research API consolidates the preserved MD-2C physical modules through `src.science.ScientificEngine`. Its geometric SPICE profiles use aberration `NONE` and explicit `MOON_ME_DE421`, `MOON_ME_DE421` or J2000 frame identifiers. The existing apparent-body pipeline above retains its separate convention. [ADR 0006](../decisions/0006-versioned-scientific-engine.md) and [the service guide](../../scientificengine/README.md) document the scientific profile boundary and provenance.

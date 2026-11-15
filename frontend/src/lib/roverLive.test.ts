@@ -5,11 +5,11 @@ import type { RoverResponse } from './roverContract.proposed'
 import { parseRoverReach, roverRequest } from './roverLive'
 
 describe('roverRequest', () => {
-  it('asks for the 3 by 3 grid from the landing moment, on the 2-minute grid', () => {
+  it('asks for the 3 by 3 grid from the landing moment, on a 2-minute grid relative to the requested landing', () => {
     const body = roverRequest('connecting-ridge', Date.parse('2026-11-27T12:03:41Z'))
     expect(body).toMatchObject({
       site: 'CR1',
-      startUtc: '2026-11-27T12:02:00Z',
+      startUtc: '2026-11-27T12:03:41Z',
       durationS: 7200,
       timeStepS: 120,
       gridRadiusCells: 1,
@@ -22,6 +22,8 @@ describe('roverRequest', () => {
 
   it('has no request for a place outside the study sites', () => {
     expect(roverRequest('apollo-11', 0)).toBeNull()
+    expect(roverRequest('apollo11', 0)).toBeNull()
+    expect(roverRequest('shackleton-ridge', 0)).toBeNull()
   })
 })
 

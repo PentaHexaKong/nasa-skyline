@@ -6,6 +6,7 @@ import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-ro
 import { useEffect, useState } from 'react'
 import { DayProfile, NoTrackNote } from '~/components/DayProfile'
 import { Intervals, intervalsOn } from '~/components/Intervals'
+import { LiveDay } from '~/components/LiveDay'
 import { changeReadout, earthChangeReadout, PhaseBadge, type Readout, Readouts, sunReadout } from '~/components/Moment'
 import { MonthTimeline } from '~/components/MonthTimeline'
 import { Panorama, PanoramaKey } from '~/components/Panorama'
@@ -349,6 +350,8 @@ function VisualizePage() {
           </section>
 
           <Nearby data={data} day={current.date} t={minute} />
+
+          <LiveDay data={data} day={current} />
 
           <div className="grid grid-cols-1 gap-12 xl:grid-cols-2">
             <section aria-labelledby="intervals" className="grid content-start gap-3">

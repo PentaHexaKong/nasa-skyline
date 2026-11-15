@@ -5,10 +5,16 @@ def diskFraction(clearanceDeg, radiusDeg):
     x = np.clip(np.asarray(clearanceDeg) / np.asarray(radiusDeg), -1., 1.)
     return (np.arccos(-x) + x * np.sqrt(1-x*x))/np.pi
 
-def eventIntervals(function, durationS, cadenceS, toleranceS):
+def eventIntervals(function, durationS, cadenceS, toleranceS, sampleTimesS=None):
     # Four probes per declared cadence bound the initial search scale.
     probeStep = cadenceS/4
+    coarseTimes = np.unique(np.r_[np.arange(0., durationS, cadenceS), durationS])
     times = np.unique(np.r_[np.arange(0.,durationS,probeStep),durationS])
+    if sampleTimesS is not None:
+        supplied = np.asarray(sampleTimesS, dtype=float)
+        if supplied.ndim != 1 or not np.isfinite(supplied).all() or np.any((supplied < 0) | (supplied > durationS)):
+            raise ValueError('Initial event samples must lie inside the evaluation window')
+        times = np.unique(np.r_[times, supplied])
     values = np.asarray(function(times),dtype=float)
     if values.shape != times.shape or not np.isfinite(values).all():
         raise ValueError('Invalid event function')
@@ -17,7 +23,7 @@ def eventIntervals(function, durationS, cadenceS, toleranceS):
     grazings = []
     # Search both extrema within coarse intervals. Completeness requires the
     # explicitly reported regularity assumption of at most one extremum of each type.
-    for left,right in zip(times[::4],np.r_[times[4::4],durationS]):
+    for left,right in zip(coarseTimes[:-1], coarseTimes[1:]):
         if right<=left:
             continue
         for sign in (-1.,1.):

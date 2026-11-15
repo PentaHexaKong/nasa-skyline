@@ -232,8 +232,8 @@ export type RoverSimInput = {
   sun: SkySample[]
   earth: SkySample[]
   /**
-   * When a relay links the landing site to Earth (relay only, not direct contact).
-   * ponytail: taken at the landing site and applied to every cell; a relay's footprint is far wider than the tile.
+   * Retained for caller compatibility. Nonempty site-level windows are rejected because
+   * mobile relay availability requires position-specific communication hops.
    */
   relaySpans?: Span[]
   speedMps: number
@@ -267,7 +267,10 @@ export type RoverSimResult = {
 
 /** Earliest arrival at every cell over the stay, hour by hour. Pure; `onProgress` gets 0 to 1. */
 export function simulateRover(input: RoverSimInput, onProgress?: (share: number) => void): RoverSimResult {
-  const { terrain, startMs, stayS, sun, earth, relaySpans = [], speedMps, maxSlopeDeg } = input
+  const { terrain, startMs, stayS, sun, earth, speedMps, maxSlopeDeg } = input
+  if (input.relaySpans?.length) {
+    throw new Error('Mobile relay reachability requires position-specific hop evaluations from the scientific service.')
+  }
   const m = buildModel(terrain, input.stride ?? STRIDE)
   const { g } = m
   const cells = g * g
@@ -281,12 +284,11 @@ export function simulateRover(input: RoverSimInput, onProgress?: (share: number)
     const t = startMs + (h + 0.5) * 3_600_000
     const s = skyAt(sun, t)
     const e = skyAt(earth, t)
-    const relay = relaySpans.some(([a, b]) => t >= a && t < b)
     const sunTan = s ? Math.tan(((s.elDeg + SUN_RADIUS_DEG) * Math.PI) / 180) : -Infinity
     const earthTan = e ? Math.tan((e.elDeg * Math.PI) / 180) : -Infinity
     for (let i = 0; i < cells; i++) {
       const lit = s !== undefined && sunTan > horizonTan(horizon, i, s.azDeg)
-      const contact = relay || (e !== undefined && earthTan > horizonTan(horizon, i, e.azDeg))
+      const contact = e !== undefined && earthTan > horizonTan(horizon, i, e.azDeg)
       if (lit && contact) usable[i * hours + h] = 1
     }
     onProgress?.(0.7 + (0.1 * (h + 1)) / hours)
@@ -312,12 +314,26 @@ export function simulateRover(input: RoverSimInput, onProgress?: (share: number)
         if ((!dr && !dc) || rr < 0 || cc < 0 || rr >= g || cc >= g) continue
         const j = rr * g + cc
         if (steep[j]) continue
-        // ponytail: an edge begun in a usable hour is finished even if the hour ends on the way (one edge is 13 to 26 min).
-        let h = h0
-        while (h < hours && !(usable[i * hours + h] && usable[j * hours + h])) h++
-        if (h >= hours) continue
         const leg = Math.hypot(Math.hypot(dr, dc) * m.cell, (m.height[j] as number) - (m.height[i] as number)) / speedMps
-        const at = Math.max(t, h * 3600) + leg
+        let h = h0
+        let at = Number.POSITIVE_INFINITY
+        while (h < hours) {
+          const candidateArrival = Math.max(t, h * 3600) + leg
+          if (candidateArrival > stayS) break
+          const lastHour = Math.min(hours - 1, Math.floor(candidateArrival / 3600))
+          let available = true
+          for (let hour = h; hour <= lastHour; hour++) {
+            if (!(usable[i * hours + hour] && usable[j * hours + hour])) {
+              available = false
+              break
+            }
+          }
+          if (available) {
+            at = candidateArrival
+            break
+          }
+          h++
+        }
         if (at <= stayS && at < (arrival[j] as number)) {
           arrival[j] = at
           prev[j] = i

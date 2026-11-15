@@ -1,5 +1,6 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "2.0.0",
+  "hashConvention": "UTF-8 source text with LF line endings; binary assets and trajectory CSV use exact bytes",
   "files": [
     {
       "path": "services/missionScience/src/skyline_mission_science/__init__.py",
@@ -7,7 +8,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/api.py",
-      "sha256": "70ea5d01692a9f09689efed4fb5c7d8be737fe394c98384d35f9f1544c7b2d84"
+      "sha256": "58caff4119d0ec1796a92a63b7025e307e80cf57742ad178bc7609c08c9f56ea"
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/engine.py",
@@ -62,6 +63,10 @@
       "sha256": "2a6666161151d015904389adbecf90ef0117d2066a31a22007b976257577317f"
     },
     {
+      "path": "services/missionScience/src/skyline_mission_science/referenceEvaluations.py",
+      "sha256": "460f181686f59b3a0b50617644472560538d84aba68c02b745b18cbf086bcb5a"
+    },
+    {
       "path": "services/missionScience/src/skyline_mission_science/schemas.py",
       "sha256": "98f246e344e31144c198c05fa0d9d2b4524d9427a30104f7c64884a0e3425751"
     },
@@ -95,7 +100,7 @@
     },
     {
       "path": "services/missionScience/src/skyline_mission_science/visibility.py",
-      "sha256": "c3be5337eb8db03ab6380cade6bda32dee054047ad1050917d15fbafee8cf541"
+      "sha256": "f1153e43b6a22cd2337d95f0f6f86654eef07fee3059fb8d9efcb09221325af0"
     },
     {
       "path": "services/missionScience/src/skyline_rover_science/__init__.py",
@@ -127,11 +132,11 @@
     },
     {
       "path": "services/relayAdapter/src/skyline_relay_adapter/api.py",
-      "sha256": "cce72552c037dbb14c73d35d85f17215c8b51bb05e8b80ca31d0a2afbd58e330"
+      "sha256": "975978a2fbde4e17e86efcc27aa21968d4d9015f66bcf5be54e9cb4503a05e8e"
     },
     {
       "path": "services/relayAdapter/src/skyline_relay_adapter/engine.py",
-      "sha256": "3f1c20ccdf6db3a9c924694b4838a9ffdb8662f34f9352e114aedfe18cc4f957"
+      "sha256": "ef336a3fafefe3a730285f600095b910ac5cb657b8a3b22713669e734ad615a3"
     },
     {
       "path": "services/relayAdapter/src/skyline_relay_adapter/legacy/__init__.py",
@@ -154,12 +159,80 @@
       "sha256": "48fa5a104e9ee72596e84b8568d96f54ffd677cbdb3d0fdd00ffcae67e0d970e"
     },
     {
+      "path": "services/relayAdapter/src/skyline_relay_adapter/orbit.py",
+      "sha256": "e185c585e834a70bd40b66148b61d77a91db3d6d157414fc54669a7592e9c01f"
+    },
+    {
       "path": "services/relayAdapter/src/skyline_relay_adapter/schemas.py",
-      "sha256": "601bd4b1b44fda6f25f800d826e1ff3fba5512758177385d87c6b88ed2f57b56"
+      "sha256": "0b0adc64c1e0866d1619e1c8ba82d00beb4efad23106c852e3c5d7a346924e7d"
     },
     {
       "path": "services/relayAdapter/data/states/candidate2States.csv",
       "sha256": "0f328f101228015d55ad301c512ffec27091beb02adb3649d3276669b1f54bce"
+    },
+    {
+      "path": "ds/pipeline/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "ds/pipeline/checksums.json",
+      "sha256": "136533ed9560fc16edfce8841b79938d93139093dcad2f2cadee31b3608bbfec"
+    },
+    {
+      "path": "ds/pipeline/fetch.py",
+      "sha256": "d5f301b8b9b0f22316d9b2f34e2b6289f7e00d46297490fe16a8db9562937983"
+    },
+    {
+      "path": "ds/pipeline/globe.py",
+      "sha256": "ae9115f464987f6c271e7beb65d44c22a9765b5eff001a92fc7701e2c01754eb"
+    },
+    {
+      "path": "ds/pipeline/island.py",
+      "sha256": "ae647042c7f3636e6c3964088519da79ea98d9a82ddb079b12f41202d5ba7033"
+    },
+    {
+      "path": "ds/pipeline/moon.py",
+      "sha256": "622199b9235d8426f466ac29d76f0e09baaf4cd064bac262efb4d0f73007f346"
+    },
+    {
+      "path": "ds/pipeline/pick.py",
+      "sha256": "6435882f61c22f1581dc4b41759f05d1ce95238106cac74b071ceda747e6374f"
+    },
+    {
+      "path": "ds/pipeline/relay_check.py",
+      "sha256": "0103521a22cccd7b8c5e4e6666ee14435600aaea24304b887aad4693fa6a78d2"
+    },
+    {
+      "path": "ds/pipeline/relay_orbits.json",
+      "sha256": "b7b87fc762cb0d012e8533105ed1c6f63280a3c1fb927a205f74cd8bc54769a6"
+    },
+    {
+      "path": "ds/pipeline/run.py",
+      "sha256": "12c4c21c3fa91b496d5a4078b2e52b6481a69d4137e2d30c9c2617ba07bf7955"
+    },
+    {
+      "path": "ds/pipeline/sites.py",
+      "sha256": "c8803833600223819800d72cdbfa4716dd5bdc0e5bc04b92784b1d98e9489bd1"
+    },
+    {
+      "path": "ds/pipeline/space.py",
+      "sha256": "5e826ad8144ebdbf0c9030a70ef6f57d53ff8c8ced4f814a529e5623dbfeed8a"
+    },
+    {
+      "path": "ds/pipeline/sun.py",
+      "sha256": "e2f6415c8c8823a7223f2f4d1fb6f28826135148387513ec59c38ede199f5740"
+    },
+    {
+      "path": "ds/pipeline/terrain.py",
+      "sha256": "afb60e815969e92b6c159e382d1d17d08df63ddc5d38bc9aa4ddff4cee7d057d"
+    },
+    {
+      "path": "ds/pipeline/visibility.py",
+      "sha256": "c66bbde568d570ec263ee06eee1e1da44dd68274027e03c30d9344ded7d3921f"
+    },
+    {
+      "path": "ds/pyproject.toml",
+      "sha256": "b14f91093705ea629e7e53af66963f0d4aea72c64774ecf6032333a46b948e78"
     }
   ]
 }

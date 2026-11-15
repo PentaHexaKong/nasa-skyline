@@ -94,6 +94,10 @@ export const SummarySchema = z.object({
 
 export type Summary = z.infer<typeof SummarySchema>
 
+export function requiresScientificRefresh(summary: Summary) {
+  return summary.provenance.algorithm_version !== '0.5.0'
+}
+
 /**
  * A site's reference note as readers see it. The pipeline's notes carry to-dos for the team ("find a primary source
  * before citing"); those stay in the data and are left off the page, while the claim keeps its "Unverified" mark.
@@ -127,6 +131,26 @@ export const SITES = z
   .parse(sitesJson)
 export type SiteId = string
 export const MOON_SITES = SITES.filter((s) => s.body === 'moon')
+
+/** Metadata for live scientific pages, with results obtained from the versioned API. */
+export type ReferenceSite = {
+  site: { id: string; name: string; observer_height_m: number }
+  params: { start: string }
+}
+
+const referenceSiteSchema = z.object({
+  site: z.object({ id: z.string(), name: z.string(), observer_height_m: z.number().nonnegative() }),
+  params: z.object({ start: isoDate }),
+})
+
+export async function loadReferenceSite(id: SiteId): Promise<ReferenceSite> {
+  const entry = sitesJson.find((site) => site.id === id)
+  if (!entry) throw new Error(`No reference catalogue entry for site "${id}"`)
+  return referenceSiteSchema.parse({
+    site: { id: entry.id, name: entry.name, observer_height_m: entry.observerHeightM },
+    params: { start: entry.referenceStartUtc },
+  })
+}
 
 const summaries = import.meta.glob<{ default: unknown }>('../data/generated/*.summary.json')
 const tracks = import.meta.glob<{ default: unknown }>('../data/generated/*.tracks.json')

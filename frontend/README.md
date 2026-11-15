@@ -72,3 +72,15 @@ Pages are pre-rendered for each site's default day. A shared `?day=` link applie
 **Review follow-ups.** Review prioritizes mast investigations for missed Sun limits and relay investigations for missed Earth limits over the whole stay. Rover reach stays an exploration follow-up; all three tools remain accessible even when the limits are met. The site picker chooses which site's conditions to investigate. Date changes and site comparisons remain the first alternatives. Scenario pages retain all validated planner settings, including the original slip date, and return to the same Review without marking an unchanged profile as edited.
 
 Scenario pages show the computed baseline and accept scenario feeds only for the exact site and mission period with `origin: computed`. Missing, invalid, fixture or differently scoped feeds cannot imply an improvement. Rover results remain not computed until a feed contract and pipeline output exist. On the dev server, **Open sample preview** displays the existing Shackleton prototype visuals and their own settings, labelled as sample data. This preview is separate from the mission baseline and absent in production. The standalone `/prototypes/*` design-review pages remain available in development.
+
+## Dynamic mission baseline
+
+The main `/analyze` planner automatically posts the selected mission to the Go gateway at `/api/mission-science/v1/scientific-evaluations`. Set up, Result, Dates, the Add-ons baseline and the downloaded brief share the returned scientific result. Site, UTC start, duration, observer height, mission limits and scientific settings participate in request identity. Date selection triggers evaluation after a 400 ms debounce.
+
+CR1, GR1 and SR1 have verified live mappings. Apollo 11 and the separate hill-top location remain selectable with explicit unsupported states. Loading, failures and unavailable data display their scientific state. The date strip shows evaluated selected missions and evaluates another date on selection.
+
+The frontend uses `VITE_API_URL` when configured and otherwise uses the same-origin `/api` proxy. The Go gateway requires `MISSION_SCIENCE_URL` and the Python service requires its pinned SPICE and LOLA assets. See [dynamic planner behavior and validation](../docs/dynamicPlanner.md).
+
+## Dynamic site references
+
+The `/analyze/<site-id>` report evaluates its selected UTC day and calendar year through the scientific service. Annual computation streams at most 27 bounded windows with progress and explicit uncomputed dates. The linked 3D site view uses API-derived sky positions, horizon and visibility. See [reference API, scientific assumptions and validation](../docs/dynamicReferences.md).

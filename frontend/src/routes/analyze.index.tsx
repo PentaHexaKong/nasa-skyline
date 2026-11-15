@@ -11,7 +11,8 @@ import { SetupStep } from '~/components/planner/SetupStep'
 import { missionShort, SlipButtons, StepBar } from '~/components/planner/StepBar'
 import { Shell } from '~/components/Shell'
 import { loadMoonEphemeris, loadSummary, MOON_SITES } from '~/lib/data'
-import { buildBrief } from '~/lib/mission'
+import { buildScientificBrief } from '~/lib/dynamicPlanner'
+import { useScientificPlan } from '~/lib/useScientificPlan'
 
 // The flow starts at Set up; links that mean the answer ask for Result by name.
 const DEFAULT_STEP: StepId = 'setup'
@@ -46,8 +47,10 @@ function PlannerPage() {
   const navigate = useNavigate({ from: Route.fullPath })
   const go = (s: Partial<PlanSearch>) => navigate({ search: (prev) => ({ ...prev, ...s }), replace: true, resetScroll: false })
   const p = useMemo(() => (hydrated ? params : ({} as PlanSearch)), [hydrated, params])
-  const plan: Plan = useMemo(() => resolvePlan(all, p), [all, p])
-  const { dates, index, date, window, requirements, sites } = plan
+  const selected: Plan = useMemo(() => resolvePlan(all, p), [all, p])
+  // Each site's stay comes from the live engine once it answers; until then, or without it, from the precomputed files.
+  const { plan, rows, refresh } = useScientificPlan(selected, hydrated)
+  const { dates, index, date, sites } = plan
   const chosenIds = sites.map((s) => s.data.site.id)
   // The step lives in the URL, so it is the same on the server: read it before hydration too, or a link to Set up
   // flashes Result first.
@@ -70,23 +73,7 @@ function PlannerPage() {
       const next = all.filter((s) => (s.site.id === id ? on : chosenIds.includes(s.site.id))).map((s) => s.site.id)
       if (next.length > 0) go({ sites: next.join(',') })
     },
-    downloadBrief: () =>
-      saveText(
-        buildBrief({
-          window,
-          requirements,
-          sites: sites.map((s) => ({
-            name: s.data.site.name,
-            lat: s.data.site.lat_deg,
-            lon: s.data.site.lon_deg_east,
-            measure: s.stay,
-            touchdown: s.touchdown,
-            algorithm: s.data.provenance.algorithm_version,
-            datasets: s.data.provenance.dem.flatMap((d) => d.file ?? d.url?.split('/').pop() ?? []),
-            kernels: s.data.provenance.kernels.map((k) => k.file),
-          })),
-        }),
-      ),
+    downloadBrief: () => saveText(buildScientificBrief(plan, rows)),
   }
 
   return (
@@ -100,7 +87,7 @@ function PlannerPage() {
         </main>
       ) : (
         <main className="mx-auto grid max-w-7xl gap-8 px-4 pt-6 pb-10 sm:px-6">
-          {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} />}
+          {step === 'result' && <ResultStep plan={plan} actions={actions} search={p} live={{ rows, refresh }} />}
           {step === 'dates' && <DatesStep plan={plan} actions={actions} />}
           {step === 'addons' && <AddonsStep plan={plan} actions={actions} search={p} />}
         </main>

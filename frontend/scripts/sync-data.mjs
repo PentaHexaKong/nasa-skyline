@@ -28,7 +28,14 @@ for (const file of readdirSync(source)
   const tracks = Object.fromEntries(days.map((d) => [d.date, d.earth_track ? { ...d.track, earth: d.earth_track } : d.track]))
   writeFileSync(join(out, `${id}.summary.json`), JSON.stringify(summary))
   writeFileSync(join(out, `${id}.tracks.json`), JSON.stringify(tracks))
-  sites.push({ id, name: result.site.name, body: result.site.body ?? 'moon' })
+  sites.push({
+    id,
+    name: result.site.name,
+    body: result.site.body ?? 'moon',
+    observerHeightM: result.site.observer_height_m,
+    referenceStartUtc: result.params.start,
+    hasTerrain: existsSync(join(source, 'terrain', `${id}.json`)),
+  })
 }
 writeFileSync(join(out, 'sites.json'), JSON.stringify(sites))
 // Local terrain for the 3D island: a small heightmap (.bin) and its metadata per site.
