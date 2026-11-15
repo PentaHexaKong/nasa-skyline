@@ -73,3 +73,56 @@ export function whenAt(e: MoonEphemeris, hours: number) {
   const at = new Date(t0 + Math.round(hours * 60) * 60_000)
   return { date: at.toISOString().slice(0, 10), minute: at.getUTCHours() * 60 + at.getUTCMinutes() }
 }
+
+const MOON_R_KM = 1737.4
+// ponytail: mean Earth distance; the true one swings 363k–405k km, under 0.03° of parallax change at the site.
+const EARTH_KM = 384_400
+
+export type SkyPoint = { az: number; el: number }
+
+/**
+ * Azimuth (from north, clockwise) and elevation above the flat horizon of a site, toward a sub-point. With `km` the
+ * body is that far from the Moon's centre and the site's offset from the centre (parallax) is taken out.
+ */
+export function skyAt(site: { lat: number; lon: number }, sub: { lat: number; lon: number }, km = Number.POSITIVE_INFINITY) {
+  const r = Math.PI / 180
+  const up = dir(site.lat, site.lon)
+  const [sl, cl] = [Math.sin(site.lon * r), Math.cos(site.lon * r)]
+  const east = [-sl, cl, 0]
+  const north = [-Math.sin(site.lat * r) * cl, -Math.sin(site.lat * r) * sl, Math.cos(site.lat * r)]
+  let v = dir(sub.lat, sub.lon)
+  if (Number.isFinite(km)) v = v.map((c, i) => c * km - (up[i] ?? 0) * MOON_R_KM) as typeof v
+  const dot = (a: number[]) => a[0]! * v[0] + a[1]! * v[1] + a[2]! * v[2]
+  const len = Math.hypot(...v)
+  return {
+    az: (((Math.atan2(dot(east), dot(north)) / r) % 360) + 360) % 360,
+    el: Math.asin(dot(up) / len) / r,
+  }
+}
+
+/** Hours from the ephemeris start to a UTC date and minute. */
+export const hoursAt = (e: MoonEphemeris, date: string, minute: number) =>
+  (Date.parse(`${date}T00:00:00Z`) - Date.parse(e.start.length === 10 ? `${e.start}T00:00:00Z` : e.start)) / 3_600_000 + minute / 60
+
+/**
+ * The Sun's and Earth's paths over one synodic month centred on `hours`, sampled hourly: a whole lunar day and night,
+ * including the stretches below the horizon that the per-day tracks leave out.
+ */
+export function orbitSky(e: MoonEphemeris, site: { lat: number; lon: number }, hours: number) {
+  const max = ephemerisHours(e)
+  const from = Math.max(0, Math.min(max - SYNODIC_HOURS, hours - SYNODIC_HOURS / 2))
+  const sun: SkyPoint[] = []
+  const earth: SkyPoint[] = []
+  for (let h = from; h <= Math.min(max, from + SYNODIC_HOURS); h += 1) {
+    const p = subPoints(e, h)
+    sun.push(skyAt(site, p.sun))
+    earth.push(skyAt(site, p.earth, EARTH_KM))
+  }
+  return { from, sun, earth }
+}
+
+/** The Sun and Earth at one moment, for when no stored track covers it (the Sun far below the horizon at night). */
+export function skyNow(e: MoonEphemeris, site: { lat: number; lon: number }, hours: number) {
+  const p = subPoints(e, hours)
+  return { sun: skyAt(site, p.sun), earth: skyAt(site, p.earth, EARTH_KM) }
+}

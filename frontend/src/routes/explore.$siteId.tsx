@@ -1,11 +1,12 @@
 import { LinkButton } from '@cloudflare/kumo/components/button'
 import { ArrowsInIcon } from '@phosphor-icons/react'
 import { createFileRoute, Link, notFound, useNavigate } from '@tanstack/react-router'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { PhaseBadge } from '~/components/Moment'
 import { Eyebrow, Shell } from '~/components/Shell'
 import { SiteDock } from '~/components/SiteDock'
-import { loadSummary, MAP_SITES } from '~/lib/data'
+import { loadMoonEphemeris, loadSummary, MAP_SITES, type MoonEphemeris } from '~/lib/data'
+import { hoursAt, orbitSky, SYNODIC_HOURS, skyNow } from '~/lib/moonLight'
 import { earthTarget } from '~/lib/target'
 import { longDate, minuteLabel, shortDate } from '~/lib/time'
 import { headline, siteFromUnderstandSearch, sunHud, useSiteView } from '~/lib/useSiteView'
@@ -32,6 +33,17 @@ function ExplorePage() {
   const { hydrated, current, track, minute, m } = view
   const comms = earthTarget(data, track, current.date, minute)
   const ref = comms?.reference
+  const [eph, setEph] = useState<MoonEphemeris>()
+  useEffect(() => {
+    loadMoonEphemeris().then(setEph, () => undefined)
+  }, [])
+  const site = { lat: data.site.lat_deg, lon: data.site.lon_deg_east }
+  const hours = eph ? hoursAt(eph, current.date, minute) : 0
+  // The month's path stays put while it plays, and moves on one whole lunar month at a time.
+  const month = Math.floor(hours / SYNODIC_HOURS)
+  const orbit = useMemo(() => (eph ? orbitSky(eph, site, (month + 0.5) * SYNODIC_HOURS) : undefined), [eph, data.site.id, month])
+  // The stored track stops about 1° below the horizon; past that, the ephemeris says where the Sun is under the ground.
+  const sun = m.sun ?? (eph && m.phase !== 'loading' ? { ...skyNow(eph, site, hours).sun, fraction: 0 } : undefined)
   // Opened from an Understand lesson, this stays a part of Understand and leads back to the lesson, not to the Moon.
   const back = from ?? `/explore?from=${data.site.id}&day=${current.date}&t=${minute}#space`
 
@@ -45,7 +57,8 @@ function ExplorePage() {
               siteId={data.site.id}
               place={data.site.name.split(',')[0] ?? data.site.name}
               track={track}
-              now={m.sun}
+              now={sun}
+              orbit={orbit}
               inSun={m.phase === 'sun'}
               horizon={m.horizon}
               comms={comms}
@@ -81,7 +94,7 @@ function ExplorePage() {
                     aria-hidden
                     className={`size-2.5 rounded-full ${ref.visible ? 'bg-comms' : 'border-[1.5px] border-comms bg-transparent'}`}
                   />
-                  {ref.visible ? 'In view' : 'Behind the ridge'}
+                  {ref.visible ? 'In view' : ref.el_deg < 0 ? 'Below the horizon' : 'Behind the ridge'}
                 </dd>
               </>
             )}

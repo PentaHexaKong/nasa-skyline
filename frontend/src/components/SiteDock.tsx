@@ -4,7 +4,7 @@ import { PauseIcon, PlayIcon } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 import { DayField, Dock, DockDivider, TimeSlider } from '~/components/Controls'
 import { SITES, type Summary } from '~/lib/data'
-import type { SiteSearch, SiteView } from '~/lib/useSiteView'
+import { type SiteSearch, type SiteView, SPEEDS, type Speed } from '~/lib/useSiteView'
 
 /** The floating site, day, play and time bar; `action` is the page's primary button. */
 export function SiteDock({
@@ -25,7 +25,7 @@ export function SiteDock({
   /** The sites the picker offers; the 3D view passes only those with terrain. */
   sites?: typeof SITES
 }) {
-  const { play, track, minute, index, selectDay } = view
+  const { play, tracks, minute, index, selectDay } = view
   return (
     <Dock label="Site, day and time">
       <div className={`${siteOnPhone ? 'flex w-full sm:w-auto' : 'hidden sm:flex'} items-center gap-1.5`}>
@@ -43,13 +43,20 @@ export function SiteDock({
       <Button
         variant="ghost"
         shape="square"
-        aria-label={play.playing ? 'Pause the day' : 'Play the day'}
+        aria-label={play.playing ? 'Pause' : 'Play'}
         aria-pressed={play.playing}
         onClick={play.toggle}
-        disabled={!track}
+        disabled={!tracks}
       >
         {play.playing ? <PauseIcon weight="fill" aria-hidden /> : <PlayIcon weight="fill" aria-hidden />}
       </Button>
+      <Select
+        aria-label="Playback speed"
+        value={String(play.speed)}
+        items={Object.fromEntries(Object.entries(SPEEDS))}
+        onValueChange={(v) => v && play.setSpeed(Number(v) as Speed)}
+        className="w-24 shrink-0 font-mono"
+      />
       <TimeSlider
         inline
         value={minute}

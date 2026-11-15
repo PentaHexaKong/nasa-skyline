@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { z } from 'zod'
 import { type Moment, moment } from '~/components/Moment'
 import { useReducedMotion } from '~/lib/motion'
-import type { Summary, Track } from './data'
+import type { Summary } from './data'
 import { minutes, peakMinute } from './time'
 import { useTracks } from './useTracks'
 
@@ -71,71 +71,94 @@ export function useSiteView(data: Summary, { day, t }: SiteSearch, go: (s: SiteS
   const [live, setLive] = useState<number>()
   const minute = live ?? (hydrated && t != null ? t : peakMinute(track))
   const m = moment(data, track, current.date, minute)
-  const play = usePlayDay(track, minute, setLive, (v) => go({ t: v }))
+  const play = usePlay(data, index, !!tracks, minute, setLive, go)
   const selectDay = (i: number) => {
     const d = data.days[Math.max(0, Math.min(data.days.length - 1, i))]
     if (d) go({ day: d.date })
   }
-  return { hydrated, index, current, track, minute, m, play, selectDay }
+  return { hydrated, index, current, track, tracks, minute, m, play, selectDay }
 }
 
-/** Sweeps the time from now to the last sample of the day in about 6 s; with reduced motion it steps 10 min at a time. */
-function usePlayDay(track: Track | undefined, minute: number, setLive: (v: number | undefined) => void, commit: (v: number) => void) {
+/** Playback speeds, in minutes of Moon time per second of playback. */
+export const SPEEDS = { 60: '1 h/s', 360: '6 h/s', 1440: '1 day/s' } as const
+export type Speed = keyof typeof SPEEDS
+
+/**
+ * Plays time forward at `speed`, rolling into the next day at midnight, until paused or the data runs out. With reduced
+ * motion it steps four times a second instead of every frame.
+ */
+function usePlay(
+  data: Summary,
+  index: number,
+  ready: boolean,
+  minute: number,
+  setLive: (v: number | undefined) => void,
+  go: (s: SiteSearch) => void,
+) {
   const [playing, setPlaying] = useState(false)
+  const [speed, setSpeed] = useState<Speed>(360)
   const reduced = useReducedMotion()
-  const at = useRef(minute)
-  at.current = minute
-  const out = useRef({ setLive, commit })
-  out.current = { setLive, commit }
+  const at = useRef({ minute, index })
+  at.current = { minute, index }
+  const out = useRef({ setLive, go, days: data.days })
+  out.current = { setLive, go, days: data.days }
   useEffect(() => {
-    if (!playing || !track) return
-    const first = track.t_min[0] ?? 0
-    const last = track.t_min.at(-1) ?? 1439
-    let t = at.current >= last - 5 ? first : at.current
-    const rate = (last - first) / 6000 // minutes per ms
-    let prev = performance.now()
-    let frame = 0
-    let timer = 0
-    const show = (v: number) => out.current.setLive(Math.round(v))
+    if (!playing || !ready) return
+    const { days } = out.current
+    let day = at.current.index
+    let t = at.current.minute
+    // At the very end, play starts over from the first day.
+    if (day >= days.length - 1 && t >= 1435) {
+      day = 0
+      t = 0
+      out.current.go({ day: days[0]?.date })
+    }
     const done = () => {
       setPlaying(false)
       out.current.setLive(undefined)
-      out.current.commit(Math.round(t))
+      out.current.go({ t: Math.round(t) })
     }
-    const step = (now: number) => {
-      t = Math.min(last, t + (now - prev) * rate)
-      prev = now
-      show(t)
-      if (t >= last) return done()
-      frame = requestAnimationFrame(step)
-    }
-    if (reduced) {
-      timer = window.setInterval(() => {
-        t = Math.min(last, t + 10)
-        show(t)
-        if (t >= last) {
-          clearInterval(timer)
-          done()
+    const advance = (min: number) => {
+      t += min
+      while (t >= 1440) {
+        if (day >= days.length - 1) {
+          t = 1439
+          out.current.setLive(t)
+          return done()
         }
-      }, 250)
-    } else frame = requestAnimationFrame(step)
+        t -= 1440
+        day++
+        out.current.go({ day: days[day]?.date })
+      }
+      out.current.setLive(Math.round(t))
+      return true
+    }
+    let prev = performance.now()
+    let frame = 0
+    let timer = 0
+    const step = (now: number) => {
+      const dt = Math.min(100, now - prev) // a hidden tab resumes where it was, not hours later
+      prev = now
+      if (advance((dt / 1000) * speed) === true) frame = requestAnimationFrame(step)
+    }
+    if (reduced) timer = window.setInterval(() => advance(speed / 4) !== true && clearInterval(timer), 250)
+    else frame = requestAnimationFrame(step)
     return () => {
       cancelAnimationFrame(frame)
       clearInterval(timer)
     }
-  }, [playing, track, reduced])
-  const toggle = () => {
-    if (playing) {
-      setPlaying(false)
-      out.current.setLive(undefined)
-      out.current.commit(Math.round(at.current))
-    } else setPlaying(true)
+  }, [playing, ready, reduced, speed])
+  const pause = () => {
+    setPlaying(false)
+    out.current.setLive(undefined)
+    out.current.go({ t: at.current.minute })
   }
+  const toggle = () => (playing ? pause() : setPlaying(true))
   const stop = () => {
     if (playing) {
       setPlaying(false)
       out.current.setLive(undefined)
     }
   }
-  return { playing, toggle, stop }
+  return { playing, toggle, stop, speed, setSpeed }
 }

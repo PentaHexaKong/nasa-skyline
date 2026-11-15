@@ -7,6 +7,7 @@ import { Line2 } from 'three/examples/jsm/lines/Line2.js'
 import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js'
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js'
 import { hasTerrain, loadTerrain, type SkyTarget, type Terrain, type Track } from '~/lib/data'
+import type { SkyPoint } from '~/lib/moonLight'
 import { reducedMotion } from '~/lib/motion'
 import { blockedAt, direction, heightAt, runs } from '~/lib/sky'
 
@@ -35,6 +36,8 @@ export type SiteIslandProps = {
   className?: string
   /** Extra buttons for the toolbar, such as the full-screen link. */
   tools?: ReactNode
+  /** The Sun's and Earth's paths over a whole lunar month, below the horizon too. Pass a stable object: a new one redraws. */
+  orbit?: { sun: SkyPoint[]; earth: SkyPoint[] }
   /** Turn the home view to face the Sun or Earth; a new `nonce` re-aims it. */
   focus?: { target: 'sun' | 'earth'; nonce: number }
 }
@@ -245,10 +248,18 @@ export function glowTexture() {
 }
 
 /** Earth as a lit sphere: its phase comes from the real Sun direction, with a thin atmosphere rim. */
-export function earthMaterial(sunDir: THREE.Vector3) {
+/**
+ * Earth's disc, lit by the Sun. With `under`, the part of the disc below the horizon (world y < 0) is drawn as a ghost in
+ * the ground's colour with an Earth-tinted rim, so a half-set Earth reads as cut by the surface, not as clipped.
+ */
+export function earthMaterial(sunDir: THREE.Vector3, under?: { ground: THREE.Color; tint: THREE.Color }) {
   return new THREE.ShaderMaterial({
     uniforms: {
       sunDir: { value: sunDir },
+      fade: { value: 1 },
+      split: { value: under ? 1 : 0 },
+      ground: { value: under?.ground ?? new THREE.Color() },
+      tint: { value: under?.tint ?? new THREE.Color() },
       ocean: { value: new THREE.Color(0x2f6fd0) },
       air: { value: new THREE.Color(0xa8dcff) },
     },
@@ -257,8 +268,10 @@ export function earthMaterial(sunDir: THREE.Vector3) {
       #include <logdepthbuf_pars_vertex>
       varying vec3 vN;
       varying vec3 vV;
+      varying float vY;
       void main() {
         vec4 wp = modelMatrix * vec4(position, 1.0);
+        vY = wp.y;
         vN = normalize(mat3(modelMatrix) * normal);
         vV = normalize(cameraPosition - wp.xyz);
         gl_Position = projectionMatrix * viewMatrix * wp;
@@ -268,15 +281,22 @@ export function earthMaterial(sunDir: THREE.Vector3) {
       #include <common>
       #include <logdepthbuf_pars_fragment>
       uniform vec3 sunDir;
+      uniform float fade;
+      uniform float split;
+      uniform vec3 ground;
+      uniform vec3 tint;
       uniform vec3 ocean;
       uniform vec3 air;
       varying vec3 vN;
       varying vec3 vV;
+      varying float vY;
       void main() {
         #include <logdepthbuf_fragment>
         float lit = max(dot(vN, sunDir), 0.0);
         float rim = pow(1.0 - max(dot(vN, vV), 0.0), 3.0);
-        gl_FragColor = vec4(ocean * (0.07 + 1.15 * lit) + air * rim * (0.2 + 0.8 * lit), 1.0);
+        vec3 sky = (ocean * (0.07 + 1.15 * lit) + air * rim * (0.2 + 0.8 * lit)) * fade;
+        vec3 ghost = mix(ground, tint, 0.035 + 0.45 * pow(1.0 - max(dot(vN, vV), 0.0), 3.0));
+        gl_FragColor = vec4(split > 0.5 && vY < 0.0 ? ghost : sky, 1.0);
         #include <colorspace_fragment>
       }`,
   })
@@ -285,7 +305,7 @@ export function earthMaterial(sunDir: THREE.Vector3) {
 /** Frees a group's line geometry and materials; shared meshes (markers, dots) are freed with the scene. */
 function dispose(g: THREE.Group) {
   g.traverse((o) => {
-    if (o instanceof Line2) {
+    if (o instanceof Line2 || o instanceof THREE.Points) {
       o.geometry.dispose()
       o.material.dispose()
     }
@@ -306,6 +326,33 @@ function pathLines(d: number, track: Track, color: THREE.Color, width: number, d
       group.add(line(pts, color, run.on ? width : width * 0.6, { dashed: !run.on, dash, opacity: run.on ? 1 : 0.75, depthTest: run.on }))
   }
   return group
+}
+
+/**
+ * A body's path over the lunar month: thin and faint above the horizon, dashed below it. Both draw through the
+ * ground, so a Sun or Earth under the surface still shows where it is. A dot marks every 24 h.
+ */
+function orbitLines(d: number, pts: SkyPoint[], color: THREE.Color) {
+  const group = new THREE.Group()
+  for (const run of runs(pts.length, (i) => (pts[i]?.el ?? 0) >= 0)) {
+    const seg = pts.slice(run.from, run.to + 1).map((q) => onDome(d, q.az, q.el))
+    if (seg.length > 1)
+      group.add(line(seg, color, 1, { dashed: !run.on, dash: SKY_DASH * 0.6, opacity: run.on ? 0.45 : 0.4, depthTest: false }))
+  }
+  const days = pts.filter((_, i) => i % 24 === 0).flatMap((q) => onDome(d, q.az, q.el).toArray())
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(days, 3))
+  const dots = new THREE.Points(
+    g,
+    new THREE.PointsMaterial({ color, size: 3, sizeAttenuation: false, transparent: true, opacity: 0.55, depthTest: false }),
+  )
+  group.add(dots)
+  return group
+}
+
+/** Dashed drop from the horizon straight down to a body under it: how far below the surface it is. */
+function dropLine(d: number, az: number, el: number, color: THREE.Color) {
+  return line([onDome(d, az, 0), onDome(d, az, el)], color, 1, { dashed: true, dash: SKY_DASH * 0.4, opacity: 0.7, depthTest: false })
 }
 
 type LabelKey =
@@ -417,6 +464,7 @@ export default function SiteIsland(props: SiteIslandProps) {
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.localClippingEnabled = true
 
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(64, 1, 0.05, SKY * 3)
@@ -469,6 +517,15 @@ export default function SiteIsland(props: SiteIslandProps) {
     meridians.visible = false
     scene.add(dome, meridians)
 
+    // Below the horizon is ground: a shaded lower hemisphere behind everything, so the Sun or Earth under it reads as
+    // under the surface, not floating in the dark.
+    const underground = new THREE.Mesh(
+      new THREE.SphereGeometry(D * 1.05, 96, 24, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2),
+      new THREE.MeshBasicMaterial({ color: p.side, side: THREE.BackSide, depthWrite: false }),
+    )
+    underground.renderOrder = -1
+    scene.add(underground)
+
     // The computed skyline (terrain out to the pipeline's full range) traced on the dome: what the village actually sees.
     const ringPts = skyline.map((e, i) => onDome(D * 0.998, i * azStep, e))
     if (ringPts[0]) ringPts.push(ringPts[0].clone())
@@ -520,9 +577,23 @@ export default function SiteIsland(props: SiteIslandProps) {
 
     // True angular radii: Sun ~0.27°, Earth from the Moon ~0.95°; the GEO marker is symbolic.
     const sunR = D * Math.tan(rad(0.267)) * SUN_SCALE
-    const sunMat = new THREE.MeshBasicMaterial({ color: p.sun, transparent: true })
-    const sunMesh = new THREE.Mesh(new THREE.SphereGeometry(sunR, 32, 16), sunMat)
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: p.sun, transparent: true, depthWrite: false }))
+    // Sun and Earth draw over the sky lines (depthTest off, drawn last; transparent so renderOrder applies), so no path or sight line cuts through a disc.
+    // The Sun is two halves split at the horizon: as it is above, and a ghost in the ground's colour below.
+    const above = [new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)]
+    const below = [new THREE.Plane(new THREE.Vector3(0, -1, 0), 0)]
+    const sunGeo = new THREE.SphereGeometry(sunR, 32, 16)
+    const sunMat = new THREE.MeshBasicMaterial({ color: p.sun.clone(), transparent: true, depthTest: false, clippingPlanes: above })
+    const sunMesh = new THREE.Mesh(sunGeo, sunMat)
+    sunMesh.renderOrder = 10
+    const sunUnder = new THREE.Mesh(
+      sunGeo,
+      new THREE.MeshBasicMaterial({ color: p.side.clone().lerp(p.sun, 0.14), transparent: true, depthTest: false, clippingPlanes: below }),
+    )
+    sunUnder.renderOrder = 10
+    sunMesh.add(sunUnder)
+    const glow = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: glowTexture(), color: p.sun, transparent: true, depthWrite: false, clippingPlanes: above }),
+    )
     glow.scale.setScalar(sunR * 9)
     sunMesh.add(glow)
     const sunHalo = new THREE.Mesh(
@@ -530,6 +601,7 @@ export default function SiteIsland(props: SiteIslandProps) {
       // Drawn through terrain, so a Sun behind the ridge still shows where it is.
       new THREE.MeshBasicMaterial({ color: p.sun, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthTest: false }),
     )
+    sunHalo.renderOrder = 11
     scene.add(sunMesh, sunHalo)
 
     const pinMat = new THREE.MeshBasicMaterial({ color: p.ink })
@@ -540,12 +612,16 @@ export default function SiteIsland(props: SiteIslandProps) {
 
     const earthGeo = new THREE.SphereGeometry(D * Math.tan(rad(0.95)) * EARTH_SCALE, 48, 24)
     const earthSun = new THREE.Vector3(0, 1, 0)
-    const earthMat = earthMaterial(earthSun)
+    const earthMat = earthMaterial(earthSun, { ground: p.side, tint: p.comms })
+    // Transparent (at full alpha) so it sorts with the lines by renderOrder; opaque objects always draw before them.
+    earthMat.depthTest = false
+    earthMat.transparent = true
     let paths = new THREE.Group()
     let ray = new THREE.Group()
     scene.add(paths, ray)
     let hours: { node: HTMLSpanElement; at: THREE.Vector3 }[] = []
     let sig = ''
+    let lastOrbit: SiteIslandProps['orbit']
     let dirty = true
     let anchors: Partial<Record<LabelKey, THREE.Vector3>> = {}
     let peaks: { hi?: THREE.Vector3; lo?: THREE.Vector3 } = {}
@@ -567,13 +643,15 @@ export default function SiteIsland(props: SiteIslandProps) {
 
     const set = (q: SiteIslandProps) => {
       const key = `${q.track?.t_min[0]}|${q.track?.az_deg.length}|${(q.references ?? []).map((r) => r.label).join()}|${q.comms?.kind}|${q.comms?.arc.length}|${q.comms?.arc[0]?.az_deg}`
-      if (key !== sig) {
+      if (key !== sig || q.orbit !== lastOrbit) {
         sig = key
+        lastOrbit = q.orbit
         scene.remove(paths)
         dispose(paths)
         paths = new THREE.Group()
         for (const h of hours) h.node.remove()
         hours = []
+        if (q.orbit) paths.add(orbitLines(D, q.orbit.sun, p.sun), orbitLines(D, q.orbit.earth, p.comms))
         if (q.track) {
           paths.add(pathLines(D, q.track, p.sun, 2, SKY_DASH))
           // Hour marks every 3 h of UTC while the Sun is up. Not on the Moon: its day lasts ~29.5 Earth days, so the
@@ -650,10 +728,13 @@ export default function SiteIsland(props: SiteIslandProps) {
         next.comms = onDome(D, ref.az_deg, ref.el_deg)
         next.commsFar = next.comms
         const by = Math.abs(ref.clearance_deg).toFixed(1)
+        const under = Math.abs(ref.el_deg).toFixed(1)
         setText(
           'comms',
-          `Earth · ${ref.visible ? `in view, ${by}° above the ridge` : `${by}° below the ridge`}`,
-          `Earth · ${ref.visible ? 'in view' : 'below the ridge'}`,
+          ref.el_deg < 0 && !ref.visible
+            ? `Earth · ${under}° below the horizon`
+            : `Earth · ${ref.visible ? `in view, ${by}° above the ridge` : `${by}° below the ridge`}`,
+          ref.el_deg < 0 && !ref.visible ? `Earth · ${under}° below` : `Earth · ${ref.visible ? 'in view' : 'below the ridge'}`,
         )
       }
 
@@ -665,8 +746,12 @@ export default function SiteIsland(props: SiteIslandProps) {
         const ref = q.comms.reference
         const at = onDome(D, ref.az_deg, ref.el_deg)
         const mark = new THREE.Mesh(earthGeo, earthMat)
+        mark.renderOrder = 10
         mark.position.copy(at)
+        // Above the horizon but behind the ridge: dimmed, never shown as in view.
+        earthMat.uniforms.fade!.value = ref.visible ? 1 : 0.5
         ray.add(mark, sight(ref.az_deg, ref.el_deg, ref.visible, p.comms, at).group)
+        if (ref.el_deg < 0) ray.add(dropLine(D, ref.az_deg, ref.el_deg, p.comms))
       }
       const s = q.now
       lastSun = s
@@ -676,12 +761,14 @@ export default function SiteIsland(props: SiteIslandProps) {
       pinMat.color.copy(q.inSun ? p.sun : p.ink)
       setText('hit', '')
       if (s) {
-        const at = onDome(D, s.az, Math.max(-1, s.el))
+        const at = onDome(D, s.az, s.el)
         sunMesh.position.copy(at)
         sunHalo.position.copy(at)
         // The Sun shines either way; dim it when the site can't see it, so the scene never implies direct sun.
-        sunMat.opacity = q.inSun ? 1 : 0.4
-        glow.material.opacity = q.inSun ? 1 : 0.25
+        // Dimmed, not see-through: lines behind the disc stay hidden.
+        sunMat.color.copy(p.sun).multiplyScalar(q.inSun ? 1 : 0.45)
+        glow.material.opacity = q.inSun ? 1 : sunUp ? 0.25 : 0
+        if (!sunUp) ray.add(dropLine(D, s.az, s.el, p.sun))
         next.sun = at
         next.sunFar = at
         if (sunUp) {
@@ -704,8 +791,12 @@ export default function SiteIsland(props: SiteIslandProps) {
         const up = `Sun ${s.el.toFixed(1)}° up`
         setText(
           'sun',
-          !sunUp ? 'Sun below the horizon' : q.inSun ? `${up} · in direct sun${ridge}` : `${up} · hidden by the ridge${ridge}`,
-          !sunUp ? 'Sun set' : `${up} · ${q.inSun ? 'in sun' : 'hidden'}`,
+          !sunUp
+            ? `Sun ${Math.abs(s.el).toFixed(1)}° below the horizon`
+            : q.inSun
+              ? `${up} · in direct sun${ridge}`
+              : `${up} · hidden by the ridge${ridge}`,
+          !sunUp ? `Sun ${Math.abs(s.el).toFixed(1)}° below` : `${up} · ${q.inSun ? 'in sun' : 'hidden'}`,
         )
       } else setText('sun', '')
       scene.add(ray)
@@ -851,7 +942,8 @@ export default function SiteIsland(props: SiteIslandProps) {
 
     const faceSun = () => {
       const s = lastSun
-      yaw = s && s.el > -0.27 ? s.az : 180
+      // A Sun just under the horizon is still worth facing: you see where it is below the ground.
+      yaw = s && s.el > -12 ? s.az : 180
       // Aim a little above the ridge in that direction, so the sky and the Sun's path fill the frame.
       pitch = clamp(ridgeAt(yaw) + 6, 8, 50)
       aimEye()
@@ -878,8 +970,8 @@ export default function SiteIsland(props: SiteIslandProps) {
     const frameHome = () => {
       const s = lastSun
       const ref = latest.current.comms?.reference
-      const up = !!s && s.el > -0.27
-      // Face the Sun; with a comms target, face between the two when both fit in one view.
+      const up = !!s && s.el > -12
+      // Face the Sun (even a little under the horizon); with a comms target, face between the two when both fit in one view.
       let face = up && s ? s.az : ref ? ref.az_deg : 180
       let top = Math.max(8, up && s ? s.el : (ref?.el_deg ?? 0))
       const focus = latest.current.focus?.target
@@ -1047,6 +1139,8 @@ export default function SiteIsland(props: SiteIslandProps) {
     view === 'eye'
       ? `Eye level at the site, 2 m up. Drag to look around; double-click to face the Sun. The white line is the computed skyline, terrain out to ${props.skylineKm} km.`
       : `Real terrain, ${terrain?.meta.radius_km ?? ''} km around the site, at true height. Drag to orbit${props.fill ? ', scroll to zoom' : ''}; double-click to reset. The Sun is drawn ${SUN_SCALE}× and Earth ${EARTH_SCALE}× their apparent size.${
+          props.orbit ? ' Faint lines trace the whole lunar month, a dot a day; dashed where it runs under the ground.' : ''
+        }${
           share != null && share < 0.995
             ? ` ${Math.round(share * 100)}% of the skyline’s ridges are inside this model; the white line includes the rest.`
             : ''
