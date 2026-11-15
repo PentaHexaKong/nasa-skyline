@@ -112,7 +112,7 @@ function SiteCataloguePage() {
     },
     {
       id: 'skyline',
-      title: 'Skyline’s own sites',
+      title: 'South-pole study sites',
       lede: 'The south-pole rims the planner is built on, with Apollo 11 for comparison.',
       entries: REFERENCE_SITES.filter((site) => !site.agency),
     },

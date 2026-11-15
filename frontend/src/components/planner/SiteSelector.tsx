@@ -117,7 +117,7 @@ export function SiteList({ plan, actions, day, verdicts = true }: { plan: Plan; 
   const agency = new Set(REFERENCE_SITES.filter((entry) => entry.agency).map((entry) => entry.id))
   const groups = [
     { title: 'Landings by other agencies', sites: plan.all.filter((data) => agency.has(data.site.id)) },
-    { title: 'Skyline’s own sites', sites: plan.all.filter((data) => !agency.has(data.site.id)) },
+    { title: 'South-pole study sites', sites: plan.all.filter((data) => !agency.has(data.site.id)) },
   ].filter((group) => group.sites.length > 0)
   return (
     <div className="grid gap-5">
